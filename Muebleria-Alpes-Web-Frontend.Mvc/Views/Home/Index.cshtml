@@ -1,0 +1,28 @@
+﻿@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Test.TestConexionViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <h2 class="fw-bold mb-2">Prueba de Conexión</h2>
+        <p class="text-muted mb-4">
+            Esta prueba valida la comunicación del frontend MVC con el backend API y la conexión del backend con Oracle.
+        </p>
+
+        @if (Model.Exitoso)
+        {
+            <div class="alert alert-success rounded-4">
+                <strong>@Model.Mensaje</strong><br />
+                Resultado: @Model.Resultado
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger rounded-4">
+                <strong>Error:</strong> @Model.Mensaje
+            </div>
+        }
+    </div>
+</div>
