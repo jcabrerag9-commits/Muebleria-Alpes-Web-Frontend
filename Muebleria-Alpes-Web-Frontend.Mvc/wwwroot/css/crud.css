@@ -1,0 +1,40 @@
+﻿.crud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .crud-header h2 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+.crud-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.crud-search {
+    border-radius: 10px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+}
+
+.table-custom {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+    .table-custom th {
+        background: #f7f7f7;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+.btn-action {
+    border: none;
+    background: transparent;
+    margin-right: 5px;
+}

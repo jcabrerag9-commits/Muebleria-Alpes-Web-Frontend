@@ -1,0 +1,50 @@
+﻿@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos.DepartamentoViewModel
+
+<div class="modal fade" id="modalDetalleDepartamento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle del Departamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-header">
+                    <div class="detail-avatar">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <div>
+                        <h4>@Model.Nombre</h4>
+                        <span>@Model.Codigo</span>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Código</label>
+                        <strong>@Model.Codigo</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Nombre</label>
+                        <strong>@Model.Nombre</strong>
+                    </div>
+
+                    <div class="detail-item detail-item-wide">
+                        <label>Descripción</label>
+                        <strong>@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripción" : Model.Descripcion)</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Estado visual</label>
+                        <strong>Activo</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,65 @@
+﻿@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos.EmpleadoViewModel
+
+<div class="modal fade" id="modalDetalleEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle del Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-header">
+                    <div class="detail-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div>
+                        <h4>@Model.NombreCompleto</h4>
+                        <span>@Model.Codigo</span>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Tipo documento</label>
+                        <strong>@(Model.TipoDocumento ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Número documento</label>
+                        <strong>@Model.NumeroDocumento</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <strong>@Model.Email</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Teléfono</label>
+                        <strong>@Model.Telefono</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Fecha nacimiento</label>
+                        <strong>@(Model.FechaNacimiento == DateTime.MinValue ? "N/A" : Model.FechaNacimiento.ToString("yyyy-MM-dd"))</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Fecha ingreso</label>
+                        <strong>@(Model.FechaIngreso == DateTime.MinValue ? "N/A" : Model.FechaIngreso.ToString("yyyy-MM-dd"))</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Estado</label>
+                        <strong>@Model.Estado</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

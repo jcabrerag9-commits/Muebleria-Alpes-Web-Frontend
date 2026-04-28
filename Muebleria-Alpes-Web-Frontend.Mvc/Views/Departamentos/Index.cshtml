@@ -1,0 +1,119 @@
+﻿@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model List<DepartamentoViewModel>
+
+@{
+    ViewData["Title"] = "Departamentos";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-diagram-3"></i>
+        </div>
+        <div>
+            <h1>Departamentos</h1>
+            <p>Administración de áreas internas de la empresa</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarDepartamento" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearDepartamento">
+            <i class="bi bi-plus-lg"></i> Nuevo Departamento
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaDepartamentos">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Departamento</th>
+                    <th>Descripción</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dep in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="code-badge">@dep.Codigo</span>
+                        </td>
+
+                        <td>
+                            <div class="employee-cell">
+                                <div class="employee-avatar">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div>
+                                    <div class="employee-name">@dep.Nombre</div>
+                                    <div class="employee-subtitle">Área organizacional</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="doc-cell">
+                                <strong>@(string.IsNullOrWhiteSpace(dep.Descripcion) ? "Sin descripción" : dep.Descripcion)</strong>
+                                <span>Descripción del departamento</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="status-badge status-active">
+                                <i class="bi bi-check-circle"></i> Activo
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-detail-departamento"
+                                        type="button"
+                                        data-id="@dep.Id"
+                                        title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+
+                                <button class="btn-icon btn-edit"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditarDepartamento-@dep.Id"
+                                        title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @await Html.PartialAsync("_EditarDepartamentoModal", dep)
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearDepartamentoModal", new CrearDepartamentoViewModel())
+
+<div id="detalleDepartamentoContainer"></div>
+
+@section Scripts {
+    <script src="~/js/recursos-humanos/departamentos.js" asp-append-version="true"></script>
+}
