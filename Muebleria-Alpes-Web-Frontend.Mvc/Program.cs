@@ -1,4 +1,5 @@
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
+using Muebleria_Alpes_Web_Frontend.Mvc.Services.RecursosHumanos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,14 @@ builder.Services.AddHttpClient("BackendApi", (sp, client) =>
 });
 
 builder.Services.AddScoped<TestApiService>();
+builder.Services.AddHttpClient<EmpleadoApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7015/");
+});
+builder.Services.AddHttpClient<DepartamentoApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7015/");
+});
 
 var app = builder.Build();
 
