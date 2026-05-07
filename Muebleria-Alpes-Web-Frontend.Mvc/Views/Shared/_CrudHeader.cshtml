@@ -1,0 +1,16 @@
+﻿@model dynamic
+
+<div class="crud-header">
+    <div>
+        <h2>@Model.Titulo</h2>
+        <span>@Model.Subtitulo</span>
+    </div>
+
+    <div class="crud-actions">
+        <input type="text" placeholder="Buscar..." class="crud-search" />
+
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="@Model.ModalId">
+            <i class="bi bi-plus"></i> Nuevo
+        </button>
+    </div>
+</div>

@@ -1,0 +1,268 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool IsController(params string[] controllers)
+    {
+        return controllers.Any(c => string.Equals(c, currentController, StringComparison.OrdinalIgnoreCase));
+    }
+
+    string ActiveMenu(params string[] controllers)
+    {
+        return IsController(controllers) ? "menu-active-accent" : "";
+    }
+
+    string ActiveSubmenu(string controller)
+    {
+        return string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            ? "submenu-active"
+            : "";
+    }
+
+    string ShowMenu(params string[] controllers)
+    {
+        return IsController(controllers) ? "show" : "";
+    }
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Los Alpes ERP</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/crud.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+    <div class="admin-wrapper">
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <a class="brand-link" asp-controller="Home" asp-action="Index">
+                    <div class="brand-icon">
+                        <i class="bi bi-triangle"></i>
+                    </div>
+                    <div>
+                        <div class="brand-title">Los Alpes</div>
+                        <div class="brand-subtitle">SISTEMA ERP</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="menu-title">MENÚ PRINCIPAL</div>
+
+            <nav class="sidebar-menu">
+
+                <a class="menu-item @ActiveMenu("Home")" asp-controller="Home" asp-action="Index">
+                    <span class="menu-left">
+                        <i class="bi bi-grid"></i>
+                        <span>Dashboard</span>
+                    </span>
+                </a>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Productos", "Categorias", "Colores", "Materiales", "Promociones")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#productosMenu"
+                            aria-expanded="@(IsController("Productos", "Categorias", "Colores", "Materiales", "Promociones").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Productos</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Productos", "Categorias", "Colores", "Materiales", "Promociones")" id="productosMenu">
+                        <a class="@ActiveSubmenu("Productos")" asp-controller="Productos" asp-action="Index">
+                            <i class="bi bi-box"></i> Catálogo
+                        </a>
+                        <a class="@ActiveSubmenu("Categorias")" asp-controller="Categorias" asp-action="Index">
+                            <i class="bi bi-tag"></i> Categorías
+                        </a>
+                        <a class="@ActiveSubmenu("Colores")" asp-controller="Colores" asp-action="Index">
+                            <i class="bi bi-palette"></i> Colores
+                        </a>
+                        <a class="@ActiveSubmenu("Materiales")" asp-controller="Materiales" asp-action="Index">
+                            <i class="bi bi-layers"></i> Materiales
+                        </a>
+                        <a class="@ActiveSubmenu("Promociones")" asp-controller="Promociones" asp-action="Index">
+                            <i class="bi bi-ticket-perforated"></i> Promociones
+                        </a>
+                    </div>
+                </div>
+
+                <a class="menu-item @ActiveMenu("Clientes")" asp-controller="Clientes" asp-action="Index">
+                    <span class="menu-left">
+                        <i class="bi bi-people"></i>
+                        <span>Clientes</span>
+                    </span>
+                </a>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Ventas", "Facturas", "Pagos")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ventasMenu"
+                            aria-expanded="@(IsController("Ventas", "Facturas", "Pagos").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-cart"></i>
+                            <span>Ventas</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Ventas", "Facturas", "Pagos")" id="ventasMenu">
+                        <a class="@ActiveSubmenu("Ventas")" asp-controller="Ventas" asp-action="Index">
+                            <i class="bi bi-cart"></i> Órdenes
+                        </a>
+                        <a class="@ActiveSubmenu("Facturas")" asp-controller="Facturas" asp-action="Index">
+                            <i class="bi bi-file-earmark-text"></i> Facturas
+                        </a>
+                        <a class="@ActiveSubmenu("Pagos")" asp-controller="Pagos" asp-action="Index">
+                            <i class="bi bi-credit-card"></i> Pagos
+                        </a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Inventario", "Bodegas", "MovimientosInventario")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#inventarioMenu"
+                            aria-expanded="@(IsController("Inventario", "Bodegas", "MovimientosInventario").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-building"></i>
+                            <span>Inventario</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Inventario", "Bodegas", "MovimientosInventario")" id="inventarioMenu">
+                        <a class="@ActiveSubmenu("Inventario")" asp-controller="Inventario" asp-action="Index">
+                            <i class="bi bi-box"></i> Existencias
+                        </a>
+                        <a class="@ActiveSubmenu("Bodegas")" asp-controller="Bodegas" asp-action="Index">
+                            <i class="bi bi-buildings"></i> Bodegas
+                        </a>
+                        <a class="@ActiveSubmenu("MovimientosInventario")" asp-controller="MovimientosInventario" asp-action="Index">
+                            <i class="bi bi-arrow-left-right"></i> Movimientos
+                        </a>
+                    </div>
+                </div>
+
+                <a class="menu-item @ActiveMenu("Produccion")" asp-controller="Produccion" asp-action="Index">
+                    <span class="menu-left">
+                        <i class="bi bi-building-gear"></i>
+                        <span>Producción</span>
+                    </span>
+                </a>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Empleados", "Contratos", "Nomina", "Asistencias", "Vacaciones", "Puestos", "Departamentos", "Evaluaciones", "Turnos")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#rrhhMenu"
+                            aria-expanded="@(IsController("Empleados", "Contratos", "Nomina", "Asistencias", "Vacaciones", "Puestos", "Departamentos", "Evaluaciones", "Turnos").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-person-gear"></i>
+                            <span>RRHH</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Empleados", "Contratos", "Nomina", "Asistencias", "Vacaciones", "Puestos", "Departamentos", "Evaluaciones", "Turnos")" id="rrhhMenu">
+                        <a class="@ActiveSubmenu("Empleados")" asp-controller="Empleados" asp-action="Index">
+                            <i class="bi bi-person"></i> Empleados
+                        </a>
+                        <a class="@ActiveSubmenu("Contratos")" asp-controller="Contratos" asp-action="Index">
+                            <i class="bi bi-file-earmark-check"></i> Contratos
+                        </a>
+                        <a class="@ActiveSubmenu("Nomina")" asp-controller="Nomina" asp-action="Index">
+                            <i class="bi bi-currency-dollar"></i> Nómina
+                        </a>
+                        <a class="@ActiveSubmenu("Asistencias")" asp-controller="Asistencias" asp-action="Index">
+                            <i class="bi bi-clock-history"></i> Asistencias
+                        </a>
+                        <a class="@ActiveSubmenu("Vacaciones")" asp-controller="Vacaciones" asp-action="Index">
+                            <i class="bi bi-airplane"></i> Vacaciones
+                        </a>
+                        <a class="@ActiveSubmenu("Puestos")" asp-controller="Puestos" asp-action="Index">
+                            <i class="bi bi-briefcase"></i> Puestos
+                        </a>
+                        <a class="@ActiveSubmenu("Departamentos")" asp-controller="Departamentos" asp-action="Index">
+                            <i class="bi bi-diagram-3"></i> Departamentos
+                        </a>
+                        <a class="@ActiveSubmenu("Evaluaciones")" asp-controller="Evaluaciones" asp-action="Index">
+                            <i class="bi bi-clipboard-check"></i> Evaluaciones
+                        </a>
+                        <a class="@ActiveSubmenu("Turnos")" asp-controller="Turnos" asp-action="Index">
+                            <i class="bi bi-calendar2-week"></i> Turnos
+                        </a>
+                    </div>
+                </div>
+
+            </nav>
+
+            <div class="store-box">
+                <a href="#">
+                    <i class="bi bi-shop"></i>
+                    <span>Ver tienda virtual</span>
+                </a>
+            </div>
+
+            <div class="user-box">
+                <div class="user-avatar">AD</div>
+                <div>
+                    <div class="user-name">Admin</div>
+                    <div class="user-email">admin@losalpes.com</div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="content-area">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button type="button" class="sidebar-toggle" id="toggleSidebar">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <div class="topbar-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Buscar en el sistema..." />
+                    </div>
+                </div>
+
+                <div class="topbar-actions">
+                    <button type="button" class="topbar-btn">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    <button type="button" class="topbar-btn">
+                        <i class="bi bi-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <main class="main-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin-layout.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

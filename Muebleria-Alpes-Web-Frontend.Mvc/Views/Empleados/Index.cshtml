@@ -1,0 +1,172 @@
+﻿@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model List<EmpleadoViewModel>
+
+@{
+    ViewData["Title"] = "Empleados";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <div>
+            <h1>Empleados</h1>
+            <p>Gestión del personal</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarEmpleado" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearEmpleado">
+            <i class="bi bi-plus-lg"></i> Nuevo Empleado
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaEmpleados">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Documento</th>
+                    <th>Contacto</th>
+                    <th>Ingreso</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model)
+                {
+                    var iniciales = string.Join("", (emp.NombreCompleto ?? "NA")
+                    .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                    .Take(2)
+                    .Select(x => x[0]))
+                    .ToUpper();
+
+                    var nombreSecundario = $"{emp.PrimerNombre} {emp.SegundoNombre} {emp.PrimerApellido} {emp.SegundoApellido}".Trim();
+
+                    <tr>
+                        <td>
+                            <span class="code-badge">@emp.Codigo</span>
+                        </td>
+
+                        <td>
+                            <div class="employee-cell">
+                                <div class="employee-avatar">@iniciales</div>
+                                <div>
+                                    <div class="employee-name">@emp.NombreCompleto</div>
+
+                                    @if (!string.IsNullOrWhiteSpace(nombreSecundario))
+                                    {
+                                        <div class="employee-subtitle">@nombreSecundario</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="employee-subtitle">Empleado registrado en RRHH</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="doc-cell">
+                                <strong>@(emp.TipoDocumento ?? "Sin tipo")</strong>
+                                <span>@(string.IsNullOrWhiteSpace(emp.NumeroDocumento) ? "Sin documento" : emp.NumeroDocumento)</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="contact-cell">
+                                <div><i class="bi bi-envelope"></i> @emp.Email</div>
+                                <span><i class="bi bi-telephone"></i> @emp.Telefono</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="date-cell">
+                                <strong>@(emp.FechaIngreso == DateTime.MinValue ? "N/A" : emp.FechaIngreso.ToString("yyyy-MM-dd"))</strong>
+                                <span>Fecha ingreso</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            @if (emp.Estado == "ACTIVO")
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle"></i> Activo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle"></i> Inactivo
+                                </span>
+                            }
+                        </td>
+
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-detail" type="button" data-id="@emp.Id" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+
+                                <button class="btn-icon btn-edit" type="button" data-bs-toggle="modal" data-bs-target="#modalEditarEmpleado-@emp.Id" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <form asp-controller="Empleados"
+                                      asp-action="CambiarEstado"
+                                      asp-route-id="@emp.Id"
+                                      method="post"
+                                      class="d-inline">
+                                    <input type="hidden" name="estadoActual" value="@emp.Estado" />
+
+                                    <button type="submit"
+                                            class="btn-icon @(emp.Estado == "ACTIVO" ? "btn-delete" : "btn-activate")"
+                                            title="Cambiar estado">
+                                        @if (emp.Estado == "ACTIVO")
+                                        {
+                                            <i class="bi bi-x-circle"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-check-circle"></i>
+                                        }
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @await Html.PartialAsync("_EditarEmpleadoModal", emp)
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearEmpleadoModal", new CrearEmpleadoViewModel())
+
+<div id="detalleEmpleadoContainer"></div>
+
+@section Scripts {
+    <script src="~/js/recursos-humanos/empleados.js" asp-append-version="true"></script>
+}
