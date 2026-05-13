@@ -1,0 +1,193 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<PromocionViewModel>
+
+@{
+    ViewData["Title"] = "Promociones";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-ticket-perforated"></i>
+        </div>
+        <div>
+            <h1>Promociones</h1>
+            <p>Gestión de descuentos y ofertas</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarPromocion" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearPromocion">
+            <i class="bi bi-plus-lg"></i> Nueva Promoción
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaPromociones">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Vigencia</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var promo in Model)
+                {
+                    var tipoClass = promo.Tipo switch
+                    {
+                        "PORCENTAJE" => "bg-info text-white",
+                        "MONTO_FIJO" => "bg-primary text-white",
+                        "2X1" => "bg-warning text-dark",
+                        "ENVIO_GRATIS" => "bg-success text-white",
+                        "COMPRA_MINIMA" => "bg-secondary text-white",
+                        _ => "bg-secondary text-white"
+                    };
+
+                    var estadoClass = promo.Estado switch
+                    {
+                        "ACTIVO" or "ACTIVA" => "status-active",
+                        "INACTIVO" or "INACTIVA" => "status-inactive",
+                        "VENCIDA" or "VENCIDO" => "status-danger",
+                        _ => "status-warning"
+                    };
+                    <tr>
+                        <td>
+                            <span class="code-badge">@promo.Codigo</span>
+                        </td>
+                        <td><strong>@promo.Nombre</strong></td>
+                        <td>
+                            <span class="badge @tipoClass">@promo.Tipo</span>
+                        </td>
+                        <td>
+                            @if (promo.Tipo == "PORCENTAJE")
+                            {
+                                <span>@((promo.Valor ?? 0).ToString("N0"))%</span>
+                            }
+                            else if (promo.Tipo == "2X1" || promo.Tipo == "ENVIO_GRATIS")
+                            {
+                                <span>-</span>
+                            }
+                            else
+                            {
+                                <span>Q@((promo.Valor ?? 0).ToString("N2"))</span>
+                            }
+                        </td>
+                        <td>
+                            <div><small>@promo.FechaInicio.ToString("dd/MM/yyyy")</small></div>
+                            <div><small class="text-muted">al @promo.FechaFin.ToString("dd/MM/yyyy")</small></div>
+                        </td>
+                        <td>
+                            <span class="status-badge @estadoClass">
+                                @promo.Estado
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-edit" type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditarPromocion-@promo.PromocionId"
+                                        title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <form asp-controller="Promociones" asp-action="Eliminar"
+                                      asp-route-id="@promo.PromocionId" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar esta promoción?');">
+                                    <button type="submit" class="btn-icon btn-delete" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="modalEditarPromocion-@promo.PromocionId" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-pencil me-2"></i> Editar Promoción
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form asp-controller="Promociones" asp-action="Actualizar"
+                                      asp-route-id="@promo.PromocionId" method="post">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                                            <input type="text" name="Nombre" class="form-control" value="@promo.Nombre" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+                                            <select name="Tipo" class="form-select" required>
+                                                @foreach (var t in new[] { "PORCENTAJE", "MONTO_FIJO", "2X1", "ENVIO_GRATIS", "COMPRA_MINIMA" })
+                                                {
+                                                    <option value="@t" selected="@(promo.Tipo == t)">@t</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Valor</label>
+                                            <input type="number" name="Valor" class="form-control" value="@promo.Valor" step="0.01" min="0.01" placeholder="0.00" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Fecha Inicio <span class="text-danger">*</span></label>
+                                            <input type="date" name="FechaInicio" class="form-control"
+                                                   value="@promo.FechaInicio.ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Fecha Fin <span class="text-danger">*</span></label>
+                                            <input type="date" name="FechaFin" class="form-control"
+                                                   value="@promo.FechaFin.ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary btn-main">
+                                            <i class="bi bi-check-lg"></i> Guardar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearPromocionModal", new CrearPromocionViewModel())
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarPromocion').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaPromociones tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

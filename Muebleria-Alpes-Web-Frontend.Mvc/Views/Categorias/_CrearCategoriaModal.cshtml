@@ -1,0 +1,42 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model CrearCategoriaViewModel
+
+<div class="modal fade" id="modalCrearCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Categorias" asp-action="Crear" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem; border-radius:8px;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        El código de categoría se genera automáticamente a partir del nombre.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nombre *</label>
+                            <input name="Nombre" class="form-control" placeholder="Ej. Sala de Estar" required />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="Descripcion" class="form-control" rows="2" placeholder="Descripción de la categoría..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

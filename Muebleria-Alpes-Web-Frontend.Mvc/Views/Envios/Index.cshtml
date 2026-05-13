@@ -1,0 +1,120 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<EnvioViewModel>
+
+@{
+    ViewData["Title"] = "Envíos";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div>
+            <h1>Envíos</h1>
+            <p>Gestión logística de entregas</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarEnvio" class="form-control search-input" placeholder="Buscar..." />
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaEnvios">
+            <thead>
+                <tr>
+                    <th>Número Orden</th>
+                    <th>Transportista</th>
+                    <th>Estado</th>
+                    <th>Fecha Envío</th>
+                    <th>Entrega Estimada</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var envio in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="code-badge">@envio.NumeroOrden</span>
+                        </td>
+                        <td>@(envio.Transportista ?? "-")</td>
+                        <td>
+                            @{
+                                var estadoClass = envio.Estado switch
+                                {
+                                    "ENTREGADO" => "status-active",
+                                    "EN_CAMINO" or "EN CAMINO" => "status-warning",
+                                    "CANCELADO" => "status-danger",
+                                    _ => "status-inactive"
+                                };
+                                var estadoIcon = envio.Estado switch
+                                {
+                                    "ENTREGADO" => "bi-check-circle",
+                                    "EN_CAMINO" or "EN CAMINO" => "bi-truck",
+                                    "CANCELADO" => "bi-x-circle",
+                                    _ => "bi-clock"
+                                };
+                            }
+                            <span class="status-badge @estadoClass">
+                                <i class="bi @estadoIcon"></i> @envio.Estado
+                            </span>
+                        </td>
+                        <td>@envio.FechaEnvio.ToString("dd/MM/yyyy")</td>
+                        <td>@(envio.FechaEntregaEstimada?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                <div class="dropdown">
+                                    <button class="btn-icon btn-edit dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" title="Cambiar estado">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        @foreach (var estado in new[] { "PREPARANDO", "EN_CAMINO", "ENTREGADO", "CANCELADO" })
+                                        {
+                                            <li>
+                                                <form asp-controller="Envios" asp-action="CambiarEstado"
+                                                      asp-route-id="@envio.EnvioId" method="post" class="d-inline">
+                                                    <input type="hidden" name="estado" value="@estado" />
+                                                    <button type="submit" class="dropdown-item">@estado</button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarEnvio').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaEnvios tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

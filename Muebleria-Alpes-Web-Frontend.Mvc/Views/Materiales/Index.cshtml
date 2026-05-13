@@ -1,0 +1,138 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model List<MaterialViewModel>
+
+@{
+    ViewData["Title"] = "Materiales";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-layers"></i>
+        </div>
+        <div>
+            <h1>Materiales</h1>
+            <p>Gestión de materiales de fabricación</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarMaterial" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearMaterial">
+            <i class="bi bi-plus-lg"></i> Nuevo Material
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaMateriales">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="code-badge">@item.Codigo</span>
+                        </td>
+
+                        <td>
+                            <div class="employee-cell">
+                                <div class="employee-avatar">
+                                    <i class="bi bi-layers"></i>
+                                </div>
+                                <div>
+                                    <div class="employee-name">@item.Nombre</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="employee-subtitle">@(item.Descripcion ?? "-")</span>
+                        </td>
+
+                        <td>
+                            @if (item.Estado == "ACTIVO")
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle"></i> Activo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle"></i> Inactivo
+                                </span>
+                            }
+                        </td>
+
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-edit"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditarMaterial-@item.Id"
+                                        title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <form asp-controller="Materiales"
+                                      asp-action="Eliminar"
+                                      asp-route-id="@item.Id"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar este material?');">
+                                    <button type="submit" class="btn-icon btn-delete" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @await Html.PartialAsync("_EditarMaterialModal", item)
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearMaterialModal", new CrearMaterialViewModel())
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buscar = document.getElementById('buscarMaterial');
+            if (buscar) {
+                buscar.addEventListener('keyup', function () {
+                    const val = this.value.toLowerCase();
+                    document.querySelectorAll('#tablaMateriales tbody tr').forEach(row => {
+                        row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+                    });
+                });
+            }
+        });
+    </script>
+}

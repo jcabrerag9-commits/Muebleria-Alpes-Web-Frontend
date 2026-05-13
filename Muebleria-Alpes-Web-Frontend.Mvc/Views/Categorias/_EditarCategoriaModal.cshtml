@@ -1,0 +1,47 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos.CategoriaViewModel
+
+<div class="modal fade" id="modalEditarCategoria-@Model.Id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Categorias" asp-action="Actualizar" asp-route-id="@Model.Id" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="employee-mini-card mb-3">
+                        <div class="avatar-soft">
+                            <i class="bi bi-tag"></i>
+                        </div>
+                        <div>
+                            <strong>@Model.Nombre</strong>
+                            <small>@Model.Codigo</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nombre *</label>
+                            <input name="Nombre" class="form-control" value="@Model.Nombre" required />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="Descripcion" class="form-control" rows="3">@Model.Descripcion</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

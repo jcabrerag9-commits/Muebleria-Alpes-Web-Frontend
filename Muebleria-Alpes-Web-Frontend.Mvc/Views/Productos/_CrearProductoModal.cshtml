@@ -1,0 +1,56 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model CrearProductoViewModel
+
+<div class="modal fade" id="modalCrearProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Productos" asp-action="Crear" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre *</label>
+                            <input name="Nombre" class="form-control" placeholder="Ej. Sofá Milano" required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">SKU *</label>
+                            <input name="Sku" class="form-control" placeholder="Ej. SOF-001" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="Descripcion" class="form-control" rows="3" placeholder="Descripción del producto..."></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo Mueble ID</label>
+                            <input name="TipoMuebleId" type="number" class="form-control" placeholder="ID del tipo de mueble" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <select name="Estado" class="form-select">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="INACTIVO">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

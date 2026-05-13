@@ -14,20 +14,34 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.RecursosHumanos
 
         public async Task<List<EmpleadoViewModel>> ListarAsync(string? estado = null)
         {
-            var url = "api/rh/empleados";
+            try
+            {
+                var url = "api/rh/empleados";
 
-            if (!string.IsNullOrWhiteSpace(estado))
-                url += $"?estado={estado}";
+                if (!string.IsNullOrWhiteSpace(estado))
+                    url += $"?estado={estado}";
 
-            var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<EmpleadoViewModel>>>(url);
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<EmpleadoViewModel>>>(url);
 
-            return response?.Resultado ?? new List<EmpleadoViewModel>();
+                return response?.Resultado ?? new List<EmpleadoViewModel>();
+            }
+            catch
+            {
+                return new List<EmpleadoViewModel>();
+            }
         }
 
         public async Task<EmpleadoViewModel?> ObtenerPorIdAsync(int id)
         {
-            var response = await _httpClient.GetFromJsonAsync<ApiResponse<EmpleadoViewModel>>($"api/rh/empleados/{id}");
-            return response?.Resultado;
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<EmpleadoViewModel>>($"api/rh/empleados/{id}");
+                return response?.Resultado;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<bool> CrearAsync(CrearEmpleadoViewModel model)
