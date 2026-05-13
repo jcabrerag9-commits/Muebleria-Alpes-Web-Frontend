@@ -1,0 +1,103 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<FacturaViewModel>
+
+@{
+    ViewData["Title"] = "Facturas";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-receipt"></i>
+        </div>
+        <div>
+            <h1>Facturas</h1>
+            <p>Facturas emitidas del sistema</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarFactura" class="form-control search-input" placeholder="Buscar..." />
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaFacturas">
+            <thead>
+                <tr>
+                    <th>Serie - Número</th>
+                    <th>Fecha Emisión</th>
+                    <th>Cliente</th>
+                    <th>Orden</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var factura in Model)
+                {
+                    var estadoBadge = factura.Estado switch
+                    {
+                        "EMITIDA"   => "status-active",
+                        "ANULADA"   => "status-danger",
+                        "CANCELADA" => "status-inactive",
+                        _           => "status-warning"
+                    };
+
+                    var estadoIcon = factura.Estado switch
+                    {
+                        "EMITIDA"   => "bi-check-circle",
+                        "ANULADA"   => "bi-x-circle",
+                        "CANCELADA" => "bi-slash-circle",
+                        _           => "bi-dash-circle"
+                    };
+
+                    <tr>
+                        <td>
+                            <span class="code-badge">@(factura.Serie ?? "")-@(factura.Numero ?? "-")</span>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <strong>@(factura.FechaEmision == DateTime.MinValue ? "N/A" : factura.FechaEmision.ToString("yyyy-MM-dd"))</strong>
+                            </div>
+                        </td>
+                        <td>@(factura.Cliente ?? "N/A")</td>
+                        <td>
+                            <span class="code-badge">@(factura.NumeroOrden ?? "-")</span>
+                        </td>
+                        <td>
+                            <strong>Q @factura.Total.ToString("N2")</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge @estadoBadge">
+                                <i class="bi @estadoIcon"></i> @(factura.Estado ?? "N/A")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("buscarFactura");
+            const tabla = document.getElementById("tablaFacturas");
+            if (input && tabla) {
+                input.addEventListener("keyup", function () {
+                    const filtro = input.value.toLowerCase();
+                    tabla.querySelectorAll("tbody tr").forEach(fila => {
+                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+        });
+    </script>
+}

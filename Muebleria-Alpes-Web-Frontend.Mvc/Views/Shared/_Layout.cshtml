@@ -216,18 +216,32 @@
             </nav>
 
             <div class="store-box">
-                <a href="#">
+                <a asp-controller="Tienda" asp-action="Index">
                     <i class="bi bi-shop"></i>
                     <span>Ver tienda virtual</span>
                 </a>
             </div>
 
             <div class="user-box">
-                <div class="user-avatar">AD</div>
-                <div>
-                    <div class="user-name">Admin</div>
-                    <div class="user-email">admin@losalpes.com</div>
-                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var nombreCompleto = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "Usuario";
+                    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+                    var initials = string.Concat(nombreCompleto.Split(' ').Take(2).Select(p => p.FirstOrDefault()));
+                    <div class="user-avatar">@initials.ToUpper()</div>
+                    <div>
+                        <div class="user-name">@nombreCompleto</div>
+                        <div class="user-email">@rol</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="user-avatar"><i class="bi bi-person"></i></div>
+                    <div>
+                        <div class="user-name">Invitado</div>
+                        <div class="user-email"><a href="/Login/Login" class="text-white-50">Iniciar sesión</a></div>
+                    </div>
+                }
             </div>
         </aside>
 
@@ -245,12 +259,23 @@
                 </div>
 
                 <div class="topbar-actions">
-                    <button type="button" class="topbar-btn">
-                        <i class="bi bi-bell"></i>
-                    </button>
-                    <button type="button" class="topbar-btn">
-                        <i class="bi bi-moon"></i>
-                    </button>
+                    @* Botón Ver Tienda — accesible para todos los no-clientes en el admin *@
+                    <a asp-controller="Tienda" asp-action="Index"
+                       class="topbar-btn" title="Ver Tienda Virtual">
+                        <i class="bi bi-shop"></i>
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Login" asp-action="Logout" class="topbar-btn" title="Cerrar sesión">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Login" class="topbar-btn" title="Iniciar sesión">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </a>
+                    }
                 </div>
             </header>
 

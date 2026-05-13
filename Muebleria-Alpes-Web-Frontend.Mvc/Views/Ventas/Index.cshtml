@@ -1,0 +1,103 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<OrdenViewModel>
+
+@{
+    ViewData["Title"] = "Ventas / Órdenes";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-cart3"></i>
+        </div>
+        <div>
+            <h1>Ventas</h1>
+            <p>Órdenes de compra registradas</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarOrden" class="form-control search-input" placeholder="Buscar..." />
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaOrdenes">
+            <thead>
+                <tr>
+                    <th>Número Orden</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var orden in Model)
+                {
+                    var estadoBadge = orden.Estado switch
+                    {
+                        "PENDIENTE"   => "status-warning",
+                        "PROCESANDO"  => "status-warning",
+                        "ENVIADO"     => "status-active",
+                        "COMPLETADO"  => "status-active",
+                        "CANCELADO"   => "status-danger",
+                        _             => "status-inactive"
+                    };
+
+                    var estadoIcon = orden.Estado switch
+                    {
+                        "PENDIENTE"   => "bi-clock",
+                        "PROCESANDO"  => "bi-arrow-repeat",
+                        "ENVIADO"     => "bi-truck",
+                        "COMPLETADO"  => "bi-check-circle",
+                        "CANCELADO"   => "bi-x-circle",
+                        _             => "bi-dash-circle"
+                    };
+
+                    <tr>
+                        <td>
+                            <span class="code-badge">@(orden.NumeroOrden ?? "-")</span>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <strong>@(orden.FechaOrden == DateTime.MinValue ? "N/A" : orden.FechaOrden.ToString("yyyy-MM-dd"))</strong>
+                            </div>
+                        </td>
+                        <td>@(orden.Cliente ?? "N/A")</td>
+                        <td>
+                            <strong>Q @orden.Total.ToString("N2")</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge @estadoBadge">
+                                <i class="bi @estadoIcon"></i> @(orden.Estado ?? "N/A")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("buscarOrden");
+            const tabla = document.getElementById("tablaOrdenes");
+            if (input && tabla) {
+                input.addEventListener("keyup", function () {
+                    const filtro = input.value.toLowerCase();
+                    tabla.querySelectorAll("tbody tr").forEach(fila => {
+                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+        });
+    </script>
+}

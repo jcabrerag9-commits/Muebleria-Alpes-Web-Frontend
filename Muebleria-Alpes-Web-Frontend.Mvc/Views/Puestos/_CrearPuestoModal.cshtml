@@ -1,0 +1,34 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearPuestoViewModel
+
+<div class="modal fade" id="modalCrearPuesto" tabindex="-1" aria-labelledby="modalCrearPuestoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearPuestoLabel">
+                    <i class="bi bi-briefcase me-2"></i> Nuevo Puesto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-controller="Puestos" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="Nombre" class="form-control" required placeholder="Nombre del puesto" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="Descripcion" class="form-control" rows="3" placeholder="Descripción del puesto"></textarea>
+                    </div>
+                    <input type="hidden" name="UsuarioId" value="1" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

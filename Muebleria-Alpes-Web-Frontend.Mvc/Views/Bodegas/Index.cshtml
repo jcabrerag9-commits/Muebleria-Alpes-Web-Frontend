@@ -1,0 +1,95 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<BodegaViewModel>
+
+@{
+    ViewData["Title"] = "Bodegas";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-buildings"></i>
+        </div>
+        <div>
+            <h1>Bodegas</h1>
+            <p>Gestión de almacenes y bodegas</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarBodega" class="form-control search-input" placeholder="Buscar..." />
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaBodegas">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bodega in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-building text-muted"></i>
+                                <strong>@bodega.Nombre</strong>
+                            </div>
+                        </td>
+                        <td>@(bodega.Descripcion ?? "-")</td>
+                        <td>
+                            @if (bodega.Estado == "ACTIVO" || bodega.Estado == "ACTIVA")
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle"></i> Activa
+                                </span>
+                            }
+                            else if (bodega.Estado == "INACTIVO" || bodega.Estado == "INACTIVA")
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle"></i> Inactiva
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-warning">
+                                    <i class="bi bi-dash-circle"></i> @(bodega.Estado ?? "Sin estado")
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarBodega').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaBodegas tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

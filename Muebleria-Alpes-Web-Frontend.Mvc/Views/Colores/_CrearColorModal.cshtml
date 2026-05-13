@@ -1,0 +1,38 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model CrearColorViewModel
+
+<div class="modal fade" id="modalCrearColor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Colores" asp-action="Crear" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Color</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre *</label>
+                            <input name="Nombre" class="form-control" placeholder="Ej. Caoba" required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Color Hex</label>
+                            <input name="HexColor" type="color" class="form-control form-control-color w-100" value="#563d2d" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
