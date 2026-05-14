@@ -1,0 +1,17 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@{
+    ViewData["Title"] = "Asignaciones";
+    var usuarios = ViewBag.Usuarios as List<UsuarioAlvaroViewModel> ?? new();
+    var roles = ViewBag.Roles as List<RolAlvaroViewModel> ?? new();
+    var permisos = ViewBag.Permisos as List<PermisoAlvaroViewModel> ?? new();
+}
+<div class="crud-page">
+  <h1>Asignaciones de seguridad</h1><p class="text-muted">Asigna roles a usuarios y permisos a roles.</p>
+  @if (TempData["Success"] is not null){<div class="alert alert-success">@TempData["Success"]</div>} @if (TempData["Error"] is not null){<div class="alert alert-danger">@TempData["Error"]</div>}
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="card border-0 shadow-sm rounded-4"><div class="card-body"><h5>Asignar rol a usuario</h5><form asp-action="AsignarRolUsuario" method="post"><label class="form-label">Usuario</label><select class="form-select mb-3" name="usuarioId">@foreach(var u in usuarios){<option value="@u.UsuarioId">@u.Codigo - @u.Username</option>}</select><label class="form-label">Rol</label><select class="form-select mb-3" name="rolId">@foreach(var r in roles){<option value="@r.RolId">@r.Codigo - @r.Nombre</option>}</select><button class="btn btn-danger">Asignar</button></form></div></div></div>
+    <div class="col-lg-6"><div class="card border-0 shadow-sm rounded-4"><div class="card-body"><h5>Asignar permiso a rol</h5><form asp-action="AsignarPermisoRol" method="post"><label class="form-label">Rol</label><select class="form-select mb-3" name="rolId">@foreach(var r in roles){<option value="@r.RolId">@r.Codigo - @r.Nombre</option>}</select><label class="form-label">Permiso</label><select class="form-select mb-3" name="permisoId">@foreach(var p in permisos){<option value="@p.PermisoId">@p.Codigo - @p.Nombre</option>}</select><button class="btn btn-danger">Asignar</button></form></div></div></div>
+    <div class="col-lg-6"><div class="card border-0 shadow-sm rounded-4"><div class="card-body"><h5>Quitar rol de usuario</h5><p class="text-muted small">Ingresa el ID de la relación usuario-rol generada por el backend.</p><form asp-action="QuitarRolUsuario" method="post"><input class="form-control mb-3" type="number" name="usuarioRolId" placeholder="UsuarioRol ID" required/><button class="btn btn-outline-danger">Quitar relación</button></form></div></div></div>
+    <div class="col-lg-6"><div class="card border-0 shadow-sm rounded-4"><div class="card-body"><h5>Quitar permiso de rol</h5><p class="text-muted small">Ingresa el ID de la relación rol-permiso generada por el backend.</p><form asp-action="QuitarPermisoRol" method="post"><input class="form-control mb-3" type="number" name="rolPermisoId" placeholder="RolPermiso ID" required/><button class="btn btn-outline-danger">Quitar relación</button></form></div></div></div>
+  </div>
+</div>

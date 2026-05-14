@@ -1,0 +1,126 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<ExistenciaViewModel>
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div>
+            <h1>Inventario</h1>
+            <p>Catálogo de productos en bodega</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarExistencia" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalMovimiento">
+            <i class="bi bi-plus-lg"></i> Registrar Movimiento
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaInventario">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>SKU</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Fecha Registro</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><span class="code-badge">@item.ProductoId</span></td>
+                        <td><span class="code-badge">@(item.Sku ?? "-")</span></td>
+                        <td>
+                            <div class="fw-semibold">@item.Nombre</div>
+                        </td>
+                        <td>
+                            <small class="text-muted">@(item.DescripcionCorta ?? "-")</small>
+                        </td>
+                        <td>
+                            @{
+                                var estadoClass = item.Estado switch
+                                {
+                                    "ACTIVO" => "status-active",
+                                    "INACTIVO" or "BORRADOR" => "status-inactive",
+                                    _ => "status-warning"
+                                };
+                            }
+                            <span class="status-badge @estadoClass">@(item.Estado ?? "-")</span>
+                        </td>
+                        <td>@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-edit"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalMovimiento"
+                                        data-producto-id="@item.ProductoId"
+                                        title="Registrar movimiento">
+                                    <i class="bi bi-arrow-left-right"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                            No hay productos en inventario
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_MovimientoModal", new CrearMovimientoViewModel())
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarExistencia').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaInventario tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        document.querySelectorAll('[data-producto-id]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const productoId = this.getAttribute('data-producto-id');
+                const productoInput = document.getElementById('movProductoId');
+                if (productoInput) productoInput.value = productoId;
+            });
+        });
+    </script>
+}

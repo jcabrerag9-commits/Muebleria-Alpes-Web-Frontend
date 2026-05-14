@@ -1,0 +1,176 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<DevolucionViewModel>
+
+@{
+    ViewData["Title"] = "Devoluciones";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-arrow-return-left"></i>
+        </div>
+        <div>
+            <h1>Devoluciones</h1>
+            <p>Gestión de devoluciones y RMA</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarDevolucion" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearDevolucion">
+            <i class="bi bi-plus-lg"></i> Nueva Devolución
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaDevoluciones">
+            <thead>
+                <tr>
+                    <th>RMA</th>
+                    <th>Orden</th>
+                    <th>Categoría</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dev in Model)
+                {
+                    var estadoClass = dev.Estado switch
+                    {
+                        "APROBADA" or "APROBADO" => "status-active",
+                        "RECHAZADA" or "RECHAZADO" => "status-danger",
+                        "PENDIENTE" => "status-warning",
+                        _ => "status-inactive"
+                    };
+                    <tr>
+                        <td>
+                            <span class="code-badge">@dev.NumeroRma</span>
+                        </td>
+                        <td>#@dev.OrdenId</td>
+                        <td>-</td>
+                        <td><strong>Q@dev.MontoTotal.ToString("N2")</strong></td>
+                        <td>
+                            <span class="status-badge @estadoClass">
+                                @dev.Estado
+                            </span>
+                        </td>
+                        <td>@dev.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                @if (dev.Estado == "PENDIENTE")
+                                {
+                                    <form asp-controller="Devoluciones" asp-action="Aprobar"
+                                          asp-route-id="@dev.DevolucionId" method="post" class="d-inline">
+                                        <button type="submit" class="btn-icon btn-edit" title="Aprobar">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
+
+                                    <form asp-controller="Devoluciones" asp-action="Rechazar"
+                                          asp-route-id="@dev.DevolucionId" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Rechazar esta devolución?');">
+                                        <button type="submit" class="btn-icon btn-delete" title="Rechazar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Sin acciones</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCrearDevolucion" tabindex="-1" aria-labelledby="modalCrearDevolucionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearDevolucionLabel">
+                    <i class="bi bi-arrow-return-left me-2"></i> Nueva Devolución
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-controller="Devoluciones" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Orden ID <span class="text-danger">*</span></label>
+                        <input type="number" name="OrdenId" class="form-control" required min="1"
+                               placeholder="ID de la orden" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cliente ID <span class="text-danger">*</span></label>
+                        <input type="number" name="ClienteId" class="form-control" required min="1"
+                               placeholder="ID del cliente" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Categoría ID <span class="text-danger">*</span></label>
+                        <input type="number" name="CategoriaId" class="form-control" required min="1"
+                               placeholder="ID de la categoría de devolución" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
+                        <textarea name="Motivo" class="form-control" rows="2" required
+                                  placeholder="Motivo de la devolución"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Monto Total <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">Q</span>
+                            <input type="number" name="MontoTotal" class="form-control" required
+                                   step="0.01" min="0.01" placeholder="0.00" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-check-lg"></i> Registrar Devolución
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarDevolucion').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaDevoluciones tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

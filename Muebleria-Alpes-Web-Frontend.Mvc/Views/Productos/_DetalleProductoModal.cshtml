@@ -1,0 +1,68 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos.ProductoViewModel
+
+<div class="modal-header">
+    <h5 class="modal-title">Detalle del Producto</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <div class="employee-mini-card mb-4">
+        <div class="avatar-soft">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div>
+            <strong>@Model.Nombre</strong>
+            <small>@(Model.Sku ?? $"#{Model.Id}")</small>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label text-muted">SKU</label>
+            <p class="fw-semibold"><span class="code-badge">@(Model.Sku ?? "-")</span></p>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label text-muted">SKU</label>
+            <p class="fw-semibold"><span class="code-badge">@(Model.Sku ?? "-")</span></p>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label text-muted">Nombre</label>
+            <p class="fw-semibold">@Model.Nombre</p>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label text-muted">Tipo Mueble</label>
+            <p class="fw-semibold">Tipo @Model.TipoMuebleId</p>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label text-muted">Descripción</label>
+            <p>@(Model.Descripcion ?? "-")</p>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label text-muted">Estado</label>
+            <p>
+                @if (Model.Estado == "ACTIVO")
+                {
+                    <span class="status-badge status-active"><i class="bi bi-check-circle"></i> Activo</span>
+                }
+                else
+                {
+                    <span class="status-badge status-inactive"><i class="bi bi-x-circle"></i> Inactivo</span>
+                }
+            </p>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label text-muted">Publicado</label>
+            <p class="fw-semibold">@(Model.Publicado == "S" ? "Sí" : "No")</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+</div>

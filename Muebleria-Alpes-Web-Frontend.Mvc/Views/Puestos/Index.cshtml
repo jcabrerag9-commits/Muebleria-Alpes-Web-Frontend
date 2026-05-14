@@ -1,0 +1,127 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model List<PuestoViewModel>
+
+@{
+    ViewData["Title"] = "Puestos";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-briefcase"></i>
+        </div>
+        <div>
+            <h1>Puestos</h1>
+            <p>Gestión de puestos de trabajo</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarPuesto" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearPuesto">
+            <i class="bi bi-plus-lg"></i> Nuevo Puesto
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaPuestos">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var puesto in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="code-badge">@puesto.Codigo</span>
+                        </td>
+                        <td>@puesto.Nombre</td>
+                        <td>@(puesto.Descripcion ?? "—")</td>
+                        <td>
+                            @if (puesto.Estado == "ACTIVO")
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle"></i> Activo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle"></i> Inactivo
+                                </span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button class="btn-icon btn-edit"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditarPuesto-@puesto.PuestoId"
+                                        title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <form asp-controller="Puestos"
+                                      asp-action="CambiarEstado"
+                                      asp-route-id="@puesto.PuestoId"
+                                      method="post"
+                                      class="d-inline">
+                                    <input type="hidden" name="estadoActual" value="@puesto.Estado" />
+                                    <button type="submit"
+                                            class="btn-icon @(puesto.Estado == "ACTIVO" ? "btn-delete" : "btn-activate")"
+                                            title="Cambiar estado">
+                                        @if (puesto.Estado == "ACTIVO")
+                                        {
+                                            <i class="bi bi-x-circle"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-check-circle"></i>
+                                        }
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @await Html.PartialAsync("_EditarPuestoModal", puesto)
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearPuestoModal", new CrearPuestoViewModel())
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarPuesto').addEventListener('input', function () {
+            var val = this.value.toLowerCase();
+            document.querySelectorAll('#tablaPuestos tbody tr').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+}

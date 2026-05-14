@@ -1,0 +1,102 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<PagoViewModel>
+
+@{
+    ViewData["Title"] = "Pagos";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-credit-card"></i>
+        </div>
+        <div>
+            <h1>Pagos</h1>
+            <p>Registro de pagos procesados</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarPago" class="form-control search-input" placeholder="Buscar..." />
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaPagos">
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Método</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pago in Model)
+                {
+                    var estadoBadge = pago.Estado switch
+                    {
+                        "COMPLETADO" => "status-active",
+                        "PENDIENTE"  => "status-warning",
+                        "RECHAZADO"  => "status-danger",
+                        "REEMBOLSADO"=> "status-inactive",
+                        _            => "status-warning"
+                    };
+
+                    var estadoIcon = pago.Estado switch
+                    {
+                        "COMPLETADO" => "bi-check-circle",
+                        "PENDIENTE"  => "bi-clock",
+                        "RECHAZADO"  => "bi-x-circle",
+                        "REEMBOLSADO"=> "bi-arrow-counterclockwise",
+                        _            => "bi-dash-circle"
+                    };
+
+                    <tr>
+                        <td>
+                            <span class="code-badge">@(pago.NumeroOrden ?? "-")</span>
+                        </td>
+                        <td>@(pago.Metodo ?? "N/A")</td>
+                        <td>
+                            <strong>Q @pago.Monto.ToString("N2")</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge @estadoBadge">
+                                <i class="bi @estadoIcon"></i> @(pago.Estado ?? "N/A")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <strong>@(pago.FechaPago == DateTime.MinValue ? "N/A" : pago.FechaPago.ToString("yyyy-MM-dd"))</strong>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("buscarPago");
+            const tabla = document.getElementById("tablaPagos");
+            if (input && tabla) {
+                input.addEventListener("keyup", function () {
+                    const filtro = input.value.toLowerCase();
+                    tabla.querySelectorAll("tbody tr").forEach(fila => {
+                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+        });
+    </script>
+}
+

@@ -1,0 +1,91 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model List<TurnoViewModel>
+
+@{
+    ViewData["Title"] = "Turnos";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div>
+            <h1>Turnos</h1>
+            <p>Gestión de turnos de trabajo</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarTurno" class="form-control search-input" placeholder="Buscar..." />
+        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearTurno">
+            <i class="bi bi-plus-lg"></i> Nuevo Turno
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaTurnos">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var turno in Model)
+                {
+                    <tr>
+                        <td>@turno.Nombre</td>
+                        <td>@(turno.HoraInicio ?? "—")</td>
+                        <td>@(turno.HoraFin ?? "—")</td>
+                        <td>
+                            @if (turno.Estado == "ACTIVO")
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle"></i> Activo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle"></i> Inactivo
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CrearTurnoModal", new CrearTurnoViewModel())
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarTurno').addEventListener('input', function () {
+            var val = this.value.toLowerCase();
+            document.querySelectorAll('#tablaTurnos tbody tr').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+}

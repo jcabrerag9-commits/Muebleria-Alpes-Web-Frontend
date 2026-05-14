@@ -1,0 +1,49 @@
+﻿@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos.DepartamentoViewModel
+
+<div class="modal fade" id="modalEditarDepartamento-@Model.Id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Departamentos" asp-action="Actualizar" asp-route-id="@Model.Id" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Departamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="employee-mini-card">
+                        <div class="avatar-soft">
+                            <i class="bi bi-diagram-3"></i>
+                        </div>
+                        <div>
+                            <strong>@Model.Nombre</strong>
+                            <small>@Model.Codigo</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input name="Nombre" class="form-control" value="@Model.Nombre" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="Descripcion" class="form-control" rows="4">@Model.Descripcion</textarea>
+                    </div>
+
+                    <div class="alert alert-light border">
+                        El código <strong>@Model.Codigo</strong> no se edita porque tu API solo permite modificar nombre y descripción.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

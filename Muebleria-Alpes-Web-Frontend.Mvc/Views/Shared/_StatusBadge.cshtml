@@ -1,0 +1,10 @@
+﻿@model string
+
+@if (Model == "A" || Model == "Activo")
+{
+    <span class="badge bg-success">Activo</span>
+}
+else
+{
+    <span class="badge bg-secondary">Inactivo</span>
+}
