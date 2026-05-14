@@ -52,6 +52,7 @@ public class LoginController : Controller
             new("clienteId",               result.ClienteId.ToString()),
             new("tokenSesion",            result.TokenSesion),
             new("sesionId",               result.SesionId.ToString())
+            new("clienteId",               result.ClienteId.ToString())
         };
 
         var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

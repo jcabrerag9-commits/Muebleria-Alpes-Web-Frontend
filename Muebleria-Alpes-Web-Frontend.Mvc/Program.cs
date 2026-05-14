@@ -5,7 +5,6 @@ using Muebleria_Alpes_Web_Frontend.Mvc.Services.RecursosHumanos;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -38,6 +37,16 @@ var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:
 builder.Services.AddHttpClient("BackendApi", (sp, client) =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
+     var baseUrl = config["ApiSettings:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!);
+});
+
+// Servicios existentes
+builder.Services.AddScoped<TestApiService>();
+
+// Servicios de Promociones y Devoluciones
+builder.Services.AddScoped<PromocionService>();
+builder.Services.AddScoped<DevolucionService>();
     var baseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:7015/";
     client.BaseAddress = new Uri(baseUrl);
 });
@@ -88,7 +97,6 @@ builder.Services.AddHttpClient<AuthApiService>(c => c.BaseAddress = new Uri(apiU
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -97,7 +105,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();
