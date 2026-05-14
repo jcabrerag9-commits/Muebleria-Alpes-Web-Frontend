@@ -95,13 +95,13 @@ public abstract class AlpesApiServiceBase
     protected Task<(bool ok, string message)> DeleteAsync(string url, object? payload) => SendAsync(HttpMethod.Delete, url, payload);
 }
 
-public class SeguridadAlvaroApiService : AlpesApiServiceBase
+public class SeguridadModuloApiService : AlpesApiServiceBase
 {
-    public SeguridadAlvaroApiService(HttpClient http) : base(http) { }
+    public SeguridadModuloApiService(HttpClient http) : base(http) { }
 
-    public Task<List<UsuarioAlvaroViewModel>> ListarUsuariosAsync(string estado = "ACTIVO") => GetListAsync<UsuarioAlvaroViewModel>($"api/Seguridad/usuarios?estado={estado}");
-    public Task<List<RolAlvaroViewModel>> ListarRolesAsync(string estado = "ACTIVO") => GetListAsync<RolAlvaroViewModel>($"api/Seguridad/roles?estado={estado}");
-    public Task<List<PermisoAlvaroViewModel>> ListarPermisosAsync(string estado = "ACTIVO") => GetListAsync<PermisoAlvaroViewModel>($"api/Seguridad/permisos?estado={estado}");
+    public Task<List<UsuarioViewModel>> ListarUsuariosAsync(string estado = "ACTIVO") => GetListAsync<UsuarioViewModel>($"api/Seguridad/usuarios?estado={estado}");
+    public Task<List<RolViewModel>> ListarRolesAsync(string estado = "ACTIVO") => GetListAsync<RolViewModel>($"api/Seguridad/roles?estado={estado}");
+    public Task<List<PermisoViewModel>> ListarPermisosAsync(string estado = "ACTIVO") => GetListAsync<PermisoViewModel>($"api/Seguridad/permisos?estado={estado}");
 
     public Task<(bool ok, string message)> CrearUsuarioAsync(string username, string passwordPlano, string estado)
         => PostAsync("api/Seguridad/usuarios", new { username, passwordPlano, estado });
@@ -181,12 +181,12 @@ public class SeguridadAlvaroApiService : AlpesApiServiceBase
         => PostAsync("api/Seguridad/bitacora-acceso", new { usuarioId, username, ip = "Frontend MVC", userAgent = "Panel ERP", resultado, detalle });
 }
 
-public class EnviosAlvaroApiService : AlpesApiServiceBase
+public class EnviosModuloApiService : AlpesApiServiceBase
 {
-    public EnviosAlvaroApiService(HttpClient http) : base(http) { }
+    public EnviosModuloApiService(HttpClient http) : base(http) { }
 
-    public Task<List<EnvioAlvaroViewModel>> ListarPorEstadoAsync(string estado = "PREPARANDO") => GetListAsync<EnvioAlvaroViewModel>($"api/Envios/estado/{estado}");
-    public Task<EnvioAlvaroViewModel?> ObtenerAsync(int envioId) => GetDataAsync<EnvioAlvaroViewModel>($"api/Envios/{envioId}");
+    public Task<List<EnvioModuloViewModel>> ListarPorEstadoAsync(string estado = "PREPARANDO") => GetListAsync<EnvioModuloViewModel>($"api/Envios/estado/{estado}");
+    public Task<EnvioModuloViewModel?> ObtenerAsync(int envioId) => GetDataAsync<EnvioModuloViewModel>($"api/Envios/{envioId}");
     public Task<List<FiltroOrdenDisponibleResponse>> OrdenesDisponiblesAsync() => GetListAsync<FiltroOrdenDisponibleResponse>("api/Envios/filtros/ordenes-disponibles");
     public Task<List<FiltroDireccionClienteResponse>> DireccionesClienteAsync(int clienteId) => GetListAsync<FiltroDireccionClienteResponse>($"api/Envios/filtros/direcciones-cliente/{clienteId}");
 
@@ -204,9 +204,9 @@ public class EnviosAlvaroApiService : AlpesApiServiceBase
             ($"api/Envios/{envioId}/confirmar-entrega", new { envioId, fechaEntregaReal = DateTime.Now, observaciones = "Entrega confirmada desde frontend", usuarioId = usuarioId == 0 ? 1 : usuarioId }));
 }
 
-public class ReportesAlvaroApiService : AlpesApiServiceBase
+public class ReportesModuloApiService : AlpesApiServiceBase
 {
-    public ReportesAlvaroApiService(HttpClient http) : base(http) { }
+    public ReportesModuloApiService(HttpClient http) : base(http) { }
 
     public Task<List<FiltroClienteResponse>> ClientesAsync() => GetListAsync<FiltroClienteResponse>("api/ReportesCliente/filtros/clientes");
     public Task<List<FiltroCanalVentaResponse>> CanalesAsync() => GetListAsync<FiltroCanalVentaResponse>("api/ReportesVentas/filtros/canales-venta");

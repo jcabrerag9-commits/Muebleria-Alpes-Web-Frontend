@@ -8,8 +8,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers;
 [Authorize(Policy = "SoloAdmin")]
 public class SeguridadController : Controller
 {
-    private readonly SeguridadAlvaroApiService _service;
-    public SeguridadController(SeguridadAlvaroApiService service) => _service = service;
+    private readonly SeguridadModuloApiService _service;
+    public SeguridadController(SeguridadModuloApiService service) => _service = service;
 
     public async Task<IActionResult> Usuarios(string estado = "ACTIVO")
     {

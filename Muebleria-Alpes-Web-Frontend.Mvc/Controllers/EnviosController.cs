@@ -7,8 +7,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers;
 [Authorize(Policy = "SoloAdmin")]
 public class EnviosController : Controller
 {
-    private readonly EnviosAlvaroApiService _service;
-    public EnviosController(EnviosAlvaroApiService service) => _service = service;
+    private readonly EnviosModuloApiService _service;
+    public EnviosController(EnviosModuloApiService service) => _service = service;
 
     public async Task<IActionResult> Index(string estado = "PREPARANDO")
     {

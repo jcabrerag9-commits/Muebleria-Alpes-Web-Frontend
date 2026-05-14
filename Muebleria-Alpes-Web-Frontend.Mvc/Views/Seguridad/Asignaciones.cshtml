@@ -1,9 +1,9 @@
 @using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
 @{
     ViewData["Title"] = "Asignaciones";
-    var usuarios = ViewBag.Usuarios as List<UsuarioAlvaroViewModel> ?? new();
-    var roles = ViewBag.Roles as List<RolAlvaroViewModel> ?? new();
-    var permisos = ViewBag.Permisos as List<PermisoAlvaroViewModel> ?? new();
+    var usuarios = ViewBag.Usuarios as List<UsuarioViewModel> ?? new();
+    var roles = ViewBag.Roles as List<RolViewModel> ?? new();
+    var permisos = ViewBag.Permisos as List<PermisoViewModel> ?? new();
 }
 <div class="crud-page">
   <h1>Asignaciones de seguridad</h1><p class="text-muted">Asigna roles a usuarios y permisos a roles.</p>

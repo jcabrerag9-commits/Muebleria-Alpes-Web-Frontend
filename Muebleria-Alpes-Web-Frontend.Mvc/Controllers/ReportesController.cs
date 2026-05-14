@@ -7,8 +7,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers;
 [Authorize(Policy = "SoloAdmin")]
 public class ReportesController : Controller
 {
-    private readonly ReportesAlvaroApiService _service;
-    public ReportesController(ReportesAlvaroApiService service) => _service = service;
+    private readonly ReportesModuloApiService _service;
+    public ReportesController(ReportesModuloApiService service) => _service = service;
 
     public IActionResult Index()
     {
