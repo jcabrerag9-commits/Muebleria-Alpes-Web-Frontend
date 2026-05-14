@@ -13,7 +13,10 @@ obj/
 # OS
 .DS_Store
 Thumbs.db
-.mcp.json
-CLAUDE.md
+
 .claude
+.antigravity
+.gemini
 .claude-flow
+CLAUDE.md
+.mcp.json

@@ -1,0 +1,147 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<CortesCajaViewModel>
+
+@{
+    ViewData["Title"] = "Caja";
+
+    var corteAbierto = Model.FirstOrDefault(c => c.Estado == "ABIERTO" || c.Estado == "ABIERTA");
+    var hoy = Model.Where(c => c.FechaCorte.Date == DateTime.Today).ToList();
+    var totalVentasHoy = hoy.Sum(c => c.TotalVentas);
+    var totalCortesHoy = hoy.Count;
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-cash-register"></i>
+        </div>
+        <div>
+            <h1>Caja</h1>
+            <p>Control de apertura y cierre de caja</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        @if (corteAbierto == null)
+        {
+            <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalAbrirCaja">
+                <i class="bi bi-unlock"></i> Abrir Caja
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja">
+                <i class="bi bi-lock"></i> Cerrar Caja
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="erp-card p-3 text-center">
+            <div class="text-muted small mb-1">Estado de Caja</div>
+            @if (corteAbierto != null)
+            {
+                <div class="fs-5 fw-bold text-success"><i class="bi bi-unlock-fill"></i> Abierta</div>
+            }
+            else
+            {
+                <div class="fs-5 fw-bold text-danger"><i class="bi bi-lock-fill"></i> Cerrada</div>
+            }
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="erp-card p-3 text-center">
+            <div class="text-muted small mb-1">Ventas Hoy</div>
+            <div class="fs-5 fw-bold">Q@totalVentasHoy.ToString("N2")</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="erp-card p-3 text-center">
+            <div class="text-muted small mb-1">Cortes Hoy</div>
+            <div class="fs-5 fw-bold">@totalCortesHoy</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="erp-card p-3 text-center">
+            <div class="text-muted small mb-1">Total Registros</div>
+            <div class="fs-5 fw-bold">@Model.Count</div>
+        </div>
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count registros
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaCortes">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Monto Inicial</th>
+                    <th>Monto Final</th>
+                    <th>Total Ventas</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var corte in Model)
+                {
+                    var estadoClass = corte.Estado switch
+                    {
+                        "CERRADO" or "CERRADA" => "status-inactive",
+                        "ABIERTO" or "ABIERTA" => "status-active",
+                        _ => "status-warning"
+                    };
+                    <tr>
+                        <td>@corte.FechaCorte.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>Q@corte.MontoInicial.ToString("N2")</td>
+                        <td>
+                            @if (corte.MontoFinal > 0)
+                            {
+                                <span>Q@corte.MontoFinal.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td><strong>Q@corte.TotalVentas.ToString("N2")</strong></td>
+                        <td>
+                            <span class="status-badge @estadoClass">
+                                @corte.Estado
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@await Html.PartialAsync("_AbrirCajaModal", new AbrirCajaViewModel())
+@await Html.PartialAsync("_CerrarCajaModal", new CerrarCajaViewModel { CorteId = corteAbierto?.CorteId ?? 0 })
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarCorte')?.addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#tablaCortes tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

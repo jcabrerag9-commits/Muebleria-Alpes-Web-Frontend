@@ -1,0 +1,289 @@
+@{
+    ViewData["Title"] = "Pagos";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">Control de Pagos</h2>
+            <p class="text-muted mb-0">Gestión de recaudación e ingresos vinculada al Kárdex Financiero Oracle.</p>
+        </div>
+        <div>
+            <button class="btn btn-main px-4 py-2" onclick="abrirModalPago()">
+                <i class="bi bi-cash-coin me-2"></i>Registrar Pago
+            </button>
+            <button class="btn btn-outline-secondary ms-2 py-2" onclick="cargarPagos()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="erp-card p-4 mb-4 shadow-sm border-0">
+        <form id="formFiltrosPagos" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">N° Factura</label>
+                <input type="number" id="filtroFacturaId" class="form-control border-0 bg-light shadow-none" placeholder="Filtrar por factura...">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-secondary w-100 py-2" onclick="cargarPagos()">
+                    <i class="bi bi-filter me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Pagos Reales -->
+    <div class="erp-card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table erp-table mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">ID PAGO</th>
+                        <th>FACTURA</th>
+                        <th>FECHA</th>
+                        <th>FORMA PAGO</th>
+                        <th>REFERENCIA</th>
+                        <th>MONTO</th>
+                        <th class="text-end pe-4">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="tbPagos">
+                    <!-- AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Procesar Pago (H.4) -->
+<div class="modal fade" id="modalProcesarPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-main text-white p-4">
+                <h5 class="modal-title fw-bold">Registrar Nuevo Pago</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formNuevoPago" onsubmit="procesarPago(event)">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seleccionar Orden Pendiente</label>
+                        <select name="ordenId" id="ordenPagoSelect" class="form-select" required onchange="actualizarMontoSugerido(this)">
+                            <option value="">Cargando órdenes...</option>
+                        </select>
+                        <div id="loaderOrdenes" class="form-text text-primary d-none">
+                            <span class="spinner-border spinner-border-sm"></span> Cargando de Oracle...
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Forma de Pago</label>
+                            <select name="formaPagoId" class="form-select" required>
+                                <option value="1">EFECTIVO</option>
+                                <option value="2">TARJETA CRÉDITO</option>
+                                <option value="3">TRANSFERENCIA</option>
+                                <option value="4">CHEQUE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Moneda</label>
+                            <select name="monedaId" class="form-select" required>
+                                <option value="1">QUETZALES (GTQ)</option>
+                                <option value="2">DÓLARES (USD)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monto a Pagar</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">Q</span>
+                            <input type="number" step="0.01" name="monto" class="form-control" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-bold">Referencia / Observaciones</label>
+                        <textarea name="referencia" class="form-control" rows="2" placeholder="N° de boleta, terminal, etc."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3 border-0">
+                    <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-main px-4" id="btnSubmitPago">
+                        <i class="bi bi-check-circle me-2"></i>Confirmar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modalPago = new bootstrap.Modal(document.getElementById('modalProcesarPago'));
+        let ordenesCache = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPagos();
+        });
+
+        async function cargarOrdenesPendientes() {
+            const select = document.getElementById('ordenPagoSelect');
+            const loader = document.getElementById('loaderOrdenes');
+            
+            try {
+                select.disabled = true;
+                loader.classList.remove('d-none');
+                
+                const response = await ERPHelpers.fetchERP('/Pago/ordenes-pendientes');
+                console.log("ORDENES PENDIENTES:", response);
+                
+                ordenesCache = response.data || [];
+                
+                select.innerHTML = '<option value="">-- Seleccione una orden --</option>';
+                
+                ordenesCache.forEach(o => {
+                    const option = document.createElement('option');
+                    option.value = o.ordenId ?? o.OrdenId;
+                    const numero = o.numeroOrden ?? o.NumeroOrden ?? '-';
+                    const cliente = o.clienteNombre ?? o.ClienteNombre ?? '-';
+                    const factura = o.facturaNumero ?? o.FacturaNumero ?? 'PEND';
+                    const saldo = o.saldoPendiente ?? o.SaldoPendiente ?? 0;
+                    
+                    option.textContent = `${numero} | ${cliente} | Factura: #${factura} | Saldo: Q ${Number(saldo).toFixed(2)}`;
+                    select.appendChild(option);
+                });
+
+                if (ordenesCache.length === 0) {
+                    select.innerHTML = '<option value="">No hay órdenes pendientes de pago</option>';
+                }
+            } catch (err) {
+                console.error("Error cargando órdenes:", err);
+                select.innerHTML = '<option value="">Error al cargar órdenes</option>';
+            } finally {
+                select.disabled = false;
+                loader.classList.add('d-none');
+            }
+        }
+
+        function actualizarMontoSugerido(select) {
+            const ordenId = parseInt(select.value);
+            const orden = ordenesCache.find(o => (o.ordenId ?? o.OrdenId) === ordenId);
+            if (orden) {
+                const saldo = orden.saldoPendiente ?? orden.SaldoPendiente ?? 0;
+                document.getElementsByName('monto')[0].value = Number(saldo).toFixed(2);
+            }
+        }
+
+        async function cargarPagos() {
+            try {
+                const facturaId = document.getElementById('filtroFacturaId').value;
+                const url = facturaId ? `/Pago/factura/${facturaId}` : '/Pago/listado';
+                
+                const response = await ERPHelpers.fetchERP(url);
+                console.log("PAGOS RESPONSE RAW:", response);
+                
+                ERPHelpers.renderTable(response.data, 'tbPagos', (p) => {
+                    const pagoId = p.pagoId ?? p.PagoId ?? 0;
+                    const factura = p.facturaNumero ?? p.FacturaNumero ?? p.facturaId ?? p.FacturaId ?? 'PEND';
+                    const fechaRaw = p.fechaPago ?? p.FechaPago ?? p.fecha ?? p.Fecha ?? null;
+                    const formaPago = p.formaPago ?? p.FormaPago ?? p.formaPagoNombre ?? p.FormaPagoNombre ?? 'N/D';
+                    const referencia = p.referencia ?? p.Referencia ?? '-';
+                    const monto = p.monto ?? p.Monto ?? 0;
+                    const estado = p.estado ?? p.Estado ?? 'ACTIVO';
+
+                    const isAnulado = estado.toUpperCase().trim() === 'ANULADO';
+                    const statusBadge = isAnulado 
+                        ? `<span class="badge bg-danger shadow-sm ms-2">ANULADO</span>` 
+                        : `<span class="badge bg-success shadow-sm ms-2">ACTIVO</span>`;
+
+                    const actionButton = isAnulado
+                        ? `<span class="text-danger small fw-bold"><i class="bi bi-slash-circle me-1"></i>Anulado</span>`
+                        : `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="anularPago(${pagoId})" title="Anular Pago">
+                             <i class="bi bi-x-circle me-1"></i>Anular
+                           </button>`;
+
+                    return `
+                        <tr>
+                            <td class="ps-4 fw-bold">#${pagoId} ${statusBadge}</td>
+                            <td><span class="badge bg-light text-primary border">FACTURA #${factura}</span></td>
+                            <td>${fechaRaw ? new Date(fechaRaw).toLocaleDateString() : '-'}</td>
+                            <td>${formaPago}</td>
+                            <td class="text-muted small">${referencia}</td>
+                            <td class="fw-bold ${isAnulado ? 'text-muted text-decoration-line-through' : 'text-success'}">Q ${Number(monto).toFixed(2)}</td>
+                            <td class="text-end pe-4">
+                                ${actionButton}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error('[Pagos SPA]', err);
+                console.error("PAGO ERROR RAW:", err);
+            }
+        }
+
+        function abrirModalPago() {
+            document.getElementById('formNuevoPago').reset();
+            cargarOrdenesPendientes();
+            modalPago.show();
+        }
+
+        async function procesarPago(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitPago');
+            
+            try {
+                const formData = new FormData(e.target);
+                const payload = Object.fromEntries(formData.entries());
+                
+                // Conversiones de tipos para .NET
+                payload.ordenId = parseInt(payload.ordenId);
+                payload.formaPagoId = parseInt(payload.formaPagoId);
+                payload.monedaId = parseInt(payload.monedaId);
+                payload.monto = parseFloat(payload.monto);
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+                console.log("PAGO PAYLOAD:", payload);
+
+                const response = await ERPHelpers.fetchERP('/Pago/procesar', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                console.log("PAGO RESPONSE:", response);
+
+                ERPHelpers.showToast(response.message || 'Pago registrado y factura emitida con éxito');
+                modalPago.hide();
+                cargarPagos();
+            } catch (err) {
+                console.error('[Pagos SPA Procesar]', err);
+                console.error("PAGO ERROR RAW:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirmar Pago';
+            }
+        }
+
+        async function anularPago(id) {
+            const motivo = prompt(`¿Desea anular el pago #${id}? Ingrese el motivo de la anulación:`);
+            
+            if (!motivo || !motivo.trim()) {
+                if (motivo !== null) ERPHelpers.showToast('Debe ingresar un motivo para anular el pago.', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await ERPHelpers.fetchERP(`/Pago/anular/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ motivo: motivo })
+                });
+                
+                ERPHelpers.showToast(response.message || 'Pago anulado con éxito');
+                cargarPagos();
+            } catch (err) {
+                // ERPHelpers maneja el toast
+            }
+        }
+    </script>
+}

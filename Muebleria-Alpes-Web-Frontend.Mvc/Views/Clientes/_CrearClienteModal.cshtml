@@ -1,0 +1,68 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model CrearClienteViewModel
+
+<div class="modal fade" id="modalCrearCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Clientes" asp-action="Crear" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Primer Nombre *</label>
+                            <input name="PrimerNombre" class="form-control" placeholder="Juan" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Segundo Nombre</label>
+                            <input name="SegundoNombre" class="form-control" placeholder="Carlos" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Primer Apellido *</label>
+                            <input name="PrimerApellido" class="form-control" placeholder="García" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Segundo Apellido</label>
+                            <input name="SegundoApellido" class="form-control" placeholder="López" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo Documento ID</label>
+                            <input name="TipoDocumentoId" type="number" class="form-control" placeholder="1" value="1" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Número Documento *</label>
+                            <input name="NumeroDocumento" class="form-control" placeholder="1234567890101" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Nacimiento</label>
+                            <input name="FechaNacimiento" type="date" class="form-control" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo Cliente ID</label>
+                            <input name="TipoClienteId" type="number" class="form-control" value="1" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

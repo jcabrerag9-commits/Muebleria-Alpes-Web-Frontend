@@ -1,0 +1,586 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Inventario
+@model PanelExistenciasViewModel
+
+@{
+    var totalDisponible = Model.Existencias?.Sum(x => x.CantidadDisponible) ?? 0;
+    var totalReservado  = Model.Existencias?.Sum(x => x.CantidadReservada)  ?? 0;
+    var totalFisico     = totalDisponible + totalReservado;
+
+    string stockClass = totalDisponible <= 0 ? "danger" : totalDisponible < 10 ? "warning" : "success";
+    string stockLabel = totalDisponible <= 0 ? "Agotado" : totalDisponible < 10 ? "Stock Bajo" : "Disponible";
+    string stockIcon  = totalDisponible <= 0 ? "bi-x-octagon" : totalDisponible < 10 ? "bi-exclamation-triangle" : "bi-check-circle";
+}
+
+<!-- Encabezado -->
+<div class="px-4 pt-4 pb-3 border-bottom" style="background:#fff;">
+    <p class="text-uppercase fw-bold mb-0" style="font-size:.72rem; letter-spacing:.06em; color:#8a7b80;">Producto</p>
+    <h5 class="fw-bold mb-1" style="color:#1f1f24;">@Model.ProductoNombre</h5>
+    <span class="code-badge me-1">ID @Model.ProductoId</span>
+    <span class="status-badge @(stockClass == "success" ? "status-active" : "")
+          @(stockClass == "danger" ? "status-inactive" : "")"
+          style="@(stockClass == "warning" ? "background:#fff3cd; color:#856404; border:1px solid #ffc107;" : "")">
+        <i class="bi @stockIcon"></i> @stockLabel
+    </span>
+</div>
+
+<!-- KPI -->
+<div class="px-4 py-3 border-bottom" style="background:var(--page-bg, #f5f6f8);">
+    <div class="row g-2">
+        <div class="col-4">
+            <div class="detail-item text-center">
+                <label>Disponible</label>
+                <strong class="d-block fs-5 @(totalDisponible <= 0 ? "text-danger" : totalDisponible < 10 ? "text-warning" : "")" style="color: @(totalDisponible >= 10 ? "#079365" : "")">@totalDisponible</strong>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="detail-item text-center">
+                <label>Reservado</label>
+                <strong class="d-block fs-5" style="color:#856404;">@totalReservado</strong>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="detail-item text-center">
+                <label>Total Físico</label>
+                <strong class="d-block fs-5" style="color:#2d5a8e;">@totalFisico</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navegación por Pestañas (SPA) -->
+<div class="px-4 border-bottom shadow-sm" style="background:#fff; position:sticky; top:0; z-index:100;">
+    <ul class="nav nav-tabs erp-tabs border-0" id="invTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold py-3" id="tab-existencias" data-bs-toggle="tab" 
+                    data-bs-target="#content-existencias" type="button" role="tab"
+                    style="font-size: .82rem; letter-spacing: .02em;">
+                <i class="bi bi-box-seam me-2"></i>EXISTENCIAS
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold py-3 btn-ver-kardex" id="tab-kardex" data-bs-toggle="tab" 
+                    data-bs-target="#content-kardex" type="button" role="tab" data-id="@Model.ProductoId"
+                    style="font-size: .82rem; letter-spacing: .02em;">
+                <i class="bi bi-clock-history me-2"></i>KARDEX HISTÓRICO
+            </button>
+        </li>
+    </ul>
+</div>
+
+<div id="antiforgery-token-container" style="display:none;">
+    @Html.AntiForgeryToken()
+</div>
+
+<div class="tab-content" id="invTabContent">
+    <!-- PESTAÑA 1: EXISTENCIAS -->
+    <div class="tab-pane fade show active" id="content-existencias" role="tabpanel">
+        <!-- Acciones -->
+        <div class="px-4 py-3 border-bottom d-flex gap-2" style="background: #fdfdfe;">
+            <button class="btn btn-sm flex-fill fw-bold py-2 btn-accion-inv" data-tipo="ENTRADA" data-id="@Model.ProductoId"
+                    style="background:#079365; color:#fff; border-radius:10px; border:0; box-shadow: 0 2px 4px rgba(7,147,101,.2);">
+                <i class="bi bi-box-arrow-in-down me-1"></i>Entrada
+            </button>
+            <button class="btn btn-sm flex-fill fw-bold py-2 btn-accion-inv" data-tipo="SALIDA" data-id="@Model.ProductoId"
+                    style="background:#d83b61; color:#fff; border-radius:10px; border:0; box-shadow: 0 2px 4px rgba(216,59,97,.2);">
+                <i class="bi bi-box-arrow-up me-1"></i>Salida
+            </button>
+            <button class="btn btn-sm flex-fill fw-bold py-2 btn-accion-inv" data-tipo="RESERVA" data-id="@Model.ProductoId"
+                    style="background:rgba(255,92,130,.08); color:#d83b61; border:1px solid rgba(216,59,97,.3); border-radius:10px;">
+                <i class="bi bi-bookmark-plus me-1"></i>Reservar
+            </button>
+        </div>
+
+<!-- Existencias por Bodega -->
+<div class="px-4 pt-3 pb-2">
+    <p class="text-uppercase fw-bold mb-2" style="font-size:.72rem; letter-spacing:.08em; color:#8a7b80;">
+        <i class="bi bi-building me-1"></i>Existencias por Bodega
+    </p>
+    @if (Model.Existencias == null || !Model.Existencias.Any())
+    {
+        <div class="text-center py-4" style="color:#8a7b80;">
+            <i class="bi bi-inbox" style="font-size:2rem; opacity:.3;"></i>
+            <p class="mt-2 mb-0" style="font-size:.85rem;">Sin registros de stock.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var exi in Model.Existencias)
+        {
+            <div class="detail-item mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold" style="color:#32292d; font-size:.88rem;">
+                        <i class="bi bi-geo-alt-fill me-1" style="color:#8a7b80;"></i>
+                        @(string.IsNullOrWhiteSpace(exi.NombreBodega) ? "Sin Bodega" : exi.NombreBodega)
+                    </span>
+                    <span class="status-badge @(exi.CantidadDisponible <= 0 ? "status-inactive" : "status-active")"
+                          style="font-size:.72rem; @(exi.CantidadDisponible > 0 && exi.CantidadDisponible < 10 ? "background:#fff3cd; color:#856404; border:1px solid #ffc107;" : "")">
+                        @(exi.CantidadDisponible <= 0 ? "Agotado" : exi.CantidadDisponible < 10 ? "Bajo" : "Normal")
+                    </span>
+                </div>
+                <div class="d-flex justify-content-around text-center" style="background:#f8f4f5; border-radius:8px; padding:8px 0;">
+                    <div>
+                        <div class="fw-bold" style="color:@(exi.CantidadDisponible <= 0 ? "#dc3545" : "#079365"); font-size:.92rem;">@exi.CantidadDisponible</div>
+                        <small style="font-size:.62rem; text-transform:uppercase; color:#9b8c91; font-weight:800;">Disp.</small>
+                    </div>
+                    <div style="border-left:1px solid #eadfe3;"></div>
+                    <div>
+                        <div class="fw-bold" style="color:#856404; font-size:.92rem;">@exi.CantidadReservada</div>
+                        <small style="font-size:.62rem; text-transform:uppercase; color:#9b8c91; font-weight:800;">Resv.</small>
+                    </div>
+                    <div style="border-left:1px solid #eadfe3;"></div>
+                    <div>
+                        <div class="fw-bold" style="color:#2d5a8e; font-size:.92rem;">@exi.TotalFisico</div>
+                        <small style="font-size:.62rem; text-transform:uppercase; color:#9b8c91; font-weight:800;">Físico</small>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Reservas Activas -->
+<div class="px-4 pt-3 pb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <p class="text-uppercase fw-bold mb-0" style="font-size:.72rem; letter-spacing:.08em; color:#8a7b80;">
+            <i class="bi bi-bookmark-check me-1"></i>Reservas Activas
+        </p>
+        @if (Model.Reservas?.Any(r => r.Motivo == "APARTADO_MANUAL" || r.Motivo == "RESERVA_TEMPORAL") == true)
+        {
+            <button class="btn btn-sm fw-bold py-1 px-2 btn-liberar-todo"
+                    data-prod-id="@Model.ProductoId"
+                    style="font-size:.65rem; background:#d83b61; color:#fff; border-radius:999px; border:0;">
+                <i class="bi bi-unlock me-1"></i> LIBERAR MANUALES
+            </button>
+        }
+    </div>
+
+    @if (Model.Reservas == null || !Model.Reservas.Any())
+    {
+        <div class="text-center py-3" style="color:#8a7b80; background:#f8f4f5; border-radius:12px; border:1px solid #eadfe3;">
+            <i class="bi bi-bookmark-check d-block mb-1" style="font-size:1.3rem; opacity:.3;"></i>
+            <span style="font-size:.82rem;">Sin reservas activas</span>
+        </div>
+    }
+    else
+    {
+        <div class="erp-card">
+            <table class="erp-table table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th style="padding:10px 12px;">ID</th>
+                        <th>Origen</th>
+                        <th class="text-center">Cant.</th>
+                        <th>Vence</th>
+                        <th class="text-end" style="padding-right:12px;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var res in Model.Reservas)
+                    {
+                        var esManual = res.Motivo == "APARTADO_MANUAL" || res.Motivo == "RESERVA_TEMPORAL";
+                        var etiqueta = res.Motivo switch {
+                            "APARTADO_MANUAL" => "Reserva Manual Ventas",
+                            "RESERVA_TEMPORAL" => "Bloqueo Almacén",
+                            "CARRITO" => "Carrito de Cliente",
+                            "ORDEN_CONFIRMADA" => "Venta en Firme",
+                            _ => res.Motivo.Replace("_", " ")
+                        };
+
+                        <tr>
+                            <td style="padding:10px 12px;">
+                                <span class="code-badge">#@res.ReservaId</span>
+                                <div class="mt-1">
+                                    <span class="badge @res.BadgeClass" style="font-size:.6rem; padding: 2px 6px;">@res.Estado</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi @(res.EsLiberableManualmente ? "bi-person-gear" : "bi-shield-lock-fill")" 
+                                       style="color:@(res.EsLiberableManualmente ? "#8a7b80" : "#d83b61"); font-size:.85rem;"></i>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold" style="color:#32292d; font-size:.82rem;">@res.MotivoLabel</span>
+                                        <div class="d-flex align-items-center mt-1" style="font-size:.65rem; color:#8a7b80;">
+                                            <i class="bi bi-building me-1"></i>
+                                            <span>@(string.IsNullOrWhiteSpace(res.NombreBodega) ? "Sin Bodega" : res.NombreBodega)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#32292d;">@res.Cantidad</td>
+                            <td>
+                                @if (res.Expiracion.HasValue)
+                                {
+                                    <span style="font-size:.72rem; color:@(res.Expiracion < DateTime.Now ? "#dc3545" : "#8a7b80");">
+                                        @res.Expiracion.Value.ToString("dd/MM HH:mm")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:.68rem; color:#8a7b80;">—</span>
+                                }
+                            </td>
+                            <td class="text-end" style="padding-right:12px;">
+                                @if (res.Estado == "ACTIVA")
+                                {
+                                    if (res.EsLiberableManualmente)
+                                    {
+                                        <button class="btn-icon btn-delete btn-liberar-reserva"
+                                                data-id="@res.ReservaId" data-prod="@Model.ProductoId"
+                                                title="Liberar reserva manual #@res.ReservaId">
+                                            <i class="bi bi-unlock-fill"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="btn-icon" style="cursor:help; opacity:.5;" 
+                                              data-bs-toggle="tooltip" data-bs-placement="left" 
+                                              title="@res.TooltipBloqueo">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-all text-success" title="Operación completada"></i>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+        </div>
+    </div>
+
+    <!-- PESTAÑA 2: KARDEX (Timeline) -->
+    <div class="tab-pane fade" id="content-kardex" role="tabpanel">
+        <div id="kardexContainer" class="p-0">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted small">Consultando historial ERP...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ═══════════════════════════════════════════════════════════════
+    //  CONTENEDOR DE MODALES: usar el que está FUERA del offcanvas
+    //  (dentro del offcanvas, Bootstrap no gestiona bien el backdrop)
+    // ═══════════════════════════════════════════════════════════════
+    const MODAL_CTX = document.getElementById('contenedorModalesInventario');
+
+    // ─── Helpers ─────────────────────────────────────────────────
+    function mostrarAlerta(texto, tipo) {
+        const p = document.getElementById('panelExistenciasContainer');
+        if (!p) return;
+        const d = document.createElement('div');
+        d.className = `alert alert-${tipo} alert-dismissible fade show mx-3 mt-2`;
+        d.style.fontSize = '.82rem';
+        d.innerHTML = `${texto}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        p.insertBefore(d, p.firstChild);
+    }
+
+    function confirmar(titulo, mensaje) {
+        return new Promise(resolve => {
+            if (!MODAL_CTX) { resolve(confirm(titulo)); return; }
+
+            MODAL_CTX.innerHTML = `
+            <div class="modal fade" id="mdlConfirm" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content erp-modal">
+                        <div class="modal-header" style="background:#f8f4f5;">
+                            <h6 class="modal-title fw-bold" style="color:#352d30;">${titulo}</h6>
+                        </div>
+                        <div class="modal-body">
+                            <p style="color:#8a7b80; font-size:.85rem; margin:0;">${mensaje}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                                    style="color:#8a7b80;">Cancelar</button>
+                            <button type="button" class="btn btn-sm btn-main text-white" id="btnConfSi">
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+            const el = document.getElementById('mdlConfirm');
+            const modal = new bootstrap.Modal(el);
+            let answered = false;
+
+            document.getElementById('btnConfSi').onclick = () => {
+                answered = true;
+                modal.hide();
+            };
+
+            el.addEventListener('hidden.bs.modal', () => {
+                MODAL_CTX.innerHTML = '';
+                resolve(answered);
+            }, { once: true });
+
+            modal.show();
+        });
+    }
+
+    // ─── Bodegas ──────────────────────────────────────────────────
+    async function cargarBodegas(sel) {
+        try {
+            const r = await fetch('@Url.Action("GetBodegas", "Inventario")');
+            const b = await r.json();
+            sel.innerHTML = b.map(x => `<option value="${x.bodegaId || x.BodegaId}">${x.nombre || x.Nombre}</option>`).join('');
+        } catch { sel.innerHTML = '<option value="1">Bodega Central</option>'; }
+    }
+
+    // ─── Modal Movimiento ────────────────────────────────────────
+    function abrirModalMov(tipo, prodId) {
+        const isE = tipo === 'ENTRADA';
+        const col = isE ? '#079365' : '#d83b61';
+
+        MODAL_CTX.innerHTML = `
+        <div class="modal fade" id="mdlMov" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content erp-modal">
+                    <div class="modal-header" style="background:${col}; color:#fff;">
+                        <h5 class="modal-title fw-bold">Registrar ${tipo}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="fMov">
+                        <div class="modal-body">
+                            <input type="hidden" name="ProductoId" value="${prodId}"/>
+                            <input type="hidden" name="TipoMovimiento" value="${tipo}"/>
+                            <input type="hidden" name="UsuarioId" value="1"/>
+                            <div class="mb-3">
+                                <label class="form-label">Bodega</label>
+                                <select name="BodegaId" id="selBodMov" class="form-control form-select" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad</label>
+                                <input type="number" name="Cantidad" class="form-control" min="1" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observación</label>
+                                <textarea name="Observacion" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="color:#8a7b80;">Cancelar</button>
+                            <button type="submit" class="btn btn-main text-white fw-bold">CONFIRMAR</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>`;
+
+        const el = document.getElementById('mdlMov');
+        const modal = new bootstrap.Modal(el);
+        cargarBodegas(document.getElementById('selBodMov'));
+        modal.show();
+
+        document.getElementById('fMov').onsubmit = async (e) => {
+            e.preventDefault();
+            const btnSubmit = e.target.querySelector('[type=submit]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Procesando...';
+            try {
+                const token = document.querySelector('#antiforgery-token-container input[name="__RequestVerificationToken"]').value;
+                const formData = new FormData(e.target);
+                console.log('[MOVIMIENTO] Payload:', [...formData.entries()]);
+                const r = await fetch('@Url.Action("RegistrarMovimiento", "Inventario")', { 
+                    method: 'POST', 
+                    body: formData,
+                    headers: { 'RequestVerificationToken': token }
+                });
+                const bodyText = await r.text();
+                console.log('[MOVIMIENTO] Status:', r.status, 'Body:', bodyText);
+                modal.hide();
+                el.addEventListener('hidden.bs.modal', () => {
+                    MODAL_CTX.innerHTML = '';
+                    if (r.ok) {
+                        window.refrescarPanelExistencias(prodId);
+                    } else {
+                        let msg = bodyText;
+                        try { const j = JSON.parse(bodyText); msg = j.mensaje || j.Mensaje || j.title || bodyText; } catch {}
+                        mostrarAlerta('Error: ' + msg, 'danger');
+                    }
+                }, { once: true });
+            } catch(err) {
+                console.error('[MOVIMIENTO ERROR]', err);
+                mostrarAlerta('Error de conexión: ' + err.message, 'danger');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'CONFIRMAR';
+            }
+        };
+    }
+
+    // ─── Modal Reserva ───────────────────────────────────────────
+    function abrirModalReserva(prodId) {
+        MODAL_CTX.innerHTML = `
+        <div class="modal fade" id="mdlRes" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content erp-modal">
+                    <div class="modal-header" style="background:#d83b61; color:#fff;">
+                        <h5 class="modal-title fw-bold">Crear Reserva Manual</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="fRes">
+                        <div class="modal-body">
+                            <input type="hidden" name="ProductoId" value="${prodId}"/>
+                            <input type="hidden" name="UsuarioId" value="1"/>
+                            <input type="hidden" name="ClienteId" value="1"/>
+                            <div class="mb-3">
+                                <label class="form-label">Bodega</label>
+                                <select name="BodegaId" id="selBodRes" class="form-control form-select" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Motivo</label>
+                                <select name="Motivo" class="form-control form-select">
+                                    <option value="APARTADO_MANUAL">Reserva Manual Ventas</option>
+                                    <option value="RESERVA_TEMPORAL">Bloqueo Almacén</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad</label>
+                                <input type="number" name="Cantidad" class="form-control" min="1" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Expiración</label>
+                                <input type="datetime-local" name="Expiracion" class="form-control"/>
+                                <small style="color:#8a7b80;">Dejar vacío si no expira.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="color:#8a7b80;">Cancelar</button>
+                            <button type="submit" class="btn btn-main text-white fw-bold">CREAR RESERVA</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>`;
+
+        const el = document.getElementById('mdlRes');
+        const modal = new bootstrap.Modal(el);
+        cargarBodegas(document.getElementById('selBodRes'));
+        modal.show();
+
+        document.getElementById('fRes').onsubmit = async (e) => {
+            e.preventDefault();
+            const btnSubmit = e.target.querySelector('[type=submit]');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Procesando...';
+            try {
+                const token = document.querySelector('#antiforgery-token-container input[name="__RequestVerificationToken"]').value;
+                const formData = new FormData(e.target);
+                console.log('[RESERVA] Payload:', [...formData.entries()]);
+                const r = await fetch('@Url.Action("ReservarStock", "Inventario")', { 
+                    method: 'POST', 
+                    body: formData,
+                    headers: { 'RequestVerificationToken': token }
+                });
+                const bodyText = await r.text();
+                console.log('[RESERVA] Status:', r.status, 'Body:', bodyText);
+                modal.hide();
+                el.addEventListener('hidden.bs.modal', () => {
+                    MODAL_CTX.innerHTML = '';
+                    if (r.ok) {
+                        window.refrescarPanelExistencias(prodId);
+                    } else {
+                        let msg = bodyText;
+                        try { const j = JSON.parse(bodyText); msg = j.mensaje || j.Mensaje || j.title || bodyText; } catch {}
+                        mostrarAlerta('Error: ' + msg, 'danger');
+                    }
+                }, { once: true });
+            } catch(err) {
+                console.error('[RESERVA ERROR]', err);
+                mostrarAlerta('Error de conexión: ' + err.message, 'danger');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'CREAR RESERVA';
+            }
+        };
+    }
+
+    // ─── Liberar Individual (DELETE con query param) ─────────────
+    document.querySelectorAll('.btn-liberar-reserva').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.dataset.id;
+            const prod = btn.dataset.prod;
+            if (!await confirmar('¿Liberar reserva?', `Se devolverá el stock del registro #${id} al inventario disponible.`)) return;
+
+            btn.style.opacity = '.3';
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const r = await fetch(`@Url.Action("LiberarReserva", "Inventario")?reservaId=${id}`, { method: 'DELETE' });
+                if (r.ok) {
+                    window.refrescarPanelExistencias(prod);
+                } else {
+                    const d = await r.json().catch(() => null);
+                    mostrarAlerta(d?.message || 'No se pudo liberar esta reserva.', 'warning');
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
+            } catch {
+                mostrarAlerta('Error de comunicación con el servidor.', 'danger');
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }
+        };
+    });
+
+    // ─── Liberar Masivo ──────────────────────────────────────────
+    const btnTodo = document.querySelector('.btn-liberar-todo');
+    if (btnTodo) {
+        btnTodo.onclick = async () => {
+            const prod = btnTodo.dataset.prodId;
+            const btns = document.querySelectorAll('.btn-liberar-reserva');
+            if (!btns.length) return;
+            if (!await confirmar('¿Liberar todo lo manual?', `Se procesarán ${btns.length} registros. Las reservas comerciales no se verán afectadas.`)) return;
+
+            let ok = 0, err = 0;
+            for (const b of btns) {
+                try {
+                    const r = await fetch(`@Url.Action("LiberarReserva", "Inventario")?reservaId=${b.dataset.id}`, { method: 'DELETE' });
+                    if (r.ok) ok++; else err++;
+                } catch { err++; }
+            }
+            mostrarAlerta(`Liberación masiva finalizada. <strong>Éxitos: ${ok}</strong>${err > 0 ? `, Fallos: ${err}` : ''}`, ok > 0 ? 'success' : 'danger');
+            setTimeout(() => window.refrescarPanelExistencias(prod), 1200);
+        };
+    }
+
+    // ─── Botones de acción ───────────────────────────────────────
+    document.querySelectorAll('.btn-accion-inv').forEach(btn => {
+        btn.onclick = () => {
+            const t = btn.dataset.tipo;
+            const id = btn.dataset.id;
+            if (t === 'RESERVA') abrirModalReserva(id);
+            else abrirModalMov(t, id);
+        };
+    });
+
+    // ─── Kardex SPA ──────────────────────────────────────────────
+    const btnKardex = document.querySelector('.btn-ver-kardex');
+    if (btnKardex) {
+        btnKardex.onclick = async () => {
+            const container = document.getElementById('kardexContainer');
+            const id = btnKardex.dataset.id;
+            
+            try {
+                const r = await fetch(`@Url.Action("GetKardex", "Inventario")?productoId=${id}`);
+                if (r.ok) {
+                    container.innerHTML = await r.text();
+                } else {
+                    container.innerHTML = '<div class="alert alert-danger m-3">Error al cargar el Kardex.</div>';
+                }
+            } catch {
+                container.innerHTML = '<div class="alert alert-danger m-3">Error de red.</div>';
+            }
+        };
+    }
+})();
+</script>
