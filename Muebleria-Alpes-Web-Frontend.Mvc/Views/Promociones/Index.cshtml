@@ -1,0 +1,186 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones.PromocionIndexViewModel
+@{
+    ViewData["Title"] = "Promociones";
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="page-title">Promociones</h2>
+        <p class="page-subtitle">Gestión de campañas y descuentos</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Banners" class="btn btn-outline-secondary">
+            <i class="bi bi-image me-1"></i> Banners
+        </a>
+        <a asp-action="Crear" class="btn btn-primary-alpes">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Promoción
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(255,92,130,.12);color:#ff5c82">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalActivas</div>
+                <div class="stat-label">Activas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(34,197,94,.12);color:#22c55e">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalVigentes</div>
+                <div class="stat-label">Vigentes hoy</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(148,163,184,.12);color:#94a3b8">
+                <i class="bi bi-pause-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalInactivas</div>
+                <div class="stat-label">Inactivas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="alpes-card mb-4">
+    <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+        <div>
+            <label class="form-label-sm">Estado</label>
+            <select name="estado" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="ACTIVO"   selected="@(Model.FiltroEstado=="ACTIVO")">Activo</option>
+                <option value="INACTIVO" selected="@(Model.FiltroEstado=="INACTIVO")">Inactivo</option>
+                <option value="EXPIRADO" selected="@(Model.FiltroEstado=="EXPIRADO")">Expirado</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label-sm">Tipo</label>
+            <select name="tipo" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="PORCENTAJE"   selected="@(Model.FiltroTipo=="PORCENTAJE")">Porcentaje</option>
+                <option value="MONTO_FIJO"   selected="@(Model.FiltroTipo=="MONTO_FIJO")">Monto fijo</option>
+                <option value="2X1"          selected="@(Model.FiltroTipo=="2X1")">2x1</option>
+                <option value="ENVIO_GRATIS" selected="@(Model.FiltroTipo=="ENVIO_GRATIS")">Envío gratis</option>
+                <option value="COMPRA_MINIMA"selected="@(Model.FiltroTipo=="COMPRA_MINIMA")">Compra mínima</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary-alpes btn-sm">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="alpes-card">
+    @if (!Model.Promociones.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-ticket-perforated"></i>
+            <p>No hay promociones registradas.</p>
+            <a asp-action="Crear" class="btn btn-primary-alpes btn-sm">Crear primera promoción</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table alpes-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Vigencia</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Promociones)
+                    {
+                        <tr>
+                            <td><span class="badge-code">@p.PrmCodigo</span></td>
+                            <td>
+                                <div class="fw-600">@p.PrmNombre</div>
+                                @if (!string.IsNullOrEmpty(p.PrmDescripcion))
+                                {
+                                    <div class="text-muted small">@p.PrmDescripcion</div>
+                                }
+                            </td>
+                            <td>
+                                <span class="promo-badge">@p.TipoDisplay</span>
+                            </td>
+                            <td>
+                                <div class="small">@p.PrmFechaInicio.ToString("dd/MM/yyyy")</div>
+                                <div class="small text-muted">→ @p.PrmFechaFin.ToString("dd/MM/yyyy")</div>
+                                @if (p.EstaVigente)
+                                {
+                                    <span class="badge bg-success-soft text-success mt-1">Vigente</span>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var estadoClass = p.PrmEstado switch {
+                                        "ACTIVO"   => "badge-estado-activo",
+                                        "INACTIVO" => "badge-estado-inactivo",
+                                        _          => "badge-estado-default"
+                                    };
+                                }
+                                <span class="badge-estado @estadoClass">@p.PrmEstado</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Detalle" asp-route-id="@p.PrmPromocion"
+                                   class="btn-icon" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Editar" asp-route-id="@p.PrmPromocion"
+                                   class="btn-icon" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Eliminar" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar la promoción @p.PrmNombre?')">
+                                    <input type="hidden" name="id" value="@p.PrmPromocion" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-icon text-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
