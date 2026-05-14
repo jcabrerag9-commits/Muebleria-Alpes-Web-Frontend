@@ -1,0 +1,45 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model CerrarCajaViewModel
+
+<div class="modal fade" id="modalCerrarCaja" tabindex="-1" aria-labelledby="modalCerrarCajaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCerrarCajaLabel">
+                    <i class="bi bi-lock me-2"></i> Cerrar Caja
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-controller="Caja" asp-action="CerrarCaja" method="post">
+                <input type="hidden" name="CorteId" value="@Model.CorteId" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Monto Final <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">Q</span>
+                            <input type="number" name="MontoFinal" class="form-control" required
+                                   step="0.01" min="0" placeholder="0.00" value="@Model.MontoFinal" />
+                        </div>
+                        <div class="form-text">Ingrese el efectivo contado al cierre.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Observación</label>
+                        <textarea name="Observacion" class="form-control" rows="3"
+                                  placeholder="Observaciones del cierre (opcional)">@Model.Observacion</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('¿Está seguro de cerrar la caja?');">
+                        <i class="bi bi-lock"></i> Cerrar Caja
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

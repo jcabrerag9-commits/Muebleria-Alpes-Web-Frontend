@@ -1,0 +1,71 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model CrearMovimientoViewModel
+
+@{
+    var bodegas = ViewData["Bodegas"] as List<BodegaViewModel> ?? new List<BodegaViewModel>();
+}
+
+<div class="modal fade" id="modalMovimiento" tabindex="-1" aria-labelledby="modalMovimientoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalMovimientoLabel">
+                    <i class="bi bi-arrow-left-right me-2"></i> Registrar Movimiento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-controller="Inventario" asp-action="RegistrarMovimiento" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Producto ID <span class="text-danger">*</span></label>
+                        <input type="number" id="movProductoId" name="ProductoId" class="form-control"
+                               value="@Model.ProductoId" required min="1" placeholder="Ingrese el ID del producto" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Bodega <span class="text-danger">*</span></label>
+                        <select id="movBodegaId" name="BodegaId" class="form-select" required>
+                            <option value="">-- Seleccione bodega --</option>
+                            @foreach (var bodega in bodegas)
+                            {
+                                <option value="@bodega.BodegaId" selected="@(Model.BodegaId == bodega.BodegaId)">
+                                    @bodega.Nombre
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tipo de Movimiento <span class="text-danger">*</span></label>
+                        <select name="TipoMovimiento" class="form-select" required>
+                            <option value="">-- Seleccione tipo --</option>
+                            <option value="ENTRADA" selected="@(Model.TipoMovimiento == "ENTRADA")">Entrada</option>
+                            <option value="SALIDA" selected="@(Model.TipoMovimiento == "SALIDA")">Salida</option>
+                            <option value="TRASLADO" selected="@(Model.TipoMovimiento == "TRASLADO")">Traslado</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cantidad <span class="text-danger">*</span></label>
+                        <input type="number" name="Cantidad" class="form-control"
+                               value="@Model.Cantidad" required min="1" placeholder="Cantidad" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Motivo</label>
+                        <textarea name="Motivo" class="form-control" rows="2"
+                                  placeholder="Motivo del movimiento (opcional)">@Model.Motivo</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-check-lg"></i> Registrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+﻿@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearEmpleadoViewModel
+
+<div class="modal fade" id="modalCrearEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content erp-modal">
+            <form asp-controller="Empleados" asp-action="Crear" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Código *</label>
+                            <input name="Codigo" class="form-control" placeholder="EMP-00003" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo Documento ID *</label>
+                            <input name="TipoDocumentoId" type="number" class="form-control" placeholder="1" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Número Documento *</label>
+                            <input name="NumeroDocumento" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Primer Nombre *</label>
+                            <input name="PrimerNombre" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Segundo Nombre</label>
+                            <input name="SegundoNombre" class="form-control" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Primer Apellido *</label>
+                            <input name="PrimerApellido" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Segundo Apellido</label>
+                            <input name="SegundoApellido" class="form-control" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input name="Email" type="email" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono *</label>
+                            <input name="Telefono" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Nacimiento *</label>
+                            <input name="FechaNacimiento" type="date" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Ingreso *</label>
+                            <input name="FechaIngreso" type="date" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

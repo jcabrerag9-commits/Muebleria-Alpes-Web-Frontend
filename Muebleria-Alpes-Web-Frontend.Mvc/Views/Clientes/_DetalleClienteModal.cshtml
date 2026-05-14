@@ -1,0 +1,70 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.ClienteViewModel
+
+<div class="modal fade" id="modalDetalleCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle del Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-header">
+                    <div class="detail-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div>
+                        <h4>@Model.NombreCompleto</h4>
+                        <span>@(Model.Codigo ?? "Sin código")</span>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Primer Nombre</label>
+                        <strong>@(Model.PrimerNombre ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Segundo Nombre</label>
+                        <strong>@(Model.SegundoNombre ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Primer Apellido</label>
+                        <strong>@(Model.PrimerApellido ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Segundo Apellido</label>
+                        <strong>@(Model.SegundoApellido ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Tipo Documento</label>
+                        <strong>Tipo @Model.TipoDocumentoId</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Número Documento</label>
+                        <strong>@(Model.NumeroDocumento ?? "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Fecha Nacimiento</label>
+                        <strong>@(Model.FechaNacimiento.HasValue ? Model.FechaNacimiento.Value.ToString("yyyy-MM-dd") : "N/A")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Estado</label>
+                        <strong>@(Model.Estado ?? "N/A")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

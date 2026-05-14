@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones;
+using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
 {
@@ -9,6 +10,9 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
         private readonly PromocionService _service;
 
         public PromocionesController(PromocionService service)
+        private readonly PromocionApiService _service;
+
+        public PromocionesController(PromocionApiService service)
         {
             _service = service;
         }

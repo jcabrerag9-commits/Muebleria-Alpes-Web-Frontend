@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones;
+using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
 {
@@ -9,6 +10,9 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
         private readonly DevolucionService _service;
 
         public DevolucionesController(DevolucionService service)
+        private readonly DevolucionApiService _service;
+
+        public DevolucionesController(DevolucionApiService service)
         {
             _service = service;
         }

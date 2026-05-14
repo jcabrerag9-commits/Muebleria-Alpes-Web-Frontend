@@ -1,0 +1,167 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<TiendaProductoViewModel>
+@{
+    Layout = "_LayoutTienda";
+    ViewData["Title"] = "Inicio - Mueblería Los Alpes";
+}
+
+<!-- Hero -->
+<section class="tienda-hero">
+    <div class="container text-center">
+        <p class="mb-3" style="color: rgba(255,255,255,0.7); letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.9rem;">Bienvenido a</p>
+        <h1 class="mb-4">Mueblería Los Alpes</h1>
+        <p class="mb-5">
+            Transforma tu hogar con muebles de alta calidad.<br />
+            Diseño, durabilidad y elegancia al mejor precio.
+        </p>
+        <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda me-3">
+            <i class="bi bi-grid me-1"></i> Ver Catálogo
+        </a>
+        <a asp-controller="Tienda" asp-action="Ofertas" class="btn-tienda-outline">
+            <i class="bi bi-tag me-1"></i> Ver Ofertas
+        </a>
+    </div>
+</section>
+
+<!-- Benefits Bar -->
+<section class="py-4" style="background: #f8f9fa; border-bottom: 1px solid #eee;">
+    <div class="container">
+        <div class="row text-center g-3">
+            <div class="col-6 col-md-3">
+                <i class="bi bi-truck fs-4" style="color: var(--tienda-primary);"></i>
+                <div class="fw-bold mt-1">Envío gratuito</div>
+                <div class="text-muted small">En compras +Q500</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-shield-check fs-4" style="color: var(--tienda-primary);"></i>
+                <div class="fw-bold mt-1">Garantía</div>
+                <div class="text-muted small">12 meses de garantía</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-arrow-repeat fs-4" style="color: var(--tienda-primary);"></i>
+                <div class="fw-bold mt-1">Devoluciones</div>
+                <div class="text-muted small">30 días sin preguntas</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-headset fs-4" style="color: var(--tienda-primary);"></i>
+                <div class="fw-bold mt-1">Soporte 24/7</div>
+                <div class="text-muted small">Siempre disponibles</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Productos Destacados</h2>
+        <p class="section-subtitle">Descubre nuestra selección de muebles más populares</p>
+
+        <div class="row g-4">
+            @foreach (var p in Model)
+            {
+                <div class="col-md-4 col-sm-6 producto-card-wrapper">
+                    <div class="card producto-card">
+                        <div class="producto-img-wrapper" style="height:220px;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
+                            @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                            {
+                                <img src="@p.ImagenUrl" alt="@p.Nombre"
+                                     style="width:100%;height:100%;object-fit:cover;"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#ccc;font-size:3rem;">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            }
+                            else
+                            {
+                                <i class="bi bi-image" style="font-size:3rem;color:#ccc;"></i>
+                            }
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            @if (p.TienePromocion)
+                            {
+                                <span class="badge-promo mb-2 align-self-start">Oferta</span>
+                            }
+                            <h5 class="card-title mb-1">@p.Nombre</h5>
+                            <p class="text-muted small mb-2">Tipo @p.TipoMuebleId</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <div>
+                                    @if (p.TienePromocion && p.PrecioConDescuento.HasValue)
+                                    {
+                                        <div class="text-muted small text-decoration-line-through">Q @p.Precio.ToString("N2")</div>
+                                        <span class="producto-precio" style="color: var(--tienda-accent);">Q @p.PrecioConDescuento.Value.ToString("N2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="producto-precio">Q @p.Precio.ToString("N2")</span>
+                                    }
+                                </div>
+                                <a asp-controller="Tienda" asp-action="Detalle" asp-route-id="@p.Id" class="btn-tienda" style="padding: 8px 18px; font-size: 0.85rem;">
+                                    Ver más
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="bi bi-box2 d-block"></i>
+                        <p class="mt-3">No hay productos disponibles en este momento.</p>
+                        <p class="small">Vuelve pronto para ver nuestras novedades.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="text-center mt-5">
+                <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda">
+                    <i class="bi bi-grid me-1"></i> Ver todo el catálogo
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5" style="background: #f8f9fa;">
+    <div class="container">
+        <h2 class="section-title">Nuestras Categorías</h2>
+        <p class="section-subtitle">Encuentra lo que necesitas para cada espacio</p>
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <a asp-controller="Tienda" asp-action="Catalogo" asp-route-tipo="Sala" class="category-card">
+                    <div class="category-icon"><i class="bi bi-house-heart"></i></div>
+                    <div class="fw-bold">Sala</div>
+                    <div class="text-muted small">Sofás, sillones y más</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Tienda" asp-action="Catalogo" asp-route-tipo="Dormitorio" class="category-card">
+                    <div class="category-icon"><i class="bi bi-moon-stars"></i></div>
+                    <div class="fw-bold">Dormitorio</div>
+                    <div class="text-muted small">Camas, armarios y más</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Tienda" asp-action="Catalogo" asp-route-tipo="Comedor" class="category-card">
+                    <div class="category-icon"><i class="bi bi-cup-hot"></i></div>
+                    <div class="fw-bold">Comedor</div>
+                    <div class="text-muted small">Mesas y sillas</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Tienda" asp-action="Catalogo" asp-route-tipo="Oficina" class="category-card">
+                    <div class="category-icon"><i class="bi bi-briefcase"></i></div>
+                    <div class="fw-bold">Oficina</div>
+                    <div class="text-muted small">Escritorios y sillas</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
