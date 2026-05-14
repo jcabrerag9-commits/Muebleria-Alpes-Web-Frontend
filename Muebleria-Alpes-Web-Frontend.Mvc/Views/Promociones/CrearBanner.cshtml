@@ -1,0 +1,68 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones.BannerCreateViewModel
+@{
+    ViewData["Title"] = "Nuevo Banner";
+}
+
+<div class="page-header mb-4">
+    <a asp-action="Banners" class="btn-back"><i class="bi bi-arrow-left"></i> Banners</a>
+    <h2 class="page-title mt-2">Nuevo Banner</h2>
+</div>
+
+<div class="alpes-card" style="max-width:720px">
+    <form asp-action="CrearBanner" method="post">
+        @Html.AntiForgeryToken()
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label-alpes">Título <span class="text-danger">*</span></label>
+                <input asp-for="BanTitulo" class="form-control-alpes" placeholder="Título del banner" />
+            </div>
+            <div class="col-12">
+                <label class="form-label-alpes">URL de imagen <span class="text-danger">*</span></label>
+                <input asp-for="BanImagenUrl" class="form-control-alpes"
+                       placeholder="https://..." oninput="previewImg(this.value)" />
+                <div id="imgPreview" class="mt-2" style="display:none">
+                    <img id="previewSrc" src="" style="max-height:120px;border-radius:8px;border:1px solid #e2e8f0" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-alpes">Enlace</label>
+                <input asp-for="BanEnlace" class="form-control-alpes" placeholder="https://..." />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-alpes">Posición</label>
+                <select asp-for="BanPosicion" class="form-control-alpes">
+                    <option value="">Sin posición</option>
+                    <option value="HOME_PRINCIPAL">Home Principal</option>
+                    <option value="HOME_SECUNDARIO">Home Secundario</option>
+                    <option value="CATEGORIA">Categoría</option>
+                    <option value="LATERAL">Lateral</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-alpes">Fecha inicio <span class="text-danger">*</span></label>
+                <input asp-for="BanFechaInicio" type="date" class="form-control-alpes" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-alpes">Fecha fin</label>
+                <input asp-for="BanFechaFin" type="date" class="form-control-alpes" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary-alpes">
+                <i class="bi bi-check-lg me-1"></i> Crear Banner
+            </button>
+            <a asp-action="Banners" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    function previewImg(url) {
+        const preview = document.getElementById('imgPreview');
+        const img = document.getElementById('previewSrc');
+        if (url) { img.src = url; preview.style.display = 'block'; }
+        else { preview.style.display = 'none'; }
+    }
+</script>
+}

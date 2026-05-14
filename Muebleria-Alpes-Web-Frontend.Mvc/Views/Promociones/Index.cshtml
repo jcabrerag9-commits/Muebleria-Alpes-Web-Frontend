@@ -1,3 +1,4 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones.PromocionIndexViewModel
 @using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
 @model List<PromocionViewModel>
 
@@ -5,189 +6,184 @@
     ViewData["Title"] = "Promociones";
 }
 
-<div class="page-header">
-    <div class="page-title-box">
-        <div class="page-icon">
-            <i class="bi bi-ticket-perforated"></i>
-        </div>
-        <div>
-            <h1>Promociones</h1>
-            <p>Gestión de descuentos y ofertas</p>
-        </div>
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="page-title">Promociones</h2>
+        <p class="page-subtitle">Gestión de campañas y descuentos</p>
     </div>
-
-    <div class="page-actions">
-        <input type="text" id="buscarPromocion" class="form-control search-input" placeholder="Buscar..." />
-        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearPromocion">
-            <i class="bi bi-plus-lg"></i> Nueva Promoción
-        </button>
+    <div class="d-flex gap-2">
+        <a asp-action="Banners" class="btn btn-outline-secondary">
+            <i class="bi bi-image me-1"></i> Banners
+        </a>
+        <a asp-action="Crear" class="btn btn-primary-alpes">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Promoción
+        </a>
     </div>
 </div>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
-
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="record-count">
-    @Model.Count registros
-</div>
-
-<div class="erp-card">
-    <div class="table-responsive">
-        <table class="table erp-table" id="tablaPromociones">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Vigencia</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var promo in Model)
-                {
-                    var tipoClass = promo.Tipo switch
-                    {
-                        "PORCENTAJE" => "bg-info text-white",
-                        "MONTO_FIJO" => "bg-primary text-white",
-                        "2X1" => "bg-warning text-dark",
-                        "ENVIO_GRATIS" => "bg-success text-white",
-                        "COMPRA_MINIMA" => "bg-secondary text-white",
-                        _ => "bg-secondary text-white"
-                    };
-
-                    var estadoClass = promo.Estado switch
-                    {
-                        "ACTIVO" or "ACTIVA" => "status-active",
-                        "INACTIVO" or "INACTIVA" => "status-inactive",
-                        "VENCIDA" or "VENCIDO" => "status-danger",
-                        _ => "status-warning"
-                    };
-                    <tr>
-                        <td>
-                            <span class="code-badge">@promo.Codigo</span>
-                        </td>
-                        <td><strong>@promo.Nombre</strong></td>
-                        <td>
-                            <span class="badge @tipoClass">@promo.Tipo</span>
-                        </td>
-                        <td>
-                            @if (promo.Tipo == "PORCENTAJE")
-                            {
-                                <span>@((promo.Valor ?? 0).ToString("N0"))%</span>
-                            }
-                            else if (promo.Tipo == "2X1" || promo.Tipo == "ENVIO_GRATIS")
-                            {
-                                <span>-</span>
-                            }
-                            else
-                            {
-                                <span>Q@((promo.Valor ?? 0).ToString("N2"))</span>
-                            }
-                        </td>
-                        <td>
-                            <div><small>@promo.FechaInicio.ToString("dd/MM/yyyy")</small></div>
-                            <div><small class="text-muted">al @promo.FechaFin.ToString("dd/MM/yyyy")</small></div>
-                        </td>
-                        <td>
-                            <span class="status-badge @estadoClass">
-                                @promo.Estado
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            <div class="action-group">
-                                <button class="btn-icon btn-edit" type="button"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalEditarPromocion-@promo.PromocionId"
-                                        title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-
-                                <form asp-controller="Promociones" asp-action="Eliminar"
-                                      asp-route-id="@promo.PromocionId" method="post" class="d-inline"
-                                      onsubmit="return confirm('¿Eliminar esta promoción?');">
-                                    <button type="submit" class="btn-icon btn-delete" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <div class="modal fade" id="modalEditarPromocion-@promo.PromocionId" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-pencil me-2"></i> Editar Promoción
-                                    </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form asp-controller="Promociones" asp-action="Actualizar"
-                                      asp-route-id="@promo.PromocionId" method="post">
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
-                                            <input type="text" name="Nombre" class="form-control" value="@promo.Nombre" required />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
-                                            <select name="Tipo" class="form-select" required>
-                                                @foreach (var t in new[] { "PORCENTAJE", "MONTO_FIJO", "2X1", "ENVIO_GRATIS", "COMPRA_MINIMA" })
-                                                {
-                                                    <option value="@t" selected="@(promo.Tipo == t)">@t</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Valor</label>
-                                            <input type="number" name="Valor" class="form-control" value="@promo.Valor" step="0.01" min="0.01" placeholder="0.00" />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Fecha Inicio <span class="text-danger">*</span></label>
-                                            <input type="date" name="FechaInicio" class="form-control"
-                                                   value="@promo.FechaInicio.ToString("yyyy-MM-dd")" required />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Fecha Fin <span class="text-danger">*</span></label>
-                                            <input type="date" name="FechaFin" class="form-control"
-                                                   value="@promo.FechaFin.ToString("yyyy-MM-dd")" required />
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="btn btn-primary btn-main">
-                                            <i class="bi bi-check-lg"></i> Guardar
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </tbody>
-        </table>
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(255,92,130,.12);color:#ff5c82">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalActivas</div>
+                <div class="stat-label">Activas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(34,197,94,.12);color:#22c55e">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalVigentes</div>
+                <div class="stat-label">Vigentes hoy</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(148,163,184,.12);color:#94a3b8">
+                <i class="bi bi-pause-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalInactivas</div>
+                <div class="stat-label">Inactivas</div>
+            </div>
+        </div>
     </div>
 </div>
 
-@await Html.PartialAsync("_CrearPromocionModal", new CrearPromocionViewModel())
+<!-- Filtros -->
+<div class="alpes-card mb-4">
+    <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+        <div>
+            <label class="form-label-sm">Estado</label>
+            <select name="estado" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="ACTIVO"   selected="@(Model.FiltroEstado=="ACTIVO")">Activo</option>
+                <option value="INACTIVO" selected="@(Model.FiltroEstado=="INACTIVO")">Inactivo</option>
+                <option value="EXPIRADO" selected="@(Model.FiltroEstado=="EXPIRADO")">Expirado</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label-sm">Tipo</label>
+            <select name="tipo" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="PORCENTAJE"   selected="@(Model.FiltroTipo=="PORCENTAJE")">Porcentaje</option>
+                <option value="MONTO_FIJO"   selected="@(Model.FiltroTipo=="MONTO_FIJO")">Monto fijo</option>
+                <option value="2X1"          selected="@(Model.FiltroTipo=="2X1")">2x1</option>
+                <option value="ENVIO_GRATIS" selected="@(Model.FiltroTipo=="ENVIO_GRATIS")">Envío gratis</option>
+                <option value="COMPRA_MINIMA"selected="@(Model.FiltroTipo=="COMPRA_MINIMA")">Compra mínima</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary-alpes btn-sm">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1">Limpiar</a>
+        </div>
+    </form>
+</div>
 
-@section Scripts {
-    <script>
-        document.getElementById('buscarPromocion').addEventListener('input', function () {
-            const term = this.value.toLowerCase();
-            document.querySelectorAll('#tablaPromociones tbody tr').forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
-            });
-        });
-    </script>
-}
+<!-- Tabla -->
+<div class="alpes-card">
+    @if (!Model.Promociones.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-ticket-perforated"></i>
+            <p>No hay promociones registradas.</p>
+            <a asp-action="Crear" class="btn btn-primary-alpes btn-sm">Crear primera promoción</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table alpes-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Vigencia</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Promociones)
+                    {
+                        <tr>
+                            <td><span class="badge-code">@p.PrmCodigo</span></td>
+                            <td>
+                                <div class="fw-600">@p.PrmNombre</div>
+                                @if (!string.IsNullOrEmpty(p.PrmDescripcion))
+                                {
+                                    <div class="text-muted small">@p.PrmDescripcion</div>
+                                }
+                            </td>
+                            <td>
+                                <span class="promo-badge">@p.TipoDisplay</span>
+                            </td>
+                            <td>
+                                <div class="small">@p.PrmFechaInicio.ToString("dd/MM/yyyy")</div>
+                                <div class="small text-muted">→ @p.PrmFechaFin.ToString("dd/MM/yyyy")</div>
+                                @if (p.EstaVigente)
+                                {
+                                    <span class="badge bg-success-soft text-success mt-1">Vigente</span>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var estadoClass = p.PrmEstado switch {
+                                        "ACTIVO"   => "badge-estado-activo",
+                                        "INACTIVO" => "badge-estado-inactivo",
+                                        _          => "badge-estado-default"
+                                    };
+                                }
+                                <span class="badge-estado @estadoClass">@p.PrmEstado</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Detalle" asp-route-id="@p.PrmPromocion"
+                                   class="btn-icon" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Editar" asp-route-id="@p.PrmPromocion"
+                                   class="btn-icon" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Eliminar" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar la promoción @p.PrmNombre?')">
+                                    <input type="hidden" name="id" value="@p.PrmPromocion" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-icon text-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

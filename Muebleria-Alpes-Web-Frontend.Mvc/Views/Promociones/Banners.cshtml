@@ -1,0 +1,104 @@
+@model List<Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones.BannerViewModel>
+@{
+    ViewData["Title"] = "Banners";
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <a asp-action="Index" class="btn-back"><i class="bi bi-arrow-left"></i> Promociones</a>
+        <h2 class="page-title mt-2">Banners</h2>
+        <p class="page-subtitle">Gestión de banners publicitarios</p>
+    </div>
+    <a asp-action="CrearBanner" class="btn btn-primary-alpes">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo Banner
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alpes-card">
+        <div class="empty-state">
+            <i class="bi bi-image"></i>
+            <p>No hay banners registrados.</p>
+            <a asp-action="CrearBanner" class="btn btn-primary-alpes btn-sm">Crear primer banner</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var b in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="alpes-card banner-card h-100">
+                    <div class="banner-img-wrap">
+                        <img src="@b.BanImagenUrl" alt="@b.BanTitulo"
+                             onerror="this.src='/images/banner-placeholder.png'" />
+                        @{
+                            var estadoCls = b.BanEstado switch {
+                                "ACTIVO"    => "badge-estado-activo",
+                                "INACTIVO"  => "badge-estado-inactivo",
+                                "PROGRAMADO"=> "badge-warning",
+                                _           => "badge-estado-default"
+                            };
+                        }
+                        <span class="banner-estado badge-estado @estadoCls">@b.BanEstado</span>
+                    </div>
+                    <div class="banner-body">
+                        <h6 class="banner-title">@b.BanTitulo</h6>
+                        @if (!string.IsNullOrEmpty(b.BanPosicion))
+                        {
+                            <span class="badge-code mb-2">@b.BanPosicion</span>
+                        }
+                        <div class="banner-meta">
+                            <span><i class="bi bi-calendar3"></i> @b.BanFechaInicio.ToString("dd/MM/yyyy")</span>
+                            @if (b.BanFechaFin.HasValue)
+                            {
+                                <span>→ @b.BanFechaFin.Value.ToString("dd/MM/yyyy")</span>
+                            }
+                        </div>
+                        <div class="banner-clicks">
+                            <i class="bi bi-cursor-fill text-primary"></i>
+                            <strong>@b.TotalClicks</strong> clicks
+                            @if (b.EstaVigente)
+                            {
+                                <span class="badge bg-success-soft text-success ms-2">Vigente</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="banner-footer">
+                        @if (!string.IsNullOrEmpty(b.BanEnlace))
+                        {
+                            <a href="@b.BanEnlace" target="_blank" class="btn-icon" title="Ver enlace">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        }
+                        <form asp-action="EliminarBanner" method="post" class="d-inline"
+                              onsubmit="return confirm('¿Eliminar el banner @b.BanTitulo?')">
+                            <input type="hidden" name="id" value="@b.BanBanner" />
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-icon text-danger" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
