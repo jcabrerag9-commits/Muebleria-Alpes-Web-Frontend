@@ -1,0 +1,38 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearTurnoViewModel
+
+<div class="modal fade" id="modalCrearTurno" tabindex="-1" aria-labelledby="modalCrearTurnoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearTurnoLabel">
+                    <i class="bi bi-clock me-2"></i> Nuevo Turno
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-controller="Turnos" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="Nombre" class="form-control" required placeholder="Ej. Turno Matutino" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora Inicio <span class="text-danger">*</span></label>
+                        <input type="time" name="HoraInicio" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora Fin <span class="text-danger">*</span></label>
+                        <input type="time" name="HoraFin" class="form-control" required />
+                    </div>
+                    <input type="hidden" name="UsuarioId" value="1" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model AbrirCajaViewModel
+
+<div class="modal fade" id="modalAbrirCaja" tabindex="-1" aria-labelledby="modalAbrirCajaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAbrirCajaLabel">
+                    <i class="bi bi-unlock me-2"></i> Abrir Caja
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-controller="Caja" asp-action="AbrirCaja" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Monto Inicial <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">Q</span>
+                            <input type="number" name="MontoInicial" class="form-control" required
+                                   step="0.01" min="0" placeholder="0.00" value="@Model.MontoInicial" />
+                        </div>
+                        <div class="form-text">Ingrese el efectivo inicial en caja.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-unlock"></i> Abrir Caja
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

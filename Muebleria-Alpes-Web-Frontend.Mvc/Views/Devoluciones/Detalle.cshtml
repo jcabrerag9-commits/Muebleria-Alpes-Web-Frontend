@@ -1,0 +1,177 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones.DevolucionViewModel
+@{
+    ViewData["Title"] = "Detalle Devolución";
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <a asp-action="Index" class="btn-back"><i class="bi bi-arrow-left"></i> Volver</a>
+        <h2 class="page-title mt-2">Devolución @Model.DevNumeroRma</h2>
+        <p class="page-subtitle">
+            <span class="badge-estado @Model.EstadoBadgeClass">@Model.DevEstado</span>
+            &nbsp; Registrada el @Model.DevFechaCreacion.ToString("dd/MM/yyyy HH:mm")
+        </p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <!-- Info principal -->
+        <div class="alpes-card">
+            <h5 class="card-section-title">Información de la devolución</h5>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Orden de venta</span>
+                    <span>#@Model.VenOrdenVenta</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Cliente</span>
+                    <span>#@Model.CliCliente</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Categoría</span>
+                    <span>@(Model.NombreCategoria ?? "—")</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Monto total</span>
+                    <span class="fw-600">Q @Model.DevMontoTotal.ToString("N2")</span>
+                </div>
+                <div class="detail-item col-span-2">
+                    <span class="detail-label">Motivo</span>
+                    <span>@Model.DevMotivo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles -->
+        <div class="alpes-card mt-4">
+            <h5 class="card-section-title">Ítems devueltos</h5>
+            @if (!Model.Detalles.Any())
+            {
+                <p class="text-muted small">Sin detalles registrados.</p>
+            }
+            else
+            {
+                <table class="table alpes-table">
+                    <thead>
+                        <tr>
+                            <th>Detalle Orden</th>
+                            <th>Cantidad</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.Detalles)
+                        {
+                            <tr>
+                                <td>#@d.VdeOrdenVentaDetalle</td>
+                                <td>@d.DdeCantidad</td>
+                                <td>Q @d.DdeMonto.ToString("N2")</td>
+                                <td>
+                                    @{
+                                        var cls = d.DdeEstado switch {
+                                            "PENDIENTE"    => "badge-warning",
+                                            "RECIBIDO"     => "badge-info",
+                                            "INSPECCIONADO"=> "badge-primary",
+                                            "REINTEGRADO"  => "badge-success",
+                                            _              => "badge-secondary"
+                                        };
+                                    }
+                                    <span class="badge-estado @cls">@d.DdeEstado</span>
+                                </td>
+                                <td>@d.DdeFechaCreacion.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-600">
+                            <td colspan="2">Total</td>
+                            <td>Q @Model.Detalles.Sum(d => d.DdeMonto).ToString("N2")</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Flujo de estados -->
+        <div class="alpes-card">
+            <h5 class="card-section-title">Cambiar estado</h5>
+
+            @{
+                var estados = new[] {
+                    ("SOLICITADA",  "Solicitada",  "bi-send"),
+                    ("EN_REVISION", "En revisión", "bi-search"),
+                    ("APROBADA",    "Aprobada",    "bi-check-circle"),
+                    ("COMPLETADA",  "Completada",  "bi-archive"),
+                    ("RECHAZADA",   "Rechazada",   "bi-x-circle")
+                };
+            }
+
+            <div class="estado-flow mb-3">
+                @foreach (var (val, label, icon) in estados)
+                {
+                    <div class="estado-step @(Model.DevEstado == val ? "active" : "")">
+                        <i class="bi @icon"></i> @label
+                    </div>
+                }
+            </div>
+
+            @if (Model.EstadosSiguientes.Any())
+            {
+                <p class="text-muted small mb-2">Transiciones permitidas:</p>
+                @foreach (var siguiente in Model.EstadosSiguientes)
+                {
+                    var btnCls = siguiente == "RECHAZADA" ? "btn-danger" : "btn-primary-alpes";
+                    <form asp-action="CambiarEstado" method="post" class="mb-2">
+                        <input type="hidden" name="id" value="@Model.DevDevolucion" />
+                        <input type="hidden" name="nuevoEstado" value="@siguiente" />
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn @btnCls w-100 btn-sm"
+                                onclick="return confirm('¿Cambiar estado a @siguiente?')">
+                            <i class="bi bi-arrow-right-circle me-1"></i> @siguiente
+                        </button>
+                    </form>
+                }
+            }
+            else
+            {
+                <p class="text-muted small">Estado final — no hay más transiciones.</p>
+            }
+        </div>
+
+        @if (Model.DevEstado == "SOLICITADA")
+        {
+            <div class="alpes-card mt-3">
+                <h5 class="card-section-title text-danger">Zona de peligro</h5>
+                <form asp-action="Eliminar" method="post"
+                      onsubmit="return confirm('¿Eliminar esta devolución? Esta acción no se puede deshacer.')">
+                    <input type="hidden" name="id" value="@Model.DevDevolucion" />
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger w-100 btn-sm">
+                        <i class="bi bi-trash me-1"></i> Eliminar devolución
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div>

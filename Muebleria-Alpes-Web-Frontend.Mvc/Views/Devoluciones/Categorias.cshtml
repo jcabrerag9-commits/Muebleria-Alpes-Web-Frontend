@@ -1,0 +1,172 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones.CategoriaIndexViewModel
+@{
+    ViewData["Title"] = "Categorías de Devolución";
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <a asp-action="Index" class="btn-back"><i class="bi bi-arrow-left"></i> Devoluciones</a>
+        <h2 class="page-title mt-2">Categorías de Devolución</h2>
+        <p class="page-subtitle">Motivos disponibles para solicitudes RMA</p>
+    </div>
+    <button class="btn btn-primary-alpes" data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alpes-card">
+    @if (!Model.Categorias.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-tags"></i>
+            <p>No hay categorías registradas.</p>
+            <button class="btn btn-primary-alpes btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#modalCrear">
+                Crear primera categoría
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table alpes-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in Model.Categorias)
+                    {
+                        <tr>
+                            <td><span class="badge-code">@cat.CtdCodigo</span></td>
+                            <td class="fw-600">@cat.CtdNombre</td>
+                            <td class="text-muted">@(cat.CtdDescripcion ?? "—")</td>
+                            <td>
+                                @{
+                                    var cls = cat.CtdEstado == "ACTIVO"
+                                        ? "badge-estado-activo" : "badge-estado-inactivo";
+                                }
+                                <span class="badge-estado @cls">@cat.CtdEstado</span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn-icon" title="Editar"
+                                        onclick="abrirEditar(@cat.CtdCategoriaTipoDev, '@cat.CtdNombre', '@cat.CtdDescripcion', '@cat.CtdEstado')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form asp-action="EliminarCategoria" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar la categoría @cat.CtdNombre?')">
+                                    <input type="hidden" name="id" value="@cat.CtdCategoriaTipoDev" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-icon text-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Modal Crear -->
+<div class="modal fade" id="modalCrear" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content alpes-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CrearCategoria" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label-alpes">Nombre <span class="text-danger">*</span></label>
+                        <input name="CtdNombre" class="form-control-alpes" required
+                               placeholder="Ej. Defecto de fábrica" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-alpes">Descripción</label>
+                        <textarea name="CtdDescripcion" class="form-control-alpes" rows="2"
+                                  placeholder="Descripción del motivo de devolución"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary-alpes">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content alpes-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditarCategoria" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="editId" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label-alpes">Nombre</label>
+                        <input name="CtdNombre" id="editNombre" class="form-control-alpes" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-alpes">Descripción</label>
+                        <textarea name="CtdDescripcion" id="editDescripcion"
+                                  class="form-control-alpes" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-alpes">Estado</label>
+                        <select name="CtdEstado" id="editEstado" class="form-control-alpes">
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary-alpes">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function abrirEditar(id, nombre, descripcion, estado) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editNombre').value = nombre;
+        document.getElementById('editDescripcion').value = descripcion || '';
+        document.getElementById('editEstado').value = estado;
+        new bootstrap.Modal(document.getElementById('modalEditar')).show();
+    }
+</script>
+}

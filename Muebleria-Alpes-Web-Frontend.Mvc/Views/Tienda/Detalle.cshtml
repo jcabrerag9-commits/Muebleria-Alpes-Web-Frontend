@@ -1,0 +1,131 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model TiendaProductoViewModel
+@{
+    Layout = "_LayoutTienda";
+    ViewData["Title"] = Model.Nombre ?? "Detalle";
+}
+
+<!-- Breadcrumb -->
+<div class="tienda-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index">Inicio</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Catalogo">Catálogo</a></li>
+                <li class="breadcrumb-item active">@Model.Nombre</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- Product Image -->
+            <div class="col-md-5">
+                <div class="card border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+                    <div id="imgContainer" style="height:380px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                        @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                        {
+                            <img id="productoImgPrincipal"
+                                 src="@Model.ImagenUrl"
+                                 alt="@Model.Nombre"
+                                 style="width:100%;height:100%;object-fit:cover;"
+                                 onerror="document.getElementById('imgContainer').innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#ccc;font-size:5rem;\'><i class=\'bi bi-image\'></i></div>';" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-image" style="font-size:5rem;color:#ccc;"></i>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-md-7">
+                @if (Model.TienePromocion)
+                {
+                    <span class="badge-promo mb-3 d-inline-block">En oferta</span>
+                }
+
+                <h1 class="fw-bold mb-2" style="color: var(--tienda-primary);">@Model.Nombre</h1>
+
+                <div class="d-flex gap-3 mb-3">
+                    @if (Model.TipoMuebleId > 0)
+                    {
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-tag me-1"></i>Tipo @Model.TipoMuebleId
+                        </span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Sku))
+                    {
+                        <span class="badge bg-light text-dark border">
+                            SKU: @Model.Sku
+                        </span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Estado))
+                    {
+                        <span class="badge bg-success">@Model.Estado</span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+                {
+                    <p class="text-muted mb-4" style="line-height: 1.7;">@Model.Descripcion</p>
+                }
+
+                <!-- Price -->
+                <div class="mb-4">
+                    @if (Model.TienePromocion && Model.PrecioConDescuento.HasValue)
+                    {
+                        <div class="text-muted text-decoration-line-through fs-5">Q @Model.Precio.ToString("N2")</div>
+                        <div class="producto-precio" style="font-size: 2rem; color: var(--tienda-accent);">Q @Model.PrecioConDescuento.Value.ToString("N2")</div>
+                    }
+                    else
+                    {
+                        <div class="producto-precio" style="font-size: 2rem;">Q @Model.Precio.ToString("N2")</div>
+                    }
+                </div>
+
+                <!-- Add to Cart Form -->
+                <form asp-controller="Carrito" asp-action="Agregar" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productoId" value="@Model.Id" />
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <label class="fw-semibold">Cantidad:</label>
+                        <div class="d-flex align-items-center qty-group">
+                            <button type="button" class="btn btn-outline-secondary qty-decrease" style="border-radius: 8px 0 0 8px;">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" name="cantidad" value="1" min="1" max="99"
+                                   class="qty-input form-control" style="border-radius: 0; border-left: 0; border-right: 0;" />
+                            <button type="button" class="btn btn-outline-secondary qty-increase" style="border-radius: 0 8px 8px 0;">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button type="submit" class="btn-tienda">
+                            <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                        </button>
+                        <a asp-controller="Tienda" asp-action="Catalogo" class="btn btn-outline-secondary" style="border-radius: 30px; padding: 12px 24px;">
+                            <i class="bi bi-arrow-left me-1"></i>Volver al catálogo
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Benefits mini -->
+                <div class="mt-4 pt-4 border-top">
+                    <div class="d-flex gap-4 text-muted small">
+                        <span><i class="bi bi-truck me-1" style="color: var(--tienda-primary);"></i>Envío disponible</span>
+                        <span><i class="bi bi-shield-check me-1" style="color: var(--tienda-primary);"></i>12 meses garantía</span>
+                        <span><i class="bi bi-arrow-repeat me-1" style="color: var(--tienda-primary);"></i>Devolución 30 días</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

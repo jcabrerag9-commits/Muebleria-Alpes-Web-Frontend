@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mueblería Los Alpes</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/tienda.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg tienda-navbar">
+        <div class="container">
+            <a class="navbar-brand tienda-brand" asp-controller="Tienda" asp-action="Index">
+                <i class="bi bi-triangle-fill"></i> Los Alpes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Tienda" asp-action="Index">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Tienda" asp-action="Catalogo">Catálogo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Tienda" asp-action="Ofertas">Ofertas</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-controller="Carrito" asp-action="Index" class="btn-carrito" title="Mi Carrito">
+                        <i class="bi bi-cart3"></i>
+                        <span class="carrito-badge" id="cartCount">0</span>
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var nombre = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "Usuario";
+                        var rol    = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+                        var esCliente = rol.Equals("Cliente", StringComparison.OrdinalIgnoreCase);
+
+                        <span class="text-white-50 small">Hola, @nombre</span>
+
+                        @if (!esCliente)
+                        {
+                            // Admins y empleados pueden ir al panel de administración
+                            <a asp-controller="Home" asp-action="Index"
+                               class="btn btn-sm btn-tienda-outline"
+                               title="Panel de administración">
+                                <i class="bi bi-speedometer2"></i> Admin
+                            </a>
+                        }
+
+                        <a asp-controller="Login" asp-action="Logout" class="btn btn-sm btn-tienda-outline">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Login" class="btn btn-sm btn-tienda-outline">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast de notificaciones (Success / Error del TempData) -->
+    @if (TempData["Success"] is string msgOk)
+    {
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+            <div class="toast show align-items-center text-bg-success border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i>@msgOk
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    }
+    @if (TempData["Error"] is string msgErr)
+    {
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+            <div class="toast show align-items-center text-bg-danger border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@msgErr
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="tienda-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-triangle-fill"></i> Mueblería Los Alpes</h5>
+                    <p class="text-muted">Tu hogar, nuestra pasión. Muebles de calidad con garantía.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6>Atención al cliente</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="bi bi-telephone me-2"></i>+502 0000-0000</li>
+                        <li><i class="bi bi-envelope me-2"></i>info@losalpes.com</li>
+                        <li><i class="bi bi-clock me-2"></i>Lun-Vie 8:00-18:00</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6>Información</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted">Política de devoluciones</a></li>
+                        <li><a href="#" class="text-muted">Garantías</a></li>
+                        <li><a href="#" class="text-muted">Envíos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr />
+            <p class="text-center text-muted mb-0">© 2026 Mueblería Los Alpes. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/tienda.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
