@@ -111,6 +111,68 @@
                     </span>
                 </a>
 
+
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Seguridad")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#seguridadMenu"
+                            aria-expanded="@(IsController("Seguridad").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Seguridad</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Seguridad")" id="seguridadMenu">
+                        <a asp-controller="Seguridad" asp-action="Usuarios">
+                            <i class="bi bi-people"></i> Usuarios
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Roles">
+                            <i class="bi bi-person-badge"></i> Roles
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Permisos">
+                            <i class="bi bi-key"></i> Permisos
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Asignaciones">
+                            <i class="bi bi-diagram-3"></i> Asignaciones
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Bitacora">
+                            <i class="bi bi-journal-text"></i> Bitácora
+                        </a>
+                    </div>
+                </div>
+
+                <a class="menu-item @ActiveMenu("Envios")" asp-controller="Envios" asp-action="Index">
+                    <span class="menu-left">
+                        <i class="bi bi-truck"></i>
+                        <span>Envíos</span>
+                    </span>
+                </a>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Reportes")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#reportesMenu"
+                            aria-expanded="@(IsController("Reportes").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-bar-chart-line"></i>
+                            <span>Reportes</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+                    <div class="collapse submenu @ShowMenu("Reportes")" id="reportesMenu">
+                        <a asp-controller="Reportes" asp-action="Index"><i class="bi bi-grid"></i> Panel</a>
+                        <a asp-controller="Reportes" asp-action="Cliente"><i class="bi bi-person-lines-fill"></i> Clientes</a>
+                        <a asp-controller="Reportes" asp-action="Ventas"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
+                        <a asp-controller="Reportes" asp-action="Caja"><i class="bi bi-cash-stack"></i> Caja</a>
+                        <a asp-controller="Reportes" asp-action="Marketing"><i class="bi bi-megaphone"></i> Marketing</a>
+                    </div>
+                </div>
+
                 <div class="menu-group">
                     <button class="menu-item menu-toggle @ActiveMenu("Ventas", "Facturas", "Pagos")"
                             type="button"
@@ -253,6 +315,12 @@
                     <button type="button" class="sidebar-toggle" id="toggleSidebar">
                         <i class="bi bi-list"></i>
                     </button>
+
+                    <div class="topbar-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Buscar en el sistema..." />
+                    </div>
+                </div>
 
                     <div class="topbar-search">
                         <i class="bi bi-search"></i>

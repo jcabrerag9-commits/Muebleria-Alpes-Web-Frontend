@@ -4,7 +4,23 @@ using System.Text.Json.Serialization;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Services;
 
-public record AuthResult(bool Exitoso, string Mensaje, int Id, string Username, string NombreCompleto, string Rol, int ClienteId = 0);
+public record AuthResult(bool Exitoso, string Mensaje, int Id, string Username, string NombreCompleto, string Rol, int ClienteId = 0, string TokenSesion = "", int SesionId = 0);
+
+
+file class AlpesLoginResponse
+{
+    [JsonPropertyName("success")] public bool Success { get; set; }
+    [JsonPropertyName("message")] public string? Message { get; set; }
+    [JsonPropertyName("data")] public AlpesLoginData? Data { get; set; }
+}
+
+file class AlpesLoginData
+{
+    [JsonPropertyName("usuarioId")] public int? UsuarioId { get; set; }
+    [JsonPropertyName("sesionId")] public int? SesionId { get; set; }
+    [JsonPropertyName("tokenSesion")] public string TokenSesion { get; set; } = "";
+    [JsonPropertyName("esValido")] public bool EsValido { get; set; }
+}
 
 file class BaseLoginResponse
 {
@@ -70,30 +86,65 @@ public class AuthApiService
     {
         try
         {
-            var body = JsonSerializer.Serialize(new { username, password });
+            var body = JsonSerializer.Serialize(new
+            {
+                username,
+                passwordPlano = password,
+                ip = "Frontend MVC",
+                userAgent = "Panel ERP Los Alpes"
+            });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync("api/auth/login", content);
-            var json     = await response.Content.ReadAsStringAsync();
+            // Endpoint real de nuestros módulos: success/message/data
+            var response = await _http.PostAsync("api/Autenticacion/iniciar-sesion", content);
+            var json = await response.Content.ReadAsStringAsync();
 
-            if (string.IsNullOrWhiteSpace(json) || (!json.TrimStart().StartsWith('{') && !json.TrimStart().StartsWith('[')))
+            if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith('{'))
                 return new AuthResult(false, $"Error {(int)response.StatusCode} — verifica que el backend esté corriendo", 0, "", "", "");
 
-            var result = JsonSerializer.Deserialize<BaseLoginResponse>(json, _json);
-
-            if (result?.Resultado == "EXITO" && result.Data is not null)
+            var result = JsonSerializer.Deserialize<AlpesLoginResponse>(json, _json);
+            if (response.IsSuccessStatusCode && result?.Success == true && result.Data is not null && result.Data.EsValido && result.Data.UsuarioId.HasValue)
             {
-                return new AuthResult(true, result.Mensaje,
-                    result.Data.Id, result.Data.Username,
-                    result.Data.NombreCompleto, result.Data.Rol,
-                    result.Data.ClienteId);
+                // Nuestro backend devuelve sesión/token, pero no devuelve rol/nombre.
+                // Para integrarlo al panel MVC, se asigna rol administrativo por defecto.
+                // Más adelante puede reemplazarse por consulta real a roles/permisos.
+                return new AuthResult(
+                    true,
+                    result.Message ?? "Inicio de sesión correcto.",
+                    result.Data.UsuarioId.Value,
+                    username,
+                    username,
+                    "Administrador",
+                    0,
+                    result.Data.TokenSesion,
+                    result.Data.SesionId ?? 0
+                );
             }
 
-            return new AuthResult(false, result?.Mensaje ?? "Credenciales inválidas", 0, "", "", "");
+            return new AuthResult(false, result?.Message ?? "Credenciales inválidas o usuario inactivo.", 0, "", "", "");
         }
         catch (Exception ex)
         {
             return new AuthResult(false, $"Error de conexión: {ex.Message}", 0, "", "", "");
+        }
+    }
+
+    public async Task<bool> CerrarSesionAsync(string? tokenSesion)
+    {
+        if (string.IsNullOrWhiteSpace(tokenSesion))
+            return true;
+
+        try
+        {
+            var body = JsonSerializer.Serialize(new { tokenSesion });
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var response = await _http.PostAsync("api/Autenticacion/cerrar-sesion", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            // Aunque falle el backend, permitimos limpiar la cookie del frontend.
+            return false;
         }
     }
 

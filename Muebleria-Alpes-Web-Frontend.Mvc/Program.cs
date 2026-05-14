@@ -86,6 +86,11 @@ builder.Services.AddHttpClient<VentasApiService>(c => c.BaseAddress = new Uri(ap
 
 // Reports
 builder.Services.AddHttpClient<ReportesApiService>(c => c.BaseAddress = new Uri(apiUrl));
+builder.Services.AddHttpClient<ReportesModuloApiService>(c => c.BaseAddress = new Uri(apiUrl));
+
+// Seguridad / Envíos / Reportes
+builder.Services.AddHttpClient<SeguridadModuloApiService>(c => c.BaseAddress = new Uri(apiUrl));
+builder.Services.AddHttpClient<EnviosModuloApiService>(c => c.BaseAddress = new Uri(apiUrl));
 
 // Auth
 builder.Services.AddHttpClient<AuthApiService>(c => c.BaseAddress = new Uri(apiUrl));

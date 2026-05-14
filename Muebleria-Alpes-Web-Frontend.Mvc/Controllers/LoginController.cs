@@ -49,6 +49,9 @@ public class LoginController : Controller
             new(ClaimTypes.GivenName,      result.NombreCompleto),
             new(ClaimTypes.Role,           result.Rol),
             // CLI_CLIENTE para el carrito de compra
+            new("clienteId",               result.ClienteId.ToString()),
+            new("tokenSesion",            result.TokenSesion),
+            new("sesionId",               result.SesionId.ToString())
             new("clienteId",               result.ClienteId.ToString())
         };
 
@@ -112,6 +115,9 @@ public class LoginController : Controller
     [HttpGet]
     public async Task<IActionResult> Logout()
     {
+        var tokenSesion = User.FindFirst("tokenSesion")?.Value;
+        await _authService.CerrarSesionAsync(tokenSesion);
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login", "Login");
     }

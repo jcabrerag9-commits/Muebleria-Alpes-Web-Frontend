@@ -1,34 +1,60 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
-using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels;
 
-namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
+namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers;
+
+[Authorize(Policy = "SoloAdmin")]
+public class EnviosController : Controller
 {
-    public class EnviosController : Controller
+    private readonly EnviosModuloApiService _service;
+    public EnviosController(EnviosModuloApiService service) => _service = service;
+
+    public async Task<IActionResult> Index(string estado = "PREPARANDO")
     {
-        private readonly LogisticaApiService _service;
+        ViewData["Title"] = "Envíos";
+        ViewBag.Estado = estado;
+        return View(await _service.ListarPorEstadoAsync(estado));
+    }
 
-        public EnviosController(LogisticaApiService service)
-        {
-            _service = service;
-        }
+    public async Task<IActionResult> Crear()
+    {
+        ViewData["Title"] = "Crear envío";
+        ViewBag.Ordenes = await _service.OrdenesDisponiblesAsync();
+        return View();
+    }
 
-        public async Task<IActionResult> Index()
-        {
-            var envios = await _service.ListarEnviosAsync();
-            return View(envios);
-        }
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Crear(int ordenVentaId, int clienteDireccionId, string numeroGuia, string transportista, decimal costoEnvio, string estado = "PREPARANDO")
+    {
+        var usuarioId = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+        var r = await _service.CrearAsync(ordenVentaId, clienteDireccionId, numeroGuia, transportista, costoEnvio, estado, usuarioId);
+        TempData[r.ok ? "Success" : "Error"] = r.message;
+        return RedirectToAction(nameof(Index));
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> CambiarEstado(int id, string estado)
-        {
-            var actualizado = await _service.CambiarEstadoEnvioAsync(id, estado);
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CambiarEstado(int envioId, string estado)
+    {
+        var usuarioId = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+        var r = await _service.CambiarEstadoAsync(envioId, estado, usuarioId);
+        TempData[r.ok ? "Success" : "Error"] = r.message;
+        return RedirectToAction(nameof(Index), new { estado });
+    }
 
-            TempData[actualizado ? "Success" : "Error"] = actualizado
-                ? "Estado del envío actualizado correctamente."
-                : "No se pudo actualizar el estado del envío.";
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmarEntrega(int envioId)
+    {
+        var usuarioId = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+        var r = await _service.ConfirmarEntregaAsync(envioId, usuarioId);
+        TempData[r.ok ? "Success" : "Error"] = r.message;
+        return RedirectToAction(nameof(Index), new { estado = "ENTREGADO" });
+    }
 
-            return RedirectToAction(nameof(Index));
-        }
+    [HttpGet]
+    public async Task<IActionResult> DireccionesCliente(int clienteId)
+    {
+        var direcciones = await _service.DireccionesClienteAsync(clienteId);
+        return Json(direcciones);
     }
 }
