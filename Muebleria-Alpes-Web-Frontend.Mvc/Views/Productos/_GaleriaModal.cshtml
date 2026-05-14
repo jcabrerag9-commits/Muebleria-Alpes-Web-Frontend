@@ -1,0 +1,241 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model List<ProductoImagenViewModel>
+@{
+    var productoId = ViewBag.ProductoId;
+}
+
+<div class="modal fade" id="modalGaleria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-images me-2"></i> Galería del Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light">
+                
+                <!-- Sección de Carga (Upload) -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-3"><i class="bi bi-cloud-arrow-up"></i> Subir Nueva Imagen</h6>
+                        <form id="formUploadImagen" enctype="multipart/form-data">
+                            <input type="hidden" id="uploadProductoId" name="ProductoId" value="@productoId" />
+                            
+                            <div id="uploadAlert" class="alert alert-danger d-none" role="alert">
+                                <!-- Error messages here -->
+                            </div>
+
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <input class="form-control" type="file" id="imageInput" name="Archivo" accept=".jpg,.jpeg,.png,.webp" required>
+                                    <div class="form-text">Formatos permitidos: JPG, PNG, WEBP. Max: 10MB.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="imageTipo" name="Tipo">
+                                        <option value="SECUNDARIA">Secundaria</option>
+                                        <option value="PRINCIPAL">Principal</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <img id="previewImage" src="/img/no-image.png" class="img-thumbnail" style="max-height: 50px; display: none;" />
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button type="submit" id="btnSubmitUpload" class="btn btn-primary w-100">
+                                        <span id="uploadBtnText">Subir</span>
+                                        <span id="uploadBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Galería -->
+                <h6 class="text-muted mb-3"><i class="bi bi-grid-3x3"></i> Imágenes Cargadas (@Model.Count)</h6>
+                <div class="row row-cols-1 row-cols-md-4 g-4" id="galeriaGrid">
+                    @if (Model.Count == 0)
+                    {
+                        <div class="col-12 text-center text-muted py-4">
+                            <i class="bi bi-camera" style="font-size: 3rem;"></i>
+                            <p class="mt-2">No hay imágenes para este producto.</p>
+                        </div>
+                    }
+                    @foreach (var img in Model.OrderByDescending(i => i.EsPrincipal).ThenBy(i => i.Orden))
+                    {
+                        <div class="col" id="img-card-@img.ImagenId">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <!-- Proxy route to avoid CORS and hide backend -->
+                                <img src="/ProductoImagen/GetImage/@img.ImagenId" onerror="this.src='/img/no-image.png'" class="card-img-top" style="height: 180px; object-fit: cover;" alt="@img.NombreArchivo">
+                                
+                                @if (img.EsPrincipal)
+                                {
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-success"><i class="bi bi-star-fill"></i> Principal</span>
+                                    </div>
+                                }
+                                
+                                <div class="card-body p-2 text-center">
+                                    <small class="text-muted d-block text-truncate" title="@img.NombreArchivo">@img.NombreArchivo</small>
+                                    <small class="text-muted">@(Math.Round(img.Tamanio / 1024.0, 1)) KB</small>
+                                </div>
+                                <div class="card-footer bg-white border-0 p-2 text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-imagen" data-id="@img.ImagenId">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar Galería</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const uploadAlert = document.getElementById('uploadAlert');
+        const formUploadImagen = document.getElementById('formUploadImagen');
+        
+        // Preview de imagen
+        if (imageInput) {
+            imageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                
+                uploadAlert.classList.add('d-none');
+                previewImage.style.display = 'none';
+
+                if (file) {
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                        uploadAlert.innerText = 'Error: Formato no permitido. Solo JPG, PNG, WEBP.';
+                        uploadAlert.classList.remove('d-none');
+                        this.value = '';
+                        return;
+                    }
+                    if (file.size > MAX_SIZE) {
+                        uploadAlert.innerText = 'Error: El archivo excede el límite de 10MB.';
+                        uploadAlert.classList.remove('d-none');
+                        this.value = '';
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        previewImage.style.display = 'inline-block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Submit Upload
+        if (formUploadImagen) {
+            formUploadImagen.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (imageInput.files.length === 0) return;
+                const file = imageInput.files[0];
+                
+                if (!ALLOWED_TYPES.includes(file.type) || file.size > MAX_SIZE) {
+                    return;
+                }
+
+                const formData = new FormData(formUploadImagen);
+                formData.set('Orden', '1');
+
+                const btnSubmitUpload = document.getElementById('btnSubmitUpload');
+                const uploadBtnText = document.getElementById('uploadBtnText');
+                const uploadBtnSpinner = document.getElementById('uploadBtnSpinner');
+                
+                btnSubmitUpload.disabled = true;
+                uploadBtnText.innerText = 'Subiendo...';
+                uploadBtnSpinner.classList.remove('d-none');
+                uploadAlert.classList.add('d-none');
+
+                console.log("Datos de FormData a enviar:", [...formData.entries()]);
+
+                try {
+                    const response = await fetch('@Url.Action("Upload", "ProductoImagen")', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const productoId = document.getElementById('uploadProductoId').value;
+                        if (typeof window.abrirGaleria === 'function') {
+                            window.abrirGaleria(productoId);
+                        }
+                        if (typeof window.refrescarTablaPrincipal === 'function') {
+                            window.refrescarTablaPrincipal();
+                        }
+                    } else {
+                        const errText = await response.text();
+                        throw new Error(errText || 'Upload fallido');
+                    }
+                } catch (error) {
+                    console.error("Error al subir imagen:", error);
+                    uploadAlert.innerText = 'Error al subir la imagen al servidor: ' + error.message;
+                    uploadAlert.classList.remove('d-none');
+                    btnSubmitUpload.disabled = false;
+                    uploadBtnText.innerText = 'Subir';
+                    uploadBtnSpinner.classList.add('d-none');
+                }
+            });
+        }
+
+        // Eliminación Lógica
+        document.querySelectorAll('.btn-eliminar-imagen').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const imagenId = this.dataset.id;
+                const card = document.getElementById('img-card-' + imagenId);
+
+                if (confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería?')) {
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    this.disabled = true;
+
+                    try {
+                        const response = await fetch('/ProductoImagen/Eliminar/' + imagenId, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.ok) {
+                            // Transición CSS para fadeOut suave nativo
+                            card.style.transition = "opacity 0.4s ease";
+                            card.style.opacity = "0";
+                            
+                            setTimeout(() => {
+                                card.remove();
+                                const remainingCols = document.querySelectorAll('#galeriaGrid .col');
+                                if (remainingCols.length === 0) {
+                                    const productoId = document.getElementById('uploadProductoId').value;
+                                    if (typeof window.abrirGaleria === 'function') {
+                                        window.abrirGaleria(productoId);
+                                    }
+                                }
+                                if (typeof window.refrescarTablaPrincipal === 'function') {
+                                    window.refrescarTablaPrincipal();
+                                }
+                            }, 400);
+                        } else {
+                            throw new Error('Error backend');
+                        }
+                    } catch (error) {
+                        alert('Error al eliminar la imagen.');
+                        this.innerHTML = originalHtml;
+                        this.disabled = false;
+                    }
+                }
+            });
+        });
+    })();
+</script>

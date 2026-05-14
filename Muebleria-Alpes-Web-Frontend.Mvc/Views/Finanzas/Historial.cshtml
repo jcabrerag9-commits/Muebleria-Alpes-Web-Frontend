@@ -1,0 +1,296 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Finanzas
+@model HistorialFinancieroViewModel
+
+@{
+    ViewData["Title"] = "Historial Financiero Global - Kardex ERP";
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header ERP -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold m-0" style="color: #1f1f24; letter-spacing: -0.5px;">Auditoría Financiera Global</h3>
+            <p class="text-muted small m-0"><i class="bi bi-bank me-1"></i> Trazabilidad completa de pagos, facturas y movimientos monetarios en Oracle.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-dark fw-bold px-4" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i>Imprimir Reporte
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros Auditoría -->
+    <div class="erp-card p-4 mb-4 shadow-sm border-0">
+        <form method="get" class="row g-3 align-items-end" id="formFiltrosFinanzas">
+            <div class="col-md-2">
+                <label class="form-label fw-bold small text-muted text-uppercase">Operación</label>
+                <select name="tipoMovimiento" class="form-select border-0 bg-light shadow-none">
+                    <option value="">TODAS</option>
+                    <option value="PAGO" selected="@(Model.TipoMovimiento == "PAGO")">PAGOS</option>
+                    <option value="ANULACION_PAGO" selected="@(Model.TipoMovimiento == "ANULACION_PAGO")">ANULACIONES</option>
+                    <option value="FACTURA" selected="@(Model.TipoMovimiento == "FACTURA")">FACTURAS</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold small text-muted text-uppercase">ID Factura</label>
+                <input type="number" name="facturaId" class="form-control border-0 bg-light shadow-none" value="@Model.FacturaId" placeholder="Ej. 101" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold small text-muted text-uppercase">Desde</label>
+                <input type="date" name="fechaInicio" class="form-control border-0 bg-light shadow-none" value="@(Model.FechaInicio?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold small text-muted text-uppercase">Hasta</label>
+                <input type="date" name="fechaFin" class="form-control border-0 bg-light shadow-none" value="@(Model.FechaFin?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-main text-white fw-bold w-100 py-2">
+                    <i class="bi bi-filter me-2"></i>Filtrar Auditoría
+                </button>
+                <a href="@Url.Action("Historial")" class="btn btn-light border px-3" title="Limpiar Filtros">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultados Auditoría -->
+    <div class="erp-card shadow-sm border-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblFinanzasKardex">
+                <thead class="bg-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4 py-3">Fecha / ID</th>
+                        <th>Tipo de Movimiento</th>
+                        <th>Referencia</th>
+                        <th class="text-end">Monto</th>
+                        <th class="text-center">Trazabilidad Saldo</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Movimientos == null || !Model.Movimientos.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-search fs-1 text-muted opacity-25"></i>
+                                <p class="text-muted mt-2">No se encontraron movimientos financieros con los filtros aplicados.</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var m in Model.Movimientos)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark mb-0">@m.Fecha.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted x-small">@m.Fecha.ToString("HH:mm:ss") | #@m.MovimientoId</div>
+                                </td>
+                                <td>
+                                    @{
+                                        var (bg, icon, label) = m.TipoMovimiento.ToUpper() switch {
+                                            "PAGO"            => ("bg-success-subtle text-success", "bi-cash-coin", "PAGO RECIBIDO"),
+                                            "ANULACION_PAGO"  => ("bg-danger-subtle text-danger", "bi-x-circle", "ANULACIÓN PAGO"),
+                                            "FACTURA"         => ("bg-primary-subtle text-primary", "bi-receipt", "EMISIÓN FACTURA"),
+                                            _                 => ("bg-secondary-subtle text-secondary", "bi-info-circle", m.TipoMovimiento)
+                                        };
+                                    }
+                                    <span class="badge @bg d-inline-flex align-items-center gap-1 py-2 px-3 rounded-pill" style="min-width: 140px;">
+                                        <i class="bi @icon"></i> @label
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small fw-bold">Factura #@m.FacturaNumero</div>
+                                    <div class="text-muted x-small">Orden #@m.OrdenId</div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fs-6 fw-bold @(m.TipoMovimiento == "PAGO" ? "text-success" : m.TipoMovimiento == "ANULACION_PAGO" ? "text-danger" : "text-dark")">
+                                        @(m.TipoMovimiento == "ANULACION_PAGO" ? "-" : "+") Q @m.Monto.ToString("N2")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center bg-light rounded-pill p-1 border mx-auto" style="width: fit-content; min-width: 160px;">
+                                        <span class="text-muted px-2 x-small" title="Saldo Anterior">Q @m.SaldoAnterior.ToString("N0")</span>
+                                        <i class="bi bi-arrow-right text-primary small"></i>
+                                        <span class="fw-bold px-2 @(m.SaldoNuevo < m.SaldoAnterior ? "text-success" : m.SaldoNuevo > m.SaldoAnterior ? "text-danger" : "text-dark")" title="Saldo Nuevo">Q @m.SaldoNuevo.ToString("N2")</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var fBadge = m.EstadoFactura.ToUpper() switch {
+                                            "PAGADA"  => "bg-success text-white",
+                                            "PARCIAL" => "bg-warning text-dark",
+                                            "EMITIDA" => "bg-info text-white",
+                                            "ANULADA" => "bg-danger text-white",
+                                            _         => "bg-secondary text-white"
+                                        };
+                                    }
+                                    <span class="badge @fBadge rounded-pill px-3">@m.EstadoFactura</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 btn-detalle-finanzas" 
+                                            data-movimiento='@System.Text.Json.JsonSerializer.Serialize(m)'>
+                                        <i class="bi bi-eye me-1"></i>Ver Detalle
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle Movimiento Financiero -->
+<div class="modal fade" id="modalDetalleFinanzas" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-info-circle me-2"></i>Detalle de Transacción ERP</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div id="fdet_badge_container"></div>
+                    <h4 class="fw-bold mt-2 mb-1" id="fdet_tipo"></h4>
+                    <span class="badge bg-light text-dark border" id="fdet_monto_principal"></span>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold">Fecha / Hora</label>
+                        <div class="fw-bold" id="fdet_fecha"></div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <label class="text-muted small text-uppercase fw-bold">ID ERP</label>
+                        <div class="fw-bold" id="fdet_id"></div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold">Factura Relacionada</label>
+                        <div class="fw-bold" id="fdet_factura"></div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <label class="text-muted small text-uppercase fw-bold">Orden de Venta</label>
+                        <div class="fw-bold" id="fdet_orden"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold">Impacto Financiero</label>
+                        <div class="d-flex align-items-center justify-content-between bg-light p-3 rounded-3 mt-1">
+                            <div class="text-center">
+                                <div class="text-muted x-small">Saldo Anterior</div>
+                                <div class="h6 m-0" id="fdet_saldo_ant"></div>
+                            </div>
+                            <div class="text-primary h4 m-0"><i class="bi bi-arrow-right"></i></div>
+                            <div class="text-center">
+                                <div class="text-muted x-small">Saldo Resultante</div>
+                                <div class="h6 m-0 fw-bold" id="fdet_saldo_nue"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <label class="text-muted small text-uppercase fw-bold">Observación / Referencia Oracle</label>
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-primary mt-1" id="fdet_obs" style="font-style: italic;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 gap-2 p-4">
+                <button type="button" class="btn btn-outline-danger py-2 fw-bold d-none" id="btnAnularPago" onclick="confirmarAnulacion()">
+                    <i class="bi bi-trash me-2"></i>Anular Pago ERP
+                </button>
+                <button type="button" class="btn btn-dark flex-grow-1 py-2 fw-bold" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+    .bg-main { background-color: #1f1f24; }
+    @@media print {
+        .btn, #formFiltrosFinanzas, .modal { display: none !important; }
+        .erp-card { border: 1px solid #ddd !important; box-shadow: none !important; }
+    }
+</style>
+
+<script>
+    let currentMovimiento = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFiltros = document.getElementById('formFiltrosFinanzas');
+        if(formFiltros) {
+            formFiltros.addEventListener('submit', function() {
+                ERPHelpers.showLoader();
+            });
+        }
+
+        document.body.addEventListener('click', function(e) {
+            const btnDetalle = e.target.closest('.btn-detalle-finanzas');
+            if(btnDetalle) {
+                const m = JSON.parse(btnDetalle.dataset.movimiento);
+                currentMovimiento = m;
+                verDetalleFinanzas(m);
+            }
+        });
+    });
+
+    function verDetalleFinanzas(m) {
+        if(!m) return;
+        
+        document.getElementById('fdet_tipo').innerText = m.TipoMovimiento || 'N/A';
+        document.getElementById('fdet_monto_principal').innerText = ERPHelpers.formatCurrency(m.Monto || 0);
+        document.getElementById('fdet_fecha').innerText = (m.Fecha || '').replace('T', ' ');
+        document.getElementById('fdet_id').innerText = '#' + m.MovimientoId;
+        document.getElementById('fdet_factura').innerText = 'Factura #' + (m.FacturaNumero || m.FacturaId || 'N/A');
+        document.getElementById('fdet_orden').innerText = '#' + m.OrdenId;
+        document.getElementById('fdet_saldo_ant').innerText = ERPHelpers.formatCurrency(m.SaldoAnterior || 0);
+        document.getElementById('fdet_saldo_nue').innerText = ERPHelpers.formatCurrency(m.SaldoNuevo || 0);
+        document.getElementById('fdet_obs').innerText = m.Observaciones || 'Sin observaciones adicionales en Oracle.';
+
+        const badgeContainer = document.getElementById('fdet_badge_container');
+        const tipo = (m.TipoMovimiento || '').toUpperCase();
+        let bg = 'bg-secondary', icon = 'bi-info-circle', label = tipo;
+        
+        if(tipo === 'PAGO') { bg = 'bg-success-subtle text-success'; icon = 'bi-cash-coin'; label = 'PAGO RECIBIDO'; }
+        else if(tipo === 'ANULACION_PAGO') { bg = 'bg-danger-subtle text-danger'; icon = 'bi-x-circle'; label = 'ANULACIÓN PAGO'; }
+        else if(tipo === 'FACTURA') { bg = 'bg-primary-subtle text-primary'; icon = 'bi-receipt'; label = 'EMISIÓN FACTURA'; }
+
+        badgeContainer.innerHTML = `<span class="badge ${bg} py-2 px-4 shadow-sm h5 mb-0 rounded-pill"><i class="bi ${icon} me-2"></i>${label}</span>`;
+
+        const btnAnular = document.getElementById('btnAnularPago');
+        if(btnAnular) {
+            // Solo permitir anular si es un PAGO y la factura no está ya anulada
+            if(tipo === 'PAGO' && m.EstadoFactura !== 'ANULADA') {
+                btnAnular.classList.remove('d-none');
+            } else {
+                btnAnular.classList.add('d-none');
+            }
+        }
+
+        const modalEl = document.getElementById('modalDetalleFinanzas');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    async function confirmarAnulacion() {
+        if(!currentMovimiento || !currentMovimiento.PagoId) return;
+
+        if(!confirm('¿Está seguro de anular este pago? Esta acción revertirá el saldo en el ERP de forma permanente.')) return;
+
+        try {
+            // Endpoint corregido para usar la ruta del helper (sin /api extra)
+            await ERPHelpers.fetchERP(`/Pago/anular/${currentMovimiento.PagoId}`, {
+                method: 'PUT'
+            });
+
+            ERPHelpers.showToast('Anulación completada con éxito.', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } catch (err) {
+            console.error('[Historial ERP Error]', err);
+        }
+    }
+</script>
