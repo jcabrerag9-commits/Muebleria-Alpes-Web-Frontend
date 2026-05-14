@@ -2,53 +2,54 @@
 @model CrearProductoViewModel
 
 <div class="modal fade" id="modalCrearProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content erp-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i> Nuevo Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
             <form asp-controller="Productos" asp-action="Crear" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Nuevo Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <label class="form-label">Nombre *</label>
-                            <input name="Nombre" class="form-control" placeholder="Ej. Sofá Milano" required />
+                            <label asp-for="Nombre" class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+                            <input asp-for="Nombre" class="form-control" required />
                         </div>
-
+                        
                         <div class="col-md-4">
-                            <label class="form-label">SKU *</label>
-                            <input name="Sku" class="form-control" placeholder="Ej. SOF-001" />
+                            <label asp-for="TipoMueble" class="form-label">Tipo de Mueble <span class="text-danger">*</span></label>
+                            <select asp-for="TipoMueble" class="form-select" required>
+                                <option value="">Seleccione un tipo...</option>
+                            </select>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Descripción</label>
-                            <textarea name="Descripcion" class="form-control" rows="3" placeholder="Descripción del producto..."></textarea>
+                        <div class="col-md-12">
+                            <label asp-for="DescripcionCorta" class="form-label">Descripción Corta</label>
+                            <input asp-for="DescripcionCorta" class="form-control" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="DescripcionLarga" class="form-label">Descripción Larga</label>
+                            <textarea asp-for="DescripcionLarga" class="form-control" rows="3"></textarea>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Tipo Mueble ID</label>
-                            <input name="TipoMuebleId" type="number" class="form-control" placeholder="ID del tipo de mueble" />
+                            <label asp-for="Peso" class="form-label">Peso (kg)</label>
+                            <input asp-for="Peso" class="form-control" type="number" step="0.01" />
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Estado</label>
-                            <select name="Estado" class="form-select">
-                                <option value="ACTIVO">Activo</option>
-                                <option value="INACTIVO">Inactivo</option>
+                            <label asp-for="EsConfigurable" class="form-label">Es Configurable</label>
+                            <select asp-for="EsConfigurable" class="form-select">
+                                <option value="N">No (Producto Simple)</option>
+                                <option value="S">Sí (Múltiples Variantes)</option>
                             </select>
                         </div>
                     </div>
                 </div>
-
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                        <i class="bi bi-x-lg"></i> Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary btn-main">
-                        <i class="bi bi-save"></i> Guardar
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
                 </div>
             </form>
         </div>

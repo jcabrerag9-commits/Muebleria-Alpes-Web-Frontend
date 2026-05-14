@@ -1,125 +1,188 @@
-@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
-@model List<ExistenciaViewModel>
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
+@model List<ProductoViewModel>
 
 @{
-    ViewData["Title"] = "Inventario";
+    ViewData["Title"] = "Gestión de Inventario";
 }
 
 <div class="page-header">
     <div class="page-title-box">
         <div class="page-icon">
-            <i class="bi bi-box-seam"></i>
+            <i class="bi bi-boxes"></i>
         </div>
         <div>
-            <h1>Inventario</h1>
-            <p>Catálogo de productos en bodega</p>
+            <h1>Control de Almacén</h1>
+            <p>Gestión de stock, entradas, salidas y reservas por producto</p>
         </div>
     </div>
 
     <div class="page-actions">
-        <input type="text" id="buscarExistencia" class="form-control search-input" placeholder="Buscar..." />
-        <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalMovimiento">
-            <i class="bi bi-plus-lg"></i> Registrar Movimiento
-        </button>
+        <input type="text" id="buscarInventario" class="form-control search-input" placeholder="Buscar por código o nombre..." />
     </div>
 </div>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
 
 <div class="record-count">
-    @Model.Count registros
+    @Model.Count productos en catálogo
 </div>
 
-<div class="erp-card">
-    <div class="table-responsive">
-        <table class="table erp-table" id="tablaInventario">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>SKU</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Estado</th>
-                    <th>Fecha Registro</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+<div id="contenedorInventarioMaster">
+    <div class="erp-card">
+        <div class="table-responsive">
+            <table class="table erp-table" id="tablaInventario">
+                <thead>
                     <tr>
-                        <td><span class="code-badge">@item.ProductoId</span></td>
-                        <td><span class="code-badge">@(item.Sku ?? "-")</span></td>
-                        <td>
-                            <div class="fw-semibold">@item.Nombre</div>
-                        </td>
-                        <td>
-                            <small class="text-muted">@(item.DescripcionCorta ?? "-")</small>
-                        </td>
-                        <td>
-                            @{
-                                var estadoClass = item.Estado switch
+                        <th>SKU</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Estado Catálogo</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var prod in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="/ProductoImagen/GetPrincipal/@prod.ProductoId" onerror="this.src='/img/no-image.png'" class="img-thumbnail me-2" style="width: 48px; height: 48px; object-fit: cover;" alt="Miniatura">
+                                    <span class="code-badge">@(string.IsNullOrWhiteSpace(prod.Sku) ? "N/A" : prod.Sku)</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="employee-cell">
+                                    <div class="employee-avatar"><i class="bi bi-box-seam"></i></div>
+                                    <div>
+                                        <div class="employee-name">@prod.Nombre</div>
+                                        <div class="employee-subtitle">@prod.DescripcionCorta</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="doc-cell">
+                                    <strong>@(prod.EsConfigurable == "S" ? "Configurable" : "Simple")</strong>
+                                    <span>Variantes</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (prod.Estado == "ACTIVO")
                                 {
-                                    "ACTIVO" => "status-active",
-                                    "INACTIVO" or "BORRADOR" => "status-inactive",
-                                    _ => "status-warning"
-                                };
-                            }
-                            <span class="status-badge @estadoClass">@(item.Estado ?? "-")</span>
-                        </td>
-                        <td>@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
-                        <td class="text-end">
-                            <div class="action-group">
-                                <button class="btn-icon btn-edit"
-                                        type="button"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalMovimiento"
-                                        data-producto-id="@item.ProductoId"
-                                        title="Registrar movimiento">
-                                    <i class="bi bi-arrow-left-right"></i>
+                                    <span class="status-badge status-active"><i class="bi bi-check-circle"></i> Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-inactive"><i class="bi bi-x-circle"></i> Inactivo</span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary btn-abrir-stock fw-bold" type="button"
+                                        data-id="@prod.ProductoId"
+                                        data-bs-toggle="tooltip" title="Ver stock y gestionar movimientos">
+                                    <i class="bi bi-boxes me-1"></i>Gestionar Stock
                                 </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-                @if (!Model.Any())
-                {
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                            No hay productos en inventario
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-@await Html.PartialAsync("_MovimientoModal", new CrearMovimientoViewModel())
+<!-- Offcanvas para el Panel de Existencias (SPA) -->
+<div class="offcanvas offcanvas-end shadow-lg" tabindex="-1" id="offcanvasInventario" aria-labelledby="offcanvasInventarioLabel" style="width: 580px; max-width:100%;">
+    <div class="offcanvas-header border-bottom" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);">
+        <div>
+            <h5 class="offcanvas-title text-white fw-bold mb-0" id="offcanvasInventarioLabel">
+                <i class="bi bi-boxes me-2"></i>Control de Stock
+            </h5>
+            <small class="text-white-50" id="offcanvasSubtitle">Seleccione un producto</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0" id="panelExistenciasContainer">
+        <div class="text-center text-muted mt-5 p-4">
+            <i class="bi bi-box-seam" style="font-size:3rem; opacity:.3;"></i>
+            <p class="mt-3 mb-0 fw-bold">Seleccione un producto</p>
+            <small>Haga clic en "Gestionar Stock" para ver las existencias</small>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor para inyectar modales dinámicos (Entrada/Salida/Reserva) -->
+<div id="contenedorModalesInventario"></div>
 
 @section Scripts {
     <script>
-        document.getElementById('buscarExistencia').addEventListener('input', function () {
-            const term = this.value.toLowerCase();
-            document.querySelectorAll('#tablaInventario tbody tr').forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
-            });
-        });
+        async function cargarPanelExistencias(productoId) {
+            const container = document.getElementById('panelExistenciasContainer');
+            container.innerHTML = `
+                <div class="text-center text-muted mt-5">
+                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+                    <p class="mt-2">Consultando existencias...</p>
+                </div>`;
+                
+            const offcanvasElement = document.getElementById('offcanvasInventario');
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+            bsOffcanvas.show();
 
-        document.querySelectorAll('[data-producto-id]').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const productoId = this.getAttribute('data-producto-id');
-                const productoInput = document.getElementById('movProductoId');
-                if (productoInput) productoInput.value = productoId;
+            try {
+                const response = await fetch(`@Url.Action("GetPanelExistencias", "Inventario")?productoId=${productoId}`);
+                if (!response.ok) throw new Error("Error al obtener stock");
+                
+                const html = await response.text();
+                container.innerHTML = html;
+                
+                // Ejecutar scripts internos si los hay
+                const scripts = container.querySelectorAll("script");
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger">Error al cargar existencias. Verifique conexión al servidor.</div>`;
+            }
+        }
+
+        // Se llamará desde los modales al terminar una acción
+        window.refrescarPanelExistencias = function(productoId) {
+            cargarPanelExistencias(productoId);
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Buscador simple
+            const inputBuscar = document.getElementById("buscarInventario");
+            const tabla = document.getElementById("tablaInventario");
+
+            if (inputBuscar && tabla) {
+                inputBuscar.addEventListener("keyup", function () {
+                    const filtro = inputBuscar.value.toLowerCase();
+                    tabla.querySelectorAll("tbody tr").forEach(fila => {
+                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+
+            // Inicializar tooltips de la tabla
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+            // Click en "Gestionar Stock"
+            document.querySelectorAll(".btn-abrir-stock").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    // Resaltar fila activa
+                    document.querySelectorAll('#tablaInventario tbody tr').forEach(r => r.classList.remove('table-active'));
+                    this.closest('tr')?.classList.add('table-active');
+                    // Actualizar subtítulo del offcanvas
+                    const nombreProd = this.closest('tr')?.querySelector('.employee-name')?.textContent?.trim();
+                    const subtitleEl = document.getElementById('offcanvasSubtitle');
+                    if (subtitleEl && nombreProd) subtitleEl.textContent = nombreProd;
+                    cargarPanelExistencias(this.dataset.id);
+                });
             });
         });
     </script>

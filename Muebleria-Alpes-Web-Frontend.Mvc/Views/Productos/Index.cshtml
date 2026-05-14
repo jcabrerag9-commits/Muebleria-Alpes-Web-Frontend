@@ -11,13 +11,13 @@
             <i class="bi bi-box-seam"></i>
         </div>
         <div>
-            <h1>Productos</h1>
-            <p>Catálogo de muebles</p>
+            <h1>Catálogo de Productos</h1>
+            <p>Gestión del catálogo general de muebles</p>
         </div>
     </div>
 
     <div class="page-actions">
-        <input type="text" id="buscarProducto" class="form-control search-input" placeholder="Buscar..." />
+        <input type="text" id="buscarProducto" class="form-control search-input" placeholder="Buscar producto..." />
         <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearProducto">
             <i class="bi bi-plus-lg"></i> Nuevo Producto
         </button>
@@ -38,135 +38,378 @@
     @Model.Count registros
 </div>
 
-<div class="erp-card">
-    <div class="table-responsive">
-        <table class="table erp-table" id="tablaProductos">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>SKU</th>
-                    <th>Tipo Mueble</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    var iniciales = string.Join("", (item.Nombre ?? "PR")
-                        .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                        .Take(2)
-                        .Select(x => x[0]))
-                        .ToUpper();
-
+<div id="contenedorListaProductos">
+    <div class="erp-card">
+        <div class="table-responsive">
+            <table class="table erp-table" id="tablaProductos">
+                <thead>
                     <tr>
-                        <td>
-                            <span class="code-badge">@(item.Sku ?? $"#{item.Id}")</span>
-                        </td>
-
-                        <td>
-                            <div class="employee-cell">
-                                <div class="employee-avatar">@iniciales</div>
-                                <div>
-                                    <div class="employee-name">@item.Nombre</div>
-                                    <div class="employee-subtitle">@item.Descripcion</div>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td>
-                            <span class="code-badge">@(item.Sku ?? "-")</span>
-                        </td>
-
-                        <td>
-                            <span>Tipo @item.TipoMuebleId</span>
-                        </td>
-
-                        <td>
-                            @if (item.Estado == "ACTIVO")
-                            {
-                                <span class="status-badge status-active">
-                                    <i class="bi bi-check-circle"></i> Activo
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="status-badge status-inactive">
-                                    <i class="bi bi-x-circle"></i> Inactivo
-                                </span>
-                            }
-                        </td>
-
-                        <td class="text-end">
-                            <div class="action-group">
-                                <button class="btn-icon btn-detail"
-                                        type="button"
-                                        data-id="@item.Id"
-                                        title="Ver detalle">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-
-                                <button class="btn-icon btn-edit"
-                                        type="button"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalEditarProducto-@item.Id"
-                                        title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-
-                                <form asp-controller="Productos"
-                                      asp-action="CambiarEstado"
-                                      asp-route-id="@item.Id"
-                                      method="post"
-                                      class="d-inline">
-                                    <input type="hidden" name="estadoActual" value="@item.Estado" />
-                                    <button type="submit"
-                                            class="btn-icon @(item.Estado == "ACTIVO" ? "btn-delete" : "btn-activate")"
-                                            title="Cambiar estado">
-                                        @if (item.Estado == "ACTIVO")
-                                        {
-                                            <i class="bi bi-x-circle"></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-check-circle"></i>
-                                        }
-                                    </button>
-                                </form>
-
-                                <form asp-controller="Productos"
-                                      asp-action="Eliminar"
-                                      asp-route-id="@item.Id"
-                                      method="post"
-                                      class="d-inline"
-                                      onsubmit="return confirm('¿Eliminar este producto?');">
-                                    <button type="submit" class="btn-icon btn-delete" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+                        <th>SKU</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Configuración</th>
+                        <th>Peso</th>
+                        <th>Registro</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
+                </thead>
+                <tbody>
+                    @foreach (var prod in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="/ProductoImagen/GetPrincipal/@prod.ProductoId" onerror="this.src='/img/no-image.png'" class="img-thumbnail me-2" style="width: 48px; height: 48px; object-fit: cover;" alt="Miniatura">
+                                    <span class="code-badge">@(string.IsNullOrWhiteSpace(prod.Sku) ? "N/A" : prod.Sku)</span>
+                                </div>
+                            </td>
 
-                    @await Html.PartialAsync("_EditarProductoModal", item)
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+                            <td>
+                                <div class="employee-cell">
+                                    <div class="employee-avatar"><i class="bi bi-box"></i></div>
+                                    <div>
+                                        <div class="employee-name">@prod.Nombre</div>
+                                        <div class="employee-subtitle">@prod.DescripcionCorta</div>
+                                    </div>
+                                </div>
+                            </td>
 
-@await Html.PartialAsync("_CrearProductoModal", new CrearProductoViewModel())
+                            <td>
+                                <div class="doc-cell">
+                                    <span class="badge rounded-pill bg-light text-dark border">
+                                        <i class="bi bi-tag me-1"></i> @(string.IsNullOrWhiteSpace(prod.TipoMuebleNombre) ? "Sin tipo" : prod.TipoMuebleNombre)
+                                    </span>
+                                </div>
+                            </td>
 
-<div id="detalleContainer"></div>
+                            <td>
+                                <div class="doc-cell">
+                                    <strong>@(prod.EsConfigurable == "S" ? "Configurable" : "Simple")</strong>
+                                    <span>Tipo</span>
+                                </div>
+                            </td>
 
-<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content erp-modal" id="detalleProductoContent">
+                            <td>
+                                <div class="contact-cell">
+                                    <div><i class="bi bi-speedometer2"></i> @(prod.Peso?.ToString("0.00") ?? "0.00") kg</div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="date-cell">
+                                    <strong>@(prod.FechaRegistro == DateTime.MinValue ? "N/A" : prod.FechaRegistro.ToString("yyyy-MM-dd"))</strong>
+                                    <span>Fecha</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (prod.Estado == "ACTIVO")
+                                {
+                                    <span class="status-badge status-active">
+                                        <i class="bi bi-check-circle"></i> Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-inactive">
+                                        <i class="bi bi-x-circle"></i> Inactivo
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <div class="action-group">
+                                    <button class="btn-icon btn-primary text-primary mx-1 btn-galeria" type="button" data-id="@prod.ProductoId" title="Galería de Imágenes">
+                                        <i class="bi bi-images"></i>
+                                    </button>
+
+                                    <button class="btn-icon btn-detail" type="button" data-id="@prod.ProductoId" title="Ver detalle">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <button class="btn-icon btn-edit" type="button" data-bs-toggle="modal" data-bs-target="#modalEditarProducto-@prod.ProductoId" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <!-- Modales de Edición generados fuera de la tabla para mantener HTML válido -->
+    @foreach (var prod in Model)
+    {
+        @await Html.PartialAsync("~/Views/Productos/_EditarProductoModal.cshtml", prod)
+    }
 </div>
 
+@await Html.PartialAsync("~/Views/Productos/_CrearProductoModal.cshtml", new CrearProductoViewModel())
+
+<div id="detalleProductoContainer"></div>
+<div id="galeriaProductoContainer"></div>
+
 @section Scripts {
-    <script src="~/js/productos/productos.js" asp-append-version="true"></script>
+    <script>
+        // Cache global de catálogos para evitar múltiples llamadas (Fase C)
+        let catalogosMuebles = [];
+
+        async function cargarCatalogos() {
+            try {
+                console.log("[Catalog] Iniciando fetch a @Url.Action("GetTiposMueble", "Productos")...");
+                const response = await fetch('@Url.Action("GetTiposMueble", "Productos")');
+                
+                console.log("[Catalog] Status HTTP:", response.status);
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                
+                const data = await response.json();
+                console.log("[Catalog] JSON recibido:", data);
+                
+                // Si la respuesta viene envuelta en InventarioResponse (Backend) o es array directo (MVC Json result)
+                catalogosMuebles = Array.isArray(data) ? data : (data.data || []);
+                
+                console.log(`[Catalog] ${catalogosMuebles.length} tipos en cache.`);
+                
+                const selects = document.querySelectorAll('select[name="TipoMueble"]');
+                console.log(`[Catalog] Encontrados ${selects.length} selects en el DOM.`);
+                
+                selects.forEach(select => {
+                    poblarSelectTipoMueble(select);
+                });
+            } catch (error) {
+                console.error('[Catalog] Error en flujo:', error);
+            }
+        }
+
+        function poblarSelectTipoMueble(select) {
+            if (!select) return;
+            if (catalogosMuebles.length === 0) {
+                console.warn("[Catalog] Intentando poblar select pero el cache está vacío.");
+                return;
+            }
+            
+            const valActual = select.dataset.selectedValue || select.value;
+            console.log(`[Catalog] Poblando select ${select.id || select.name}. Valor actual: ${valActual}`);
+            
+            const originalLength = select.options.length;
+            select.innerHTML = '<option value="">Seleccione un tipo...</option>';
+            
+            catalogosMuebles.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo.id;
+                option.textContent = tipo.nombre;
+                if (tipo.id == valActual) option.selected = true;
+                select.appendChild(option);
+            });
+            console.log(`[Catalog] Select poblado con ${select.options.length} opciones (tenía ${originalLength}).`);
+        }
+
+        // Función global para recargar la galería manteniendo el modal
+        async function abrirGaleria(id) {
+            try {
+                const response = await fetch(`@Url.Action("Galeria", "ProductoImagen")?productoId=${id}`);
+                if (!response.ok) throw new Error('Error al cargar la galería');
+                
+                const html = await response.text();
+                const container = document.getElementById("galeriaProductoContainer");
+                
+                // LIMPIEZA DEL MODAL VIEJO (Evita freeze y backdrop fantasma)
+                const oldModalElement = document.getElementById('modalGaleria');
+                if (oldModalElement) {
+                    const existingModal = bootstrap.Modal.getInstance(oldModalElement);
+                    if (existingModal) existingModal.dispose(); 
+                }
+                
+                // Destrucción manual de backdrops residuales
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+
+                container.innerHTML = html;
+                
+                // Para que Vanilla JS ejecute scripts insertados vía innerHTML
+                const scripts = container.querySelectorAll("script");
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+                
+                const modalElement = document.getElementById('modalGaleria');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo cargar la galería del producto.');
+            }
+        }
+
+        // Función global para refrescar dinámicamente la tabla por debajo (SPA-like)
+        async function refrescarTablaPrincipal() {
+            try {
+                const response = await fetch(window.location.href);
+                if (!response.ok) return;
+                const html = await response.text();
+                
+                // Parsear el HTML y extraer el contenedor completo (Tabla + Modales)
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const nuevoContenedor = doc.getElementById('contenedorListaProductos');
+                
+                if (nuevoContenedor) {
+                    const contenedorActual = document.getElementById('contenedorListaProductos');
+                    contenedorActual.innerHTML = nuevoContenedor.innerHTML;
+                    
+                    // Repoblar los selects de los nuevos modales inyectados
+                    document.querySelectorAll('select[name="TipoMueble"]').forEach(select => {
+                        poblarSelectTipoMueble(select);
+                    });
+
+                    // Re-vincular los eventos a los nuevos botones y modales inyectados
+                    vincularEventosTabla();
+                }
+            } catch (error) {
+                console.error('Error refrescando tabla:', error);
+            }
+        }
+
+        // Exponemos funciones globalmente
+        window.abrirGaleria = abrirGaleria;
+        window.refrescarTablaPrincipal = refrescarTablaPrincipal;
+
+        function vincularEventosTabla() {
+            // Detalle
+            document.querySelectorAll(".btn-detail").forEach(btn => {
+                // Al reemplazar el innerHTML se destruyen los listeners anteriores, así que es seguro agregar nuevos
+                btn.addEventListener("click", async function () {
+                    const id = this.dataset.id;
+                    try {
+                        const response = await fetch(`@Url.Action("Detalle", "Productos")?id=${id}`);
+                        if (!response.ok) throw new Error('Error al cargar detalle');
+                        const html = await response.text();
+                        
+                        document.getElementById("detalleProductoContainer").innerHTML = html;
+                        
+                        const modalElement = document.getElementById("modalDetalleProducto");
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            // Galería
+            document.querySelectorAll(".btn-galeria").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const id = this.dataset.id;
+                    abrirGaleria(id);
+                });
+            });
+
+            // Formularios de Edición SPA
+            const editForms = document.querySelectorAll('.form-editar-producto');
+            console.log(`[DOM] Encontrados ${editForms.length} formularios de edición .form-editar-producto`);
+            
+            editForms.forEach(form => {
+                form.addEventListener("submit", async function (e) {
+                    console.log(`[SUBMIT EVENT] Formulario interceptado!`);
+                    e.preventDefault(); // Prevenir recarga de página (SSR nativo)
+                    
+                    const submitBtn = form.querySelector('.btn-submit-editar');
+                    const originalText = submitBtn.innerHTML;
+                    const errorAlert = form.querySelector('.form-error-alert');
+                    
+                    console.log(`[SUBMIT EVENT] Form Action:`, form.getAttribute('action'));
+                    
+                    try {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+                        errorAlert.classList.add('d-none');
+                        
+                        const formData = new FormData(form);
+                        const url = form.getAttribute('action');
+                        
+                        console.log(`[FETCH] Iniciando POST a ${url}`);
+                        
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        console.log(`[FETCH] Response Status: ${response.status}`);
+                        
+                        if (response.ok) {
+                            console.log(`[FETCH] Éxito! Status 200/OK.`);
+                            const modalElement = form.closest('.modal');
+                            if (modalElement) {
+                                console.log(`[MODAL] Ocultando modal...`);
+                                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                                
+                                // IMPORTANTE: Esperar a que la animación termine antes de destruir el HTML
+                                modalElement.addEventListener('hidden.bs.modal', function () {
+                                    console.log(`[MODAL] Animación terminada. Actualizando DOM...`);
+                                    if (typeof window.refrescarTablaPrincipal === 'function') {
+                                        window.refrescarTablaPrincipal();
+                                    }
+                                }, { once: true });
+                                
+                                modal.hide();
+                            } else {
+                                if (typeof window.refrescarTablaPrincipal === 'function') {
+                                    window.refrescarTablaPrincipal();
+                                }
+                            }
+                            
+                            // Ya no limpiamos manualmente aquí porque hidden.bs.modal lo hará seguro.
+                        } else {
+                            const errorText = await response.text();
+                            console.error(`[FETCH] Error en response:`, errorText);
+                            errorAlert.innerHTML = errorText || 'Error al actualizar el producto en el servidor.';
+                            errorAlert.classList.remove('d-none');
+                        }
+                    } catch (error) {
+                        console.error('[FETCH EXCEPTION] Error capturado:', error);
+                        errorAlert.innerHTML = 'Error de comunicación con el servidor.';
+                        errorAlert.classList.remove('d-none');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        console.log(`[SUBMIT EVENT] Terminado.`);
+                    }
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Buscador simple
+            const inputBuscar = document.getElementById("buscarProducto");
+            const tabla = document.getElementById("tablaProductos");
+            
+            if (inputBuscar && tabla) {
+                inputBuscar.addEventListener("keyup", function () {
+                    const filtro = inputBuscar.value.toLowerCase();
+                    const filas = tabla.querySelectorAll("tbody tr");
+
+                    filas.forEach(fila => {
+                        const texto = fila.innerText.toLowerCase();
+                        fila.style.display = texto.includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+
+            // Inicializar eventos de la tabla
+            vincularEventosTabla();
+
+            // Carga inicial única de catálogos
+            cargarCatalogos();
+        });
+    </script>
 }

@@ -1,103 +1,414 @@
-@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
-@model List<FacturaViewModel>
-
 @{
-    ViewData["Title"] = "Facturas";
+    ViewData["Title"] = "Facturación";
 }
 
-<div class="page-header">
-    <div class="page-title-box">
-        <div class="page-icon">
-            <i class="bi bi-receipt"></i>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">Gestión de Facturas</h2>
+            <p class="text-muted mb-0">Listado, emisión y anulación de facturas comerciales vinculadas a Oracle.</p>
         </div>
         <div>
-            <h1>Facturas</h1>
-            <p>Facturas emitidas del sistema</p>
+            <button class="btn btn-main px-4 py-2" onclick="abrirModalGenerar()">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Factura
+            </button>
+            <button class="btn btn-outline-secondary px-3 py-2 ms-2" onclick="cargarFacturas()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
         </div>
     </div>
 
-    <div class="page-actions">
-        <input type="text" id="buscarFactura" class="form-control search-input" placeholder="Buscar..." />
+    <!-- Filtros Reales -->
+    <div class="erp-card p-4 mb-4">
+        <form id="formFiltrosFacturas" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Estado de Factura</label>
+                <select id="filtroEstado" class="form-select border-0 bg-light shadow-none">
+                    <option value="">TODOS LOS ESTADOS</option>
+                    <option value="EMITIDA">EMITIDA</option>
+                    <option value="ANULADA">ANULADA</option>
+                    <option value="PAGADA">PAGADA</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">ID Cliente / NIT</label>
+                <input type="text" id="filtroClienteId" class="form-control border-0 bg-light shadow-none" placeholder="Buscar por cliente...">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-secondary w-100 py-2" onclick="cargarFacturas()">
+                    <i class="bi bi-search me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla Funcional -->
+    <div class="erp-card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table erp-table mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">N° FACTURA</th>
+                        <th>FECHA EMISIÓN</th>
+                        <th>SERIE</th>
+                        <th>ORDEN</th>
+                        <th>TOTAL</th>
+                        <th>ESTADO</th>
+                        <th class="text-end pe-4">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="tbFacturas">
+                    <!-- Cargado vía AJAX -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<div class="record-count">
-    @Model.Count registros
+
+<!-- Modal Seleccionar Orden (H.6.2) -->
+<div class="modal fade" id="modalSeleccionarOrden" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-main text-dark p-4">
+                <h5 class="modal-title fw-bold">Seleccionar Orden para Facturar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table erp-table mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">ID ORDEN</th>
+                                <th>CLIENTE</th>
+                                <th>FECHA</th>
+                                <th>TOTAL</th>
+                                <th>SALDO</th>
+                                <th class="text-end pe-4">ACCION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbOrdenesPendientes">
+                            <!-- Cargado vía AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loaderOrdenes" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">Buscando órdenes facturables...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="erp-card">
-    <div class="table-responsive">
-        <table class="table erp-table" id="tablaFacturas">
-            <thead>
-                <tr>
-                    <th>Serie - Número</th>
-                    <th>Fecha Emisión</th>
-                    <th>Cliente</th>
-                    <th>Orden</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var factura in Model)
-                {
-                    var estadoBadge = factura.Estado switch
-                    {
-                        "EMITIDA"   => "status-active",
-                        "ANULADA"   => "status-danger",
-                        "CANCELADA" => "status-inactive",
-                        _           => "status-warning"
-                    };
+<!-- Modal Detalle (H.4) -->
+<div class="modal fade" id="modalDetalleFactura" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white p-4">
+                <h5 class="modal-title fw-bold">Detalle de Factura <span id="lblFacturaId"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="detalleBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-muted">Consultando Oracle...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    var estadoIcon = factura.Estado switch
-                    {
-                        "EMITIDA"   => "bi-check-circle",
-                        "ANULADA"   => "bi-x-circle",
-                        "CANCELADA" => "bi-slash-circle",
-                        _           => "bi-dash-circle"
-                    };
-
-                    <tr>
-                        <td>
-                            <span class="code-badge">@(factura.Serie ?? "")-@(factura.Numero ?? "-")</span>
-                        </td>
-                        <td>
-                            <div class="date-cell">
-                                <strong>@(factura.FechaEmision == DateTime.MinValue ? "N/A" : factura.FechaEmision.ToString("yyyy-MM-dd"))</strong>
-                            </div>
-                        </td>
-                        <td>@(factura.Cliente ?? "N/A")</td>
-                        <td>
-                            <span class="code-badge">@(factura.NumeroOrden ?? "-")</span>
-                        </td>
-                        <td>
-                            <strong>Q @factura.Total.ToString("N2")</strong>
-                        </td>
-                        <td>
-                            <span class="status-badge @estadoBadge">
-                                <i class="bi @estadoIcon"></i> @(factura.Estado ?? "N/A")
-                            </span>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<!-- Modal Anular Factura (H.7.8) -->
+<div class="modal fade" id="modalAnularFactura" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white p-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Anular Factura</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="txtAnularFacturaId">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-danger mb-3"><i class="bi bi-ban"></i></div>
+                    <p class="text-muted">Esta acción revertirá la factura y reabrirá la orden asociada para una nueva facturación.</p>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold small text-uppercase">Motivo de Anulación</label>
+                    <textarea id="txtMotivoAnulacion" class="form-control border-0 bg-light shadow-none" rows="3" placeholder="Describa el motivo..."></textarea>
+                </div>
+                <div class="alert alert-warning border-0 small mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Se registrará la trazabilidad en Oracle.
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger px-4" onclick="confirmarAnulacion()">Confirmar Anulación</button>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const input = document.getElementById("buscarFactura");
-            const tabla = document.getElementById("tablaFacturas");
-            if (input && tabla) {
-                input.addEventListener("keyup", function () {
-                    const filtro = input.value.toLowerCase();
-                    tabla.querySelectorAll("tbody tr").forEach(fila => {
-                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
-                    });
-                });
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarFacturas();
         });
+
+        /**
+         * Carga facturas reales desde el Backend API
+         */
+        async function cargarFacturas() {
+            try {
+                const estado = document.getElementById('filtroEstado').value;
+                const search = document.getElementById('filtroClienteId').value;
+                
+                let queryParams = [];
+                if (estado) queryParams.push(`estado=${estado}`);
+                if (search) {
+                    // Si es numérico asumimos clienteId, si no nit
+                    if (!isNaN(search) && search.trim() !== '') {
+                        queryParams.push(`clienteId=${search}`);
+                    } else {
+                        queryParams.push(`nit=${search}`);
+                    }
+                }
+                
+                const url = `/Facturacion/listado${queryParams.length > 0 ? `?${queryParams.join('&')}` : ''}`;
+                
+                const response = await ERPHelpers.fetchERP(url);
+                console.log("FACTURAS RAW JSON:", response);
+                
+                ERPHelpers.renderTable(response.data, 'tbFacturas', (f) => `
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">#${f.facturaId || f.FacturaId}</td>
+                        <td>${new Date(f.fechaEmision || f.FechaEmision).toLocaleDateString()}</td>
+                        <td><span class="badge bg-light text-dark border">${f.serie || f.Serie || 'N/A'}</span></td>
+                        <td><span class="text-muted">Orden #${f.ordenId || f.OrdenId}</span></td>
+                        <td class="fw-bold">${ERPHelpers.formatCurrency(f.total || f.Total)}</td>
+                        <td>
+                            ${renderEstadoBadge(f.estado || f.Estado)}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm">
+                                <button class="btn btn-sm btn-white border" onclick="verDetalle(${f.facturaId || f.FacturaId})" title="Ver Detalle">
+                                    <i class="bi bi-eye text-primary"></i>
+                                </button>
+                                ${(f.estado || f.Estado) !== 'ANULADA' && (f.anulable || f.Anulable) ? `
+                                    <button class="btn btn-sm btn-white border" onclick="anularFactura(${f.facturaId || f.FacturaId})" title="Anular">
+                                        <i class="bi bi-x-circle text-danger"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            } catch (err) {
+                console.error('[Facturacion SPA]', err);
+            }
+        }
+
+        function renderEstadoBadge(estado) {
+            const map = {
+                'EMITIDA': 'bg-primary-subtle text-primary',
+                'PAGADA': 'bg-success-subtle text-success',
+                'ANULADA': 'bg-danger-subtle text-danger'
+            };
+            const cls = map[estado] || 'bg-secondary-subtle text-secondary';
+            return `<span class="badge ${cls} rounded-pill px-3">${estado}</span>`;
+        }
+
+        let facturaIdAnulando = null;
+        let modalAnulacion = null;
+
+        async function anularFactura(id) {
+            facturaIdAnulando = id;
+            document.getElementById('txtAnularFacturaId').value = id;
+            document.getElementById('txtMotivoAnulacion').value = '';
+            
+            modalAnulacion = new bootstrap.Modal(document.getElementById('modalAnularFactura'));
+            modalAnulacion.show();
+        }
+
+        async function confirmarAnulacion() {
+            const motivo = document.getElementById('txtMotivoAnulacion').value;
+            if (!motivo || !motivo.trim()) {
+                ERPHelpers.showToast('Debe ingresar un motivo para la anulación.', 'warning');
+                return;
+            }
+
+            try {
+                const response = await ERPHelpers.fetchERP(`/Facturacion/anular/${facturaIdAnulando}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ motivo: motivo })
+                });
+
+                if (modalAnulacion) modalAnulacion.hide();
+                ERPHelpers.showToast(response.message || 'Factura anulada correctamente');
+                cargarFacturas();
+            } catch (err) {
+                // Toast ya manejado por fetchERP
+            }
+        }
+
+        async function verDetalle(id) {
+            const modal = new bootstrap.Modal(document.getElementById('modalDetalleFactura'));
+            document.getElementById('lblFacturaId').innerText = `#${id}`;
+            document.getElementById('detalleBody').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+            modal.show();
+
+            try {
+                const response = await ERPHelpers.fetchERP(`/Facturacion/detalle/${id}`);
+                console.log("FACTURA DETALLE RAW:", response);
+                console.log("FACTURA DATA:", response.data);
+                
+                const d = response.data;
+                
+                if (!d) throw { message: 'No se encontró el detalle' };
+
+                const numero = d.numero ?? d.Numero ?? '-';
+                const serie = d.serie ?? d.Serie ?? '-';
+                const subtotal = d.subtotal ?? d.Subtotal ?? 0;
+                const impuestos = d.impuestos ?? d.Impuestos ?? 0;
+                const total = d.total ?? d.Total ?? 0;
+                const fechaRaw = d.fechaEmision ?? d.FechaEmision;
+                const fechaStr = fechaRaw ? new Date(fechaRaw).toLocaleString() : '-';
+                const numeroOrden = d.numeroOrden ?? d.NumeroOrden ?? d.ordenId ?? d.OrdenId ?? '-';
+                const formaPago = d.formaPagoNombre ?? d.FormaPagoNombre ?? '-';
+
+                const clienteNombre = d.clienteNombre ?? d.ClienteNombre ?? '-';
+                const clienteNit = d.clienteNit ?? d.ClienteNit ?? d.nit ?? d.Nit ?? '-';
+                const clienteCorreo = d.clienteCorreo ?? d.ClienteCorreo ?? '-';
+                const clienteTelefono = d.clienteTelefono ?? d.ClienteTelefono ?? '-';
+                const clienteDireccion = d.clienteDireccion ?? d.ClienteDireccion ?? '-';
+                document.getElementById('detalleBody').innerHTML = `
+                    <div class="row mb-4">
+                        <div class="col-6 border-end">
+                            <p class="text-muted small mb-1 text-uppercase">Datos de Facturación</p>
+                            <h6 class="fw-bold">Serie: ${serie}</h6>
+                            <h6 class="fw-bold">Número: ${numero}</h6>
+                            <h6 class="fw-bold mt-2 text-muted small">Orden: ${numeroOrden}</h6>
+                            <h6 class="fw-bold text-muted small">Forma de Pago: ${formaPago}</h6>
+                            <p class="text-muted small mt-3 mb-1 text-uppercase">Fecha Emisión</p>
+                            <h6 class="fw-bold">${fechaStr}</h6>
+                        </div>
+                        <div class="col-6 ps-4">
+                            <p class="text-muted small mb-1 text-uppercase">Datos del Cliente</p>
+                            <h6 class="fw-bold text-primary mb-1">${clienteNombre}</h6>
+                            <p class="mb-1"><strong>NIT:</strong> ${clienteNit}</p>
+                            <p class="mb-1 small text-muted"><i class="bi bi-envelope me-1"></i> ${clienteCorreo}</p>
+                            <p class="mb-1 small text-muted"><i class="bi bi-telephone me-1"></i> ${clienteTelefono}</p>
+                            <p class="mb-0 text-muted small"><i class="bi bi-geo-alt me-1"></i> ${clienteDireccion}</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm erp-table align-middle">
+                            <thead class="bg-light">
+                                <tr class="small text-muted text-uppercase">
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(d.detalles || d.Detalles || []).map(item => `
+                                    <tr>
+                                        <td class="fw-bold small">${item.producto || item.Producto}</td>
+                                        <td class="text-center small">${item.cantidad || item.Cantidad}</td>
+                                        <td class="text-end small">${ERPHelpers.formatCurrency(item.precioUnitario || item.PrecioUnitario)}</td>
+                                        <td class="text-end small fw-bold">${ERPHelpers.formatCurrency(item.subtotal || item.Subtotal)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-bold">${ERPHelpers.formatCurrency(subtotal)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Impuestos:</span>
+                        <span class="fw-bold">${ERPHelpers.formatCurrency(impuestos)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                        <h5 class="fw-bold">TOTAL:</h5>
+                        <h5 class="fw-bold text-primary">${ERPHelpers.formatCurrency(total)}</h5>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('detalleBody').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function abrirModalGenerar() {
+            const modal = new bootstrap.Modal(document.getElementById('modalSeleccionarOrden'));
+            const tbody = document.getElementById('tbOrdenesPendientes');
+            const loader = document.getElementById('loaderOrdenes');
+
+            tbody.innerHTML = '';
+            loader.classList.remove('d-none');
+            modal.show();
+
+            try {
+                const response = await ERPHelpers.fetchERP('/Facturacion/ordenes-pendientes');
+                console.log("ORDENES FACTURABLES:", response);
+                loader.classList.add('d-none');
+
+                if (!response.data || response.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">No hay órdenes pendientes de facturación.</td></tr>';
+                    return;
+                }
+
+                ERPHelpers.renderTable(response.data, 'tbOrdenesPendientes', (o) => `
+                    <tr>
+                        <td class="ps-4 fw-bold">#${o.ordenId}</td>
+                        <td>${o.clienteNombre}</td>
+                        <td>${new Date(o.fecha).toLocaleDateString()}</td>
+                        <td class="fw-bold">${ERPHelpers.formatCurrency(o.total)}</td>
+                        <td class="text-danger fw-bold">${ERPHelpers.formatCurrency(o.saldoPendiente)}</td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-main px-3" onclick="confirmarFactura(${o.ordenId})">
+                                Facturar
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            } catch (err) {
+                loader.classList.add('d-none');
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-danger">${err.message}</td></tr>`;
+            }
+        }
+
+        async function confirmarFactura(ordenId) {
+            if (!confirm(`¿Desea generar la factura para la Orden #${ordenId}?`)) return;
+
+            const payload = {
+                ordenId: ordenId,
+                pagoId: 0, 
+                usuarioId: 1
+            };
+
+            console.log("FACTURA PAYLOAD:", payload);
+
+            try {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalSeleccionarOrden'));
+                if (modal) modal.hide();
+
+                const response = await ERPHelpers.fetchERP('/Facturacion/generar', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log("FACTURA RESPONSE:", response);
+                ERPHelpers.showToast(response.message || 'Factura generada exitosamente.', 'success');
+                cargarFacturas();
+            } catch (err) {
+                console.log("FACTURA RESPONSE ERROR:", err);
+            }
+        }
     </script>
 }

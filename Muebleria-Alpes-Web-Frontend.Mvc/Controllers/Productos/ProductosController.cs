@@ -6,28 +6,37 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
 {
     public class ProductosController : Controller
     {
-        private readonly ProductoApiService _service;
+        private readonly ProductoApiService _productoService;
+        private readonly Muebleria_Alpes_Web_Frontend.Mvc.Services.Catalogos.CatalogoApiService _catalogoService;
 
-        public ProductosController(ProductoApiService service)
+        public ProductosController(ProductoApiService productoService, Muebleria_Alpes_Web_Frontend.Mvc.Services.Catalogos.CatalogoApiService catalogoService)
         {
-            _service = service;
+            _productoService = productoService;
+            _catalogoService = catalogoService;
         }
 
-        public async Task<IActionResult> Index(string? estado = null)
+        public async Task<IActionResult> Index()
         {
-            var productos = await _service.ListarAsync(estado);
-            return View(productos);
+            var productos = await _productoService.ListarAsync();
+            return View("~/Views/Productos/Index.cshtml", productos);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTiposMueble()
+        {
+            var tipos = await _catalogoService.ListarTiposMuebleAsync();
+            return Json(tipos);
         }
 
         [HttpGet]
         public async Task<IActionResult> Detalle(int id)
         {
-            var producto = await _service.ObtenerPorIdAsync(id);
+            var producto = await _productoService.ObtenerPorIdAsync(id);
 
             if (producto == null)
                 return NotFound();
 
-            return PartialView("_DetalleProductoModal", producto);
+            return PartialView("~/Views/Productos/_DetalleProductoModal.cshtml", producto);
         }
 
         [HttpPost]
@@ -39,11 +48,11 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
                 return RedirectToAction(nameof(Index));
             }
 
-            var creado = await _service.CrearAsync(model);
+            var creado = await _productoService.CrearAsync(model);
 
             TempData[creado ? "Success" : "Error"] = creado
                 ? "Producto creado correctamente."
-                : "No se pudo crear el producto.";
+                : "No se pudo crear el producto. Revisa los datos o la conexión con el backend.";
 
             return RedirectToAction(nameof(Index));
         }
@@ -51,38 +60,25 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
         [HttpPost]
         public async Task<IActionResult> Actualizar(int id, ActualizarProductoViewModel model)
         {
-            var actualizado = await _service.ActualizarAsync(id, model);
+            System.Console.WriteLine($"[MVC MVC] RECIBIDO PUT para ProductoId: {id}");
+            System.Console.WriteLine($"[MVC MVC] Modelo recibido -> Nombre: {model?.Nombre}, Peso: {model?.Peso}");
 
-            TempData[actualizado ? "Success" : "Error"] = actualizado
-                ? "Producto actualizado correctamente."
-                : "No se pudo actualizar el producto.";
+            if (!ModelState.IsValid)
+            {
+                System.Console.WriteLine($"[MVC MVC] ModelState Invalido");
+                return BadRequest("Verifica los datos ingresados.");
+            }
 
-            return RedirectToAction(nameof(Index));
-        }
+            var actualizado = await _productoService.ActualizarAsync(id, model);
 
-        [HttpPost]
-        public async Task<IActionResult> CambiarEstado(int id, string estadoActual)
-        {
-            var nuevoEstado = estadoActual == "ACTIVO" ? "INACTIVO" : "ACTIVO";
-            var actualizado = await _service.CambiarEstadoAsync(id, nuevoEstado);
+            if (!actualizado)
+            {
+                System.Console.WriteLine($"[MVC MVC] Falla en ApiService al actualizar");
+                return BadRequest("Error al actualizar el producto en el backend.");
+            }
 
-            TempData[actualizado ? "Success" : "Error"] = actualizado
-                ? "Estado actualizado correctamente."
-                : "No se pudo cambiar el estado.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var eliminado = await _service.EliminarAsync(id);
-
-            TempData[eliminado ? "Success" : "Error"] = eliminado
-                ? "Producto eliminado correctamente."
-                : "No se pudo eliminar el producto.";
-
-            return RedirectToAction(nameof(Index));
+            System.Console.WriteLine($"[MVC MVC] Éxito al actualizar ProductoId: {id}");
+            return Ok(new { success = true, message = "Producto actualizado correctamente." });
         }
     }
 }

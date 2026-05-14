@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.RecursosHumanos;
+using Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos;
+using Muebleria_Alpes_Web_Frontend.Mvc.Services.Inventario;
+using Muebleria_Alpes_Web_Frontend.Mvc.Services.Finanzas;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +56,10 @@ builder.Services.AddScoped<DevolucionService>();
 
 // Generic test service
 builder.Services.AddScoped<TestApiService>();
+builder.Services.AddHttpClient<ProductoImagenApiService>(client => client.BaseAddress = new Uri(baseUrl));
+builder.Services.AddHttpClient<InventarioApiService>(client => client.BaseAddress = new Uri(baseUrl));
+builder.Services.AddHttpClient<Muebleria_Alpes_Web_Frontend.Mvc.Services.Catalogos.CatalogoApiService>(client => client.BaseAddress = new Uri(baseUrl));
+builder.Services.AddHttpClient<FinanzasApiService>(client => client.BaseAddress = new Uri(baseUrl));
 
 // RRHH
 builder.Services.AddHttpClient<EmpleadoApiService>(c => c.BaseAddress = new Uri(apiUrl));
@@ -66,7 +73,6 @@ builder.Services.AddHttpClient<EvaluacionApiService>(c => c.BaseAddress = new Ur
 
 // Products & Catalog
 builder.Services.AddHttpClient<ProductoApiService>(c => c.BaseAddress = new Uri(apiUrl));
-builder.Services.AddHttpClient<CatalogoApiService>(c => c.BaseAddress = new Uri(apiUrl));
 
 // Clients & Sales
 builder.Services.AddHttpClient<ClienteApiService>(c => c.BaseAddress = new Uri(apiUrl));
@@ -114,5 +120,17 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Tienda}/{action=Index}/{id?}");
+
+// Generar placeholder por defecto si no existe
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var imgPath = Path.Combine(webRoot, "img", "no-image.png");
+if (!File.Exists(imgPath))
+{
+    var imgDir = Path.GetDirectoryName(imgPath);
+    if (imgDir != null && !Directory.Exists(imgDir)) Directory.CreateDirectory(imgDir);
+    // Base64 de un pixel gris 1x1 transparente/sutil (válido como PNG)
+    var base64Png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjbQg61aAAAADUlEQVQYV2P4//8/AwAI/AL+Xo/xkwAAAABJRU5ErkJggg==";
+    File.WriteAllBytes(imgPath, Convert.FromBase64String(base64Png));
+}
 
 app.Run();
