@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
 {
     /// <summary>

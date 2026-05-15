@@ -86,42 +86,31 @@ public class AuthApiService
     {
         try
         {
-            var body = JsonSerializer.Serialize(new
-            {
-                username,
-                passwordPlano = password,
-                ip = "Frontend MVC",
-                userAgent = "Panel ERP Los Alpes"
-            });
+            var body    = JsonSerializer.Serialize(new { username, password });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
 
-            // Endpoint real de nuestros módulos: success/message/data
-            var response = await _http.PostAsync("api/Autenticacion/iniciar-sesion", content);
-            var json = await response.Content.ReadAsStringAsync();
+            var response = await _http.PostAsync("api/auth/login", content);
+            var json     = await response.Content.ReadAsStringAsync();
 
             if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith('{'))
                 return new AuthResult(false, $"Error {(int)response.StatusCode} — verifica que el backend esté corriendo", 0, "", "", "");
 
-            var result = JsonSerializer.Deserialize<AlpesLoginResponse>(json, _json);
-            if (response.IsSuccessStatusCode && result?.Success == true && result.Data is not null && result.Data.EsValido && result.Data.UsuarioId.HasValue)
+            var result = JsonSerializer.Deserialize<BaseLoginResponse>(json, _json);
+
+            if (result?.Resultado == "EXITO" && result.Data is not null)
             {
-                // Nuestro backend devuelve sesión/token, pero no devuelve rol/nombre.
-                // Para integrarlo al panel MVC, se asigna rol administrativo por defecto.
-                // Más adelante puede reemplazarse por consulta real a roles/permisos.
                 return new AuthResult(
                     true,
-                    result.Message ?? "Inicio de sesión correcto.",
-                    result.Data.UsuarioId.Value,
-                    username,
-                    username,
-                    "Administrador",
-                    0,
-                    result.Data.TokenSesion,
-                    result.Data.SesionId ?? 0
+                    result.Mensaje,
+                    result.Data.Id,
+                    result.Data.Username,
+                    result.Data.NombreCompleto,
+                    result.Data.Rol,
+                    result.Data.ClienteId
                 );
             }
 
-            return new AuthResult(false, result?.Message ?? "Credenciales inválidas o usuario inactivo.", 0, "", "", "");
+            return new AuthResult(false, result?.Mensaje ?? "Credenciales inválidas o usuario inactivo.", 0, "", "", "");
         }
         catch (Exception ex)
         {

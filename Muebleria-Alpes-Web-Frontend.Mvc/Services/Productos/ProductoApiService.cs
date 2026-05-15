@@ -1,11 +1,26 @@
+using System.Text.Json;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Shared;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
 {
+    // Local DTO that mirrors the backend Producto domain model field names.
+    file record ProductoDto(
+        int Id,
+        int TipoMueble,
+        string? Sku,
+        string Nombre,
+        string? DescripcionCorta,
+        string? DescripcionLarga,
+        decimal? Peso,
+        string EsConfigurable,
+        string Estado
+    );
+
     public class ProductoApiService
     {
         private readonly HttpClient _httpClient;
+        private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
         public ProductoApiService(HttpClient httpClient)
         {
@@ -14,81 +29,108 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
 
         public async Task<List<ProductoViewModel>> ListarAsync()
         {
-            try 
+            try
             {
-                var response = await _httpClient.GetAsync("api/Producto");
+                var response = await _httpClient.GetAsync("api/Productos");
                 var raw = await response.Content.ReadAsStringAsync();
 
-                System.Console.WriteLine($"[MVC HOTFIX] Status: {response.StatusCode}");
                 if (!response.IsSuccessStatusCode)
                 {
-                    System.Console.WriteLine($"[MVC HOTFIX] ERROR BODY: {raw}");
+                    Console.WriteLine($"[ProductoApiService] ListarAsync ERROR {response.StatusCode}: {raw}");
                     return new List<ProductoViewModel>();
                 }
 
-                var result = System.Text.Json.JsonSerializer.Deserialize<BackendResponse<List<ProductoViewModel>>>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return result?.Data ?? new List<ProductoViewModel>();
+                // Backend returns a plain array: [{...}, {...}]
+                var dtos = JsonSerializer.Deserialize<List<ProductoDto>>(raw, _json);
+                if (dtos == null) return new List<ProductoViewModel>();
+
+                return dtos.Select(d => new ProductoViewModel
+                {
+                    ProductoId       = d.Id,
+                    Sku              = d.Sku ?? string.Empty,
+                    Nombre           = d.Nombre,
+                    DescripcionCorta = d.DescripcionCorta ?? string.Empty,
+                    DescripcionLarga = d.DescripcionLarga ?? string.Empty,
+                    Peso             = d.Peso,
+                    EsConfigurable   = d.EsConfigurable,
+                    Estado           = d.Estado,
+                    TipoMuebleId     = d.TipoMueble,
+                }).ToList();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                System.Console.WriteLine($"[MVC HOTFIX] EXCEPTION: {ex.Message}");
+                Console.WriteLine($"[ProductoApiService] ListarAsync EXCEPTION: {ex.Message}");
                 return new List<ProductoViewModel>();
             }
         }
 
         public async Task<ProductoViewModel?> ObtenerPorIdAsync(int id)
         {
-            try 
+            try
             {
-                var response = await _httpClient.GetAsync($"api/Producto/{id}");
+                var response = await _httpClient.GetAsync($"api/Productos/{id}");
                 var raw = await response.Content.ReadAsStringAsync();
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    System.Console.WriteLine($"[MVC ApiService] ERROR ObtenerPorId({id}): {raw}");
+                    Console.WriteLine($"[ProductoApiService] ObtenerPorId({id}) ERROR {response.StatusCode}: {raw}");
                     return null;
                 }
 
-                var result = System.Text.Json.JsonSerializer.Deserialize<BackendResponse<ProductoViewModel>>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return result?.Data;
+                var dto = JsonSerializer.Deserialize<ProductoDto>(raw, _json);
+                if (dto == null) return null;
+
+                return new ProductoViewModel
+                {
+                    ProductoId       = dto.Id,
+                    Sku              = dto.Sku ?? string.Empty,
+                    Nombre           = dto.Nombre,
+                    DescripcionCorta = dto.DescripcionCorta ?? string.Empty,
+                    DescripcionLarga = dto.DescripcionLarga ?? string.Empty,
+                    Peso             = dto.Peso,
+                    EsConfigurable   = dto.EsConfigurable,
+                    Estado           = dto.Estado,
+                    TipoMuebleId     = dto.TipoMueble,
+                };
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                System.Console.WriteLine($"[MVC ApiService] EXCEPTION ObtenerPorId({id}): {ex.Message}");
+                Console.WriteLine($"[ProductoApiService] ObtenerPorId({id}) EXCEPTION: {ex.Message}");
                 return null;
             }
         }
 
         public async Task<bool> CrearAsync(CrearProductoViewModel model)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Producto/crear", model);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<BackendResponse<object>>();
-                return result != null && result.IsSuccess;
+                var response = await _httpClient.PostAsJsonAsync("api/Productos", model);
+                return response.IsSuccessStatusCode;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ProductoApiService] CrearAsync EXCEPTION: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> ActualizarAsync(int id, ActualizarProductoViewModel model)
         {
-            System.Console.WriteLine($"[MVC ApiService] Enviando PUT a api/Producto/{id}");
-            var response = await _httpClient.PutAsJsonAsync($"api/Producto/{id}", model);
-            
-            System.Console.WriteLine($"[MVC ApiService] Status Code del Backend: {response.StatusCode}");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<BackendResponse<object>>();
-                System.Console.WriteLine($"[MVC ApiService] BackendResponse IsSuccess: {result?.IsSuccess}");
-                return result != null && result.IsSuccess;
+                var response = await _httpClient.PutAsJsonAsync($"api/Productos/{id}", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[ProductoApiService] ActualizarAsync({id}) ERROR {response.StatusCode}: {err}");
+                }
+                return response.IsSuccessStatusCode;
             }
-            else
+            catch (Exception ex)
             {
-                var errText = await response.Content.ReadAsStringAsync();
-                System.Console.WriteLine($"[MVC ApiService] ERROR del Backend: {errText}");
+                Console.WriteLine($"[ProductoApiService] ActualizarAsync({id}) EXCEPTION: {ex.Message}");
+                return false;
             }
-            return false;
         }
     }
 }

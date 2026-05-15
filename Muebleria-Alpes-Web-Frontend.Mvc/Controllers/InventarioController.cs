@@ -4,6 +4,10 @@ using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
 {
+    // Ruta explícita para evitar colisión con Controllers.Inventario.InventarioController.
+    // Este controlador legacy queda accesible en /Inventario-Legacy/... mientras se mantiene
+    // el correcto en Controllers/Inventario/InventarioController.cs bajo /Inventario/...
+    [Route("Inventario-Legacy/[action]")]
     public class InventarioController : Controller
     {
         private readonly InventarioApiService _service;

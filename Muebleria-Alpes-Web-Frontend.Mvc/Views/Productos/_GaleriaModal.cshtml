@@ -178,8 +178,14 @@
                             window.refrescarTablaPrincipal();
                         }
                     } else {
-                        const errText = await response.text();
-                        throw new Error(errText || 'Upload fallido');
+                        let errorMsg = `Error ${response.status}`;
+                        try {
+                            const errJson = await response.json();
+                            errorMsg = errJson.error || errJson.message || errJson.mensaje || errorMsg;
+                        } catch {
+                            errorMsg = (await response.text()) || errorMsg;
+                        }
+                        throw new Error(errorMsg);
                     }
                 } catch (error) {
                     console.error("Error al subir imagen:", error);

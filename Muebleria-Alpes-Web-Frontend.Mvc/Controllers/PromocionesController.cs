@@ -7,9 +7,6 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
 {
     public class PromocionesController : Controller
     {
-        private readonly PromocionService _service;
-
-        public PromocionesController(PromocionService service)
         private readonly PromocionApiService _service;
 
         public PromocionesController(PromocionApiService service)
