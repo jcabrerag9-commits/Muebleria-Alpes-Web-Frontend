@@ -21,46 +21,46 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
             return PartialView("~/Views/Productos/_GaleriaModal.cshtml", imagenes);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Upload(UploadImagenViewModel model)
-        {
-            System.Console.WriteLine($"[ProductoImagenController] Upload requested. ProductoId: {model.ProductoId}, Tipo: {model.Tipo}, Archivo nulo?: {model.Archivo == null}");
-            
-            if (model.Archivo == null || model.Archivo.Length == 0)
-            {
-                System.Console.WriteLine("[ProductoImagenController] Error: Archivo vacío.");
-                return BadRequest("Archivo vacío.");
-            }
+    [HttpPost]
+public async Task<IActionResult> Upload(UploadImagenViewModel model)
+{
+    System.Console.WriteLine($"[ProductoImagenController] Upload requested. ProductoId: {model.ProductoId}, Tipo: {model.Tipo}, Archivo nulo?: {model.Archivo == null}");
 
-            try 
-            {
-                var success = await _imagenService.SubirImagenAsync(model);
-                
-                if (success)
-                {
-                    System.Console.WriteLine("[ProductoImagenController] Upload exitoso.");
-                    return Ok(new { success = true });
-                }
-                
-                System.Console.WriteLine("[ProductoImagenController] Error lógico en backend (IsSuccess = false).");
-                return BadRequest("Error lógico en backend al subir la imagen.");
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine($"[ProductoImagenController] Excepción: {ex.Message}");
-                return BadRequest(ex.Message);
-            }
+    if (model.Archivo == null || model.Archivo.Length == 0)
+    {
+        System.Console.WriteLine("[ProductoImagenController] Error: Archivo vacío.");
+        return BadRequest("Archivo vacío.");
+    }
+
+    try
+    {
+        var (ok, mensaje) = await _imagenService.SubirImagenAsync(model);
+
+        if (ok)
+        {
+            System.Console.WriteLine("[ProductoImagenController] Upload exitoso.");
+            return Ok(new { success = true });
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var success = await _imagenService.EliminarAsync(id);
-            if (success)
-                return Ok(new { success = true });
+        System.Console.WriteLine("[ProductoImagenController] Error lógico en backend.");
+        return BadRequest(mensaje);
+    }
+    catch (Exception ex)
+    {
+        System.Console.WriteLine($"[ProductoImagenController] Excepción: {ex.Message}");
+        return BadRequest(ex.Message);
+    }
+}
+[HttpDelete]
+public async Task<IActionResult> Eliminar(int id)
+{
+    var success = await _imagenService.EliminarAsync(id);
 
-            return BadRequest("Error al eliminar la imagen.");
-        }
+    if (success)
+        return Ok(new { success = true });
+
+    return BadRequest("Error al eliminar la imagen.");
+}
 
         [HttpGet("ProductoImagen/GetPrincipal/{productoId}")]
         public async Task<IActionResult> GetPrincipal(int productoId)

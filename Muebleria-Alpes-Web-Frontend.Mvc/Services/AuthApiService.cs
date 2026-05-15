@@ -86,26 +86,22 @@ public class AuthApiService
     {
         try
         {
-            var body = JsonSerializer.Serialize(new
-            {
-                username,
-                password
-            });
+            var body    = JsonSerializer.Serialize(new { username, password });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
 
-            // Nuevo endpoint basado en SQL/BCrypt (api/auth/login)
             var response = await _http.PostAsync("api/auth/login", content);
-            var json = await response.Content.ReadAsStringAsync();
+            var json     = await response.Content.ReadAsStringAsync();
 
             if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith('{'))
                 return new AuthResult(false, $"Error {(int)response.StatusCode} — verifica que el backend esté corriendo", 0, "", "", "");
 
             var result = JsonSerializer.Deserialize<BaseLoginResponse>(json, _json);
-            if (response.IsSuccessStatusCode && result?.Resultado == "EXITO" && result.Data is not null)
+
+            if (result?.Resultado == "EXITO" && result.Data is not null)
             {
                 return new AuthResult(
                     true,
-                    result.Mensaje ?? "Inicio de sesión correcto.",
+                    result.Mensaje,
                     result.Data.Id,
                     result.Data.Username,
                     result.Data.NombreCompleto,
@@ -124,9 +120,21 @@ public class AuthApiService
 
     public async Task<bool> CerrarSesionAsync(string? tokenSesion)
     {
-        // En el flujo actual de AuthController no hay manejo de sesiones en BD.
-        // Basta con que el Frontend limpie su cookie de autenticación.
-        return await Task.FromResult(true);
+        if (string.IsNullOrWhiteSpace(tokenSesion))
+            return true;
+
+        try
+        {
+            var body = JsonSerializer.Serialize(new { tokenSesion });
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var response = await _http.PostAsync("api/Autenticacion/cerrar-sesion", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            // Aunque falle el backend, permitimos limpiar la cookie del frontend.
+            return false;
+        }
     }
 
     public async Task<AuthResult> RegistrarAsync(string username, string password)

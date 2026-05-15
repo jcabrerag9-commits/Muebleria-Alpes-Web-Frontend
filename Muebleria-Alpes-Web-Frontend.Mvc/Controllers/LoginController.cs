@@ -51,8 +51,7 @@ public class LoginController : Controller
             // CLI_CLIENTE para el carrito de compra
             new("clienteId",               result.ClienteId.ToString()),
             new("tokenSesion",            result.TokenSesion),
-            new("sesionId",               result.SesionId.ToString()),
-            new("clienteId",               result.ClienteId.ToString())
+            new("sesionId",               result.SesionId.ToString())
         };
 
         var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

@@ -5,6 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
 {
+    /// <summary>
+    /// Servicio para api/promociones.
+    /// Respuesta estándar: { success: true, data: ... }
+    /// </summary>
     public class PromocionApiService
     {
         private readonly HttpClient _httpClient;
@@ -14,20 +18,25 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             _httpClient = httpClient;
         }
 
+        // ── Promociones ───────────────────────────────────────────────────────
+
+        // GET api/promociones?estado=...&tipo=...
         public async Task<List<PromocionViewModel>> GetAllAsync(string? estado = null, string? tipo = null)
         {
             try
             {
-                var query = string.Empty;
-                if (!string.IsNullOrEmpty(estado)) query += $"estado={estado}&";
-                if (!string.IsNullOrEmpty(tipo)) query += $"tipo={tipo}&";
-                
-                var result = await _httpClient.GetFromJsonAsync<SuccessDataResponse<List<PromocionViewModel>>>($"api/promociones?{query}");
+                var query = new List<string>();
+                if (!string.IsNullOrWhiteSpace(estado)) query.Add($"estado={Uri.EscapeDataString(estado)}");
+                if (!string.IsNullOrWhiteSpace(tipo))   query.Add($"tipo={Uri.EscapeDataString(tipo)}");
+                var url = "api/promociones" + (query.Count > 0 ? "?" + string.Join("&", query) : "");
+
+                var result = await _httpClient.GetFromJsonAsync<SuccessDataResponse<List<PromocionViewModel>>>(url);
                 return result?.Data ?? [];
             }
             catch { return []; }
         }
 
+        // GET api/promociones/vigentes
         public async Task<List<PromocionViewModel>> GetVigentesAsync()
         {
             try
@@ -38,6 +47,7 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             catch { return []; }
         }
 
+        // GET api/promociones/{id}
         public async Task<PromocionViewModel?> GetByIdAsync(long id)
         {
             try
@@ -48,75 +58,68 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             catch { return null; }
         }
 
+        // POST api/promociones
         public async Task<(bool Ok, string Mensaje)> CreateAsync(CrearPromocionViewModel model)
         {
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/promociones", model);
-                var body = await response.Content.ReadFromJsonAsync<PromocionErrorResponse>();
-                return (response.IsSuccessStatusCode, body?.Message ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
+                if (response.IsSuccessStatusCode)
+                    return (true, "Promoción creada correctamente.");
+
+                var body = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+                return (false, body?.Message ?? $"Error {(int)response.StatusCode}");
             }
-            catch (Exception ex) { return (false, ex.Message); }
+            catch (Exception ex) { return (false, $"Error de conexión: {ex.Message}"); }
         }
 
+        // PUT api/promociones/{id}
         public async Task<(bool Ok, string Mensaje)> UpdateAsync(long id, PromocionUpdateViewModel model)
         {
             try
             {
                 var response = await _httpClient.PutAsJsonAsync($"api/promociones/{id}", model);
-                var body = await response.Content.ReadFromJsonAsync<PromocionErrorResponse>();
-                return (response.IsSuccessStatusCode, body?.Message ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
+                if (response.IsSuccessStatusCode)
+                    return (true, "Promoción actualizada correctamente.");
+
+                var body = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+                return (false, body?.Message ?? $"Error {(int)response.StatusCode}");
             }
-            catch (Exception ex) { return (false, ex.Message); }
+            catch (Exception ex) { return (false, $"Error de conexión: {ex.Message}"); }
         }
 
+        // DELETE api/promociones/{id}
         public async Task<(bool Ok, string Mensaje)> DeleteAsync(long id)
         {
             try
             {
                 var response = await _httpClient.DeleteAsync($"api/promociones/{id}");
-                var body = await response.Content.ReadFromJsonAsync<PromocionErrorResponse>();
-                return (response.IsSuccessStatusCode, body?.Message ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
+                if (response.IsSuccessStatusCode)
+                    return (true, "Promoción eliminada correctamente.");
+
+                var body = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+                return (false, body?.Message ?? $"Error {(int)response.StatusCode}");
             }
-            catch (Exception ex) { return (false, ex.Message); }
+            catch (Exception ex) { return (false, $"Error de conexión: {ex.Message}"); }
         }
 
-        // Banners
-        public async Task<List<BannerViewModel>> GetBannersAsync(string? estado = null)
-        {
-            try
-            {
-                var url = string.IsNullOrEmpty(estado) ? "api/promociones/banners" : $"api/promociones/banners?estado={estado}";
-                var result = await _httpClient.GetFromJsonAsync<SuccessDataResponse<List<BannerViewModel>>>(url);
-                return result?.Data ?? [];
-            }
-            catch { return []; }
-        }
+        // ── Banners (no implementados en backend aún — stubs seguros) ─────────
 
-        public async Task<(bool Ok, string Mensaje)> CreateBannerAsync(BannerCreateViewModel model)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("api/promociones/banners", model);
-                var body = await response.Content.ReadFromJsonAsync<PromocionErrorResponse>();
-                return (response.IsSuccessStatusCode, body?.Message ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
-            }
-            catch (Exception ex) { return (false, ex.Message); }
-        }
+        public Task<List<BannerViewModel>> GetBannersAsync(string? estado = null)
+            => Task.FromResult(new List<BannerViewModel>());
 
-        public async Task<(bool Ok, string Mensaje)> DeleteBannerAsync(long id)
-        {
-            try
-            {
-                var response = await _httpClient.DeleteAsync($"api/promociones/banners/{id}");
-                var body = await response.Content.ReadFromJsonAsync<PromocionErrorResponse>();
-                return (response.IsSuccessStatusCode, body?.Message ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
-            }
-            catch (Exception ex) { return (false, ex.Message); }
-        }
+        public Task<(bool Ok, string Mensaje)> CreateBannerAsync(BannerCreateViewModel model)
+            => Task.FromResult((false, "La gestión de banners aún no está disponible."));
 
-        private sealed class PromocionErrorResponse
+        public Task<(bool Ok, string Mensaje)> DeleteBannerAsync(long id)
+            => Task.FromResult((false, "La gestión de banners aún no está disponible."));
+
+        // ── DTO interno ───────────────────────────────────────────────────────
+        private sealed class ApiErrorResponse
         {
+            [JsonPropertyName("success")]
+            public bool Success { get; set; }
+
             [JsonPropertyName("message")]
             public string? Message { get; set; }
         }

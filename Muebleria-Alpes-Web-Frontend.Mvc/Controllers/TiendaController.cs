@@ -7,10 +7,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
     public class TiendaController : Controller
     {
         private readonly TiendaApiService _tiendaService;
+        private readonly IWebHostEnvironment _env;
 
-        public TiendaController(TiendaApiService tiendaService)
+        public TiendaController(TiendaApiService tiendaService, IWebHostEnvironment env)
         {
             _tiendaService = tiendaService;
+            _env = env;
         }
 
         public async Task<IActionResult> Index()
@@ -100,14 +102,26 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
         /// Proxy de imágenes: evita problemas de TLS/CORS al cargar imágenes
         /// directamente desde el backend. El browser siempre habla con el frontend.
         /// GET /Tienda/Imagen/{id} → proxía api/productoImagen/producto/{id}/principal
+        /// Si no hay imagen en el backend devuelve el placeholder no-image.png (200, sin 404).
         /// </summary>
         [HttpGet]
         [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> Imagen(int id)
         {
             var result = await _tiendaService.ObtenerImagenBytesAsync(id);
-            if (result == null) return NotFound();
-            return File(result.Value.Bytes, result.Value.ContentType);
+            if (result != null)
+                return File(result.Value.Bytes, result.Value.ContentType);
+
+            // Sin imagen → SVG placeholder inline (200 OK, sin 404 en consola del browser)
+            const string svg = @"<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>
+  <rect width='400' height='300' fill='#f0f0f0'/>
+  <rect x='150' y='100' width='100' height='80' rx='8' fill='none' stroke='#cccccc' stroke-width='3'/>
+  <circle cx='200' cy='138' r='18' fill='none' stroke='#cccccc' stroke-width='3'/>
+  <circle cx='200' cy='138' r='8' fill='#cccccc'/>
+  <rect x='160' y='105' width='14' height='8' rx='2' fill='#cccccc'/>
+  <text x='200' y='210' font-size='14' font-family='sans-serif' text-anchor='middle' fill='#bbbbbb'>Sin imagen</text>
+</svg>";
+            return Content(svg, "image/svg+xml");
         }
     }
 }
