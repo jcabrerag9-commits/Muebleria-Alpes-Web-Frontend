@@ -7,9 +7,6 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
 {
     public class DevolucionesController : Controller
     {
-        private readonly DevolucionService _service;
-
-        public DevolucionesController(DevolucionService service)
         private readonly DevolucionApiService _service;
 
         public DevolucionesController(DevolucionApiService service)

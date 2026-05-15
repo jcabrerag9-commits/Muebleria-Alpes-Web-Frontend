@@ -1,4 +1,4 @@
-@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones
 @model CrearPromocionViewModel
 
 <div class="modal fade" id="modalCrearPromocion" tabindex="-1" aria-labelledby="modalCrearPromocionLabel" aria-hidden="true">
@@ -15,19 +15,19 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
-                        <input type="text" name="Nombre" class="form-control" required
+                        <input type="text" name="PrmNombre" class="form-control" required
                                placeholder="Nombre de la promoción" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Descripción</label>
-                        <textarea name="Descripcion" class="form-control" rows="2"
+                        <textarea name="PrmDescripcion" class="form-control" rows="2"
                                   placeholder="Descripción opcional"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
-                        <select name="Tipo" class="form-select" required>
+                        <select name="PrmTipo" class="form-select" required>
                             <option value="">-- Seleccione tipo --</option>
                             <option value="PORCENTAJE">Porcentaje</option>
                             <option value="MONTO_FIJO">Monto Fijo</option>
@@ -39,18 +39,18 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Valor</label>
-                        <input type="number" name="Valor" class="form-control"
+                        <input type="number" name="PrmValor" class="form-control"
                                step="0.01" min="0" placeholder="0.00" />
                     </div>
 
                     <div class="row g-3">
                         <div class="col-6">
                             <label class="form-label fw-semibold">Fecha Inicio <span class="text-danger">*</span></label>
-                            <input type="date" name="FechaInicio" class="form-control" required />
+                            <input type="date" name="PrmFechaInicio" class="form-control" required />
                         </div>
                         <div class="col-6">
                             <label class="form-label fw-semibold">Fecha Fin <span class="text-danger">*</span></label>
-                            <input type="date" name="FechaFin" class="form-control" required />
+                            <input type="date" name="PrmFechaFin" class="form-control" required />
                         </div>
                     </div>
                 </div>

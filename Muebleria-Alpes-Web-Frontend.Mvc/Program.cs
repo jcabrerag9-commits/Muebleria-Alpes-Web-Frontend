@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.RecursosHumanos;
-using Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos;
-using Muebleria_Alpes_Web_Frontend.Mvc.Services.Inventario;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.Finanzas;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,26 +38,17 @@ var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:
 builder.Services.AddHttpClient("BackendApi", (sp, client) =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-     var baseUrl = config["ApiSettings:BaseUrl"];
-    client.BaseAddress = new Uri(baseUrl!);
+    var baseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:7015/";
+    client.BaseAddress = new Uri(baseUrl);
 });
 
 // Servicios existentes
 builder.Services.AddScoped<TestApiService>();
 
-// Servicios de Promociones y Devoluciones
-builder.Services.AddScoped<PromocionService>();
-builder.Services.AddScoped<DevolucionService>();
-    var baseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:7015/";
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-// Generic test service
-builder.Services.AddScoped<TestApiService>();
-builder.Services.AddHttpClient<ProductoImagenApiService>(client => client.BaseAddress = new Uri(baseUrl));
-builder.Services.AddHttpClient<InventarioApiService>(client => client.BaseAddress = new Uri(baseUrl));
-builder.Services.AddHttpClient<Muebleria_Alpes_Web_Frontend.Mvc.Services.Catalogos.CatalogoApiService>(client => client.BaseAddress = new Uri(baseUrl));
-builder.Services.AddHttpClient<FinanzasApiService>(client => client.BaseAddress = new Uri(baseUrl));
+builder.Services.AddHttpClient<ProductoImagenApiService>(client => client.BaseAddress = new Uri(apiUrl));
+builder.Services.AddHttpClient<InventarioApiService>(client => client.BaseAddress = new Uri(apiUrl));
+builder.Services.AddHttpClient<Muebleria_Alpes_Web_Frontend.Mvc.Services.Catalogos.CatalogoApiService>(client => client.BaseAddress = new Uri(apiUrl));
+builder.Services.AddHttpClient<FinanzasApiService>(client => client.BaseAddress = new Uri(apiUrl));
 
 // RRHH
 builder.Services.AddHttpClient<EmpleadoApiService>(c => c.BaseAddress = new Uri(apiUrl));
