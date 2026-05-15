@@ -62,29 +62,53 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
             return BadRequest("Error al eliminar la imagen.");
         }
 
-        [HttpGet]
-        [Route("ProductoImagen/GetPrincipal/{productoId}")]
+        [HttpGet("ProductoImagen/GetPrincipal/{productoId}")]
         public async Task<IActionResult> GetPrincipal(int productoId)
         {
-            var result = await _imagenService.ObtenerPrincipalAsync(productoId);
-            if (result.Stream == null)
+            System.Console.WriteLine($"[MVC-IMG] GetPrincipal solicitado para ProductoId: {productoId}");
+            try 
             {
+                var (stream, contentType) = await _imagenService.ObtenerPrincipalAsync(productoId);
+                if (stream == null) 
+                {
+                    System.Console.WriteLine($"[MVC-IMG] No se encontró imagen para ProductoId: {productoId}");
+                    return NotFound();
+                }
+
+                var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                System.Console.WriteLine($"[MVC-IMG] Sirviendo imagen para ProductoId: {productoId}. Size: {memoryStream.Length} bytes");
+                return File(memoryStream, contentType ?? "image/jpeg");
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"[MVC-IMG] ERROR: {ex.Message}");
                 return NotFound();
             }
-            return File(result.Stream, result.ContentType ?? "image/jpeg");
         }
 
-        [HttpGet]
-        [Route("ProductoImagen/GetImage/{id}")]
+        [HttpGet("ProductoImagen/GetImage/{id}")]
         public async Task<IActionResult> GetImage(int id)
         {
-            System.Console.WriteLine($"[ProductoImagenController] GetImage solicitado para ID: {id}");
-            var result = await _imagenService.ObtenerImagenAsync(id);
-            if (result.Stream == null)
+            System.Console.WriteLine($"[MVC-IMG] GetImage solicitado para ID: {id}");
+            try 
             {
+                var (stream, contentType) = await _imagenService.ObtenerImagenAsync(id);
+                if (stream == null) return NotFound();
+
+                var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                return File(memoryStream, contentType ?? "image/jpeg");
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"[MVC-IMG] ERROR: {ex.Message}");
                 return NotFound();
             }
-            return File(result.Stream, result.ContentType ?? "image/jpeg"); 
         }
     }
 }

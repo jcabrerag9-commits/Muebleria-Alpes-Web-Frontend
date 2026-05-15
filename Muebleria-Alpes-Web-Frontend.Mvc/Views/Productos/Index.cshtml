@@ -314,16 +314,16 @@
                 });
             });
 
-            // Formularios de Edición SPA
-            const editForms = document.querySelectorAll('.form-editar-producto');
-            console.log(`[DOM] Encontrados ${editForms.length} formularios de edición .form-editar-producto`);
+            // Formularios de Creación y Edición SPA
+            const forms = document.querySelectorAll('.form-editar-producto, .form-crear-producto');
+            console.log(`[DOM] Encontrados ${forms.length} formularios SPA (.form-editar-producto, .form-crear-producto)`);
             
-            editForms.forEach(form => {
+            forms.forEach(form => {
                 form.addEventListener("submit", async function (e) {
                     console.log(`[SUBMIT EVENT] Formulario interceptado!`);
-                    e.preventDefault(); // Prevenir recarga de página (SSR nativo)
+                    e.preventDefault(); 
                     
-                    const submitBtn = form.querySelector('.btn-submit-editar');
+                    const submitBtn = form.querySelector('.btn-submit-editar, .btn-submit-crear');
                     const originalText = submitBtn.innerHTML;
                     const errorAlert = form.querySelector('.form-error-alert');
                     
@@ -337,52 +337,41 @@
                         const formData = new FormData(form);
                         const url = form.getAttribute('action');
                         
-                        console.log(`[FETCH] Iniciando POST a ${url}`);
-                        
                         const response = await fetch(url, {
                             method: 'POST',
                             body: formData
                         });
                         
-                        console.log(`[FETCH] Response Status: ${response.status}`);
-                        
                         if (response.ok) {
                             console.log(`[FETCH] Éxito! Status 200/OK.`);
                             const modalElement = form.closest('.modal');
                             if (modalElement) {
-                                console.log(`[MODAL] Ocultando modal...`);
                                 const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                                 
-                                // IMPORTANTE: Esperar a que la animación termine antes de destruir el HTML
                                 modalElement.addEventListener('hidden.bs.modal', function () {
-                                    console.log(`[MODAL] Animación terminada. Actualizando DOM...`);
                                     if (typeof window.refrescarTablaPrincipal === 'function') {
                                         window.refrescarTablaPrincipal();
                                     }
                                 }, { once: true });
                                 
                                 modal.hide();
+                                if (form.classList.contains('form-crear-producto')) form.reset();
                             } else {
                                 if (typeof window.refrescarTablaPrincipal === 'function') {
                                     window.refrescarTablaPrincipal();
                                 }
                             }
-                            
-                            // Ya no limpiamos manualmente aquí porque hidden.bs.modal lo hará seguro.
                         } else {
                             const errorText = await response.text();
-                            console.error(`[FETCH] Error en response:`, errorText);
-                            errorAlert.innerHTML = errorText || 'Error al actualizar el producto en el servidor.';
+                            errorAlert.innerHTML = errorText || 'Error al procesar la solicitud.';
                             errorAlert.classList.remove('d-none');
                         }
                     } catch (error) {
-                        console.error('[FETCH EXCEPTION] Error capturado:', error);
                         errorAlert.innerHTML = 'Error de comunicación con el servidor.';
                         errorAlert.classList.remove('d-none');
                     } finally {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalText;
-                        console.log(`[SUBMIT EVENT] Terminado.`);
                     }
                 });
             });

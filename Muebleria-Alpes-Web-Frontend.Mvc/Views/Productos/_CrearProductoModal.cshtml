@@ -8,8 +8,9 @@
                 <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i> Nuevo Producto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-controller="Productos" asp-action="Crear" method="post">
+            <form asp-controller="Productos" asp-action="Crear" method="post" class="form-crear-producto">
                 <div class="modal-body">
+                    <div class="alert alert-danger d-none form-error-alert" role="alert"></div>
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label asp-for="Nombre" class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
@@ -49,7 +50,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                    <button type="submit" class="btn btn-primary btn-submit-crear">Guardar Producto</button>
                 </div>
             </form>
         </div>
