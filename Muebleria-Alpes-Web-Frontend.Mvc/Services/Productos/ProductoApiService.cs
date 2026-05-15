@@ -84,5 +84,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
             
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<bool> CambiarEstadoAsync(int id, string nuevoEstado)
+        {
+            System.Console.WriteLine($"[API-SERVICE] PATCH a api/Productos/{id}/estado?estado={nuevoEstado}");
+            var response = await _httpClient.PatchAsync($"api/Productos/{id}/estado?estado={nuevoEstado}", null);
+            return response.IsSuccessStatusCode;
+        }
     }
 }

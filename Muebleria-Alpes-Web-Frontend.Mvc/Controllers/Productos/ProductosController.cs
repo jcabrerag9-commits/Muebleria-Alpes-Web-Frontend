@@ -89,5 +89,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
                 return StatusCode(500, $"Error interno: {ex.Message}");
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstado(int id, string estado)
+        {
+            var exito = await _productoService.CambiarEstadoAsync(id, estado);
+            if (exito) return Ok(new { success = true });
+            return BadRequest("No se pudo cambiar el estado del producto.");
+        }
     }
 }

@@ -65,26 +65,20 @@ public async Task<IActionResult> Eliminar(int id)
         [HttpGet("ProductoImagen/GetPrincipal/{productoId}")]
         public async Task<IActionResult> GetPrincipal(int productoId)
         {
-            System.Console.WriteLine($"[MVC-IMG] GetPrincipal solicitado para ProductoId: {productoId}");
             try 
             {
                 var (stream, contentType) = await _imagenService.ObtenerPrincipalAsync(productoId);
-                if (stream == null) 
-                {
-                    System.Console.WriteLine($"[MVC-IMG] No se encontró imagen para ProductoId: {productoId}");
-                    return NotFound();
-                }
+                if (stream == null) return NotFound();
 
                 var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
+                memoryStream.Position = 0; // REQUERIDO para que el FileResult pueda leerlo
 
-                System.Console.WriteLine($"[MVC-IMG] Sirviendo imagen para ProductoId: {productoId}. Size: {memoryStream.Length} bytes");
                 return File(memoryStream, contentType ?? "image/jpeg");
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"[MVC-IMG] ERROR: {ex.Message}");
+                System.Console.WriteLine($"[MVC-IMG] ERROR en GetPrincipal({productoId}): {ex.Message}");
                 return NotFound();
             }
         }
@@ -92,7 +86,6 @@ public async Task<IActionResult> Eliminar(int id)
         [HttpGet("ProductoImagen/GetImage/{id}")]
         public async Task<IActionResult> GetImage(int id)
         {
-            System.Console.WriteLine($"[MVC-IMG] GetImage solicitado para ID: {id}");
             try 
             {
                 var (stream, contentType) = await _imagenService.ObtenerImagenAsync(id);
@@ -100,13 +93,13 @@ public async Task<IActionResult> Eliminar(int id)
 
                 var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
+                memoryStream.Position = 0; // REQUERIDO
 
                 return File(memoryStream, contentType ?? "image/jpeg");
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"[MVC-IMG] ERROR: {ex.Message}");
+                System.Console.WriteLine($"[MVC-IMG] ERROR en GetImage({id}): {ex.Message}");
                 return NotFound();
             }
         }

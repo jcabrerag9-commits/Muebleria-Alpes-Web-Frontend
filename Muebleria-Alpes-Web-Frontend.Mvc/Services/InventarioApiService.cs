@@ -109,11 +109,32 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/inventario/reservar/{reservaId}");
-                var result = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
-                return (response.IsSuccessStatusCode, result?.Mensaje ?? (response.IsSuccessStatusCode ? "Éxito" : "Error"));
+                // La API real usa "liberar/{id}" según InventarioController.cs:152
+                var response = await _httpClient.DeleteAsync($"api/inventario/liberar/{reservaId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    return (true, result?.Mensaje ?? "Reserva liberada con éxito");
+                }
+                else
+                {
+                    // Manejo seguro: si no es JSON o falla, capturamos el error sin romper el flujo
+                    try 
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                        return (false, errorResult?.Mensaje ?? $"Error {(int)response.StatusCode}");
+                    }
+                    catch 
+                    {
+                        return (false, $"Error del servidor ({(int)response.StatusCode}): {response.ReasonPhrase}");
+                    }
+                }
             }
-            catch (Exception ex) { return (false, ex.Message); }
+            catch (Exception ex) 
+            { 
+                return (false, $"Error de comunicación: {ex.Message}"); 
+            }
         }
 
         public async Task<bool> CrearBodegaAsync(BodegaViewModel model)
@@ -121,7 +142,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             LastErrorMessage = null;
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/inventario/bodegas", model);
+                // El backend real tiene BodegaController en api/Bodega
+                var response = await _httpClient.PostAsJsonAsync("api/Bodega", model);
                 if (!response.IsSuccessStatusCode)
                 {
                     var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
@@ -137,7 +159,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             LastErrorMessage = null;
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/inventario/bodegas/{model.BodegaId}", model);
+                // El backend real tiene BodegaController en api/Bodega/{id}
+                var response = await _httpClient.PutAsJsonAsync($"api/Bodega/{model.BodegaId}", model);
                 if (!response.IsSuccessStatusCode)
                 {
                     var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
@@ -153,7 +176,11 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
             LastErrorMessage = null;
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/inventario/bodegas/{id}");
+                // El backend real usa PATCH para cambiar estado (api/Bodega/{id}/estado)
+                // Inactivar es poner estado=INACTIVO
+                var url = $"api/Bodega/{id}/estado?estado=INACTIVO&motivo=Inactivacion desde Panel Administrativo&usuarioId=1";
+                var response = await _httpClient.PatchAsync(url, null);
+                
                 if (!response.IsSuccessStatusCode)
                 {
                     var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
@@ -188,10 +215,15 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
 
     public class InventarioApiResponse<T>
     {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+        
         [JsonPropertyName("resultado")]
-        public bool Resultado { get; set; }
+        public string? Resultado { get; set; }
+        
         [JsonPropertyName("mensaje")]
         public string? Mensaje { get; set; }
+        
         [JsonPropertyName("data")]
         public T? Data { get; set; }
     }
