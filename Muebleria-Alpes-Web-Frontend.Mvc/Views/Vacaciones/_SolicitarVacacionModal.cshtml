@@ -1,0 +1,42 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearVacacionViewModel
+
+<div class="modal fade" id="modalSolicitarVacacion" tabindex="-1" aria-labelledby="modalSolicitarVacacionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSolicitarVacacionLabel">
+                    <i class="bi bi-umbrella me-2"></i> Solicitar Vacaciones
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-controller="Vacaciones" asp-action="Solicitar" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Empleado ID <span class="text-danger">*</span></label>
+                        <input type="number" name="EmpleadoId" class="form-control" required placeholder="ID del empleado" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha Inicio <span class="text-danger">*</span></label>
+                        <input type="date" name="FechaInicio" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha Fin <span class="text-danger">*</span></label>
+                        <input type="date" name="FechaFin" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Días Solicitados <span class="text-danger">*</span></label>
+                        <input type="number" name="Dias" class="form-control" required min="1" placeholder="Número de días" />
+                    </div>
+                    <input type="hidden" name="UsuarioId" value="1" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Solicitar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

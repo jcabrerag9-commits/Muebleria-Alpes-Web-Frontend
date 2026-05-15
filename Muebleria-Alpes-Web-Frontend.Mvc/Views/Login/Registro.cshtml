@@ -1,0 +1,133 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RegistroViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Crear Cuenta";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear Cuenta - Mueblería Los Alpes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --brand: #4a1822; --brand-dark: #360f18; --brand-light: #7a2d3a; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #360f18 0%, #4a1822 50%, #7a2d3a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .registro-card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,.4);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem 2rem;
+        }
+
+        .brand-icon {
+            width: 64px; height: 64px;
+            background: var(--brand);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+            color: #fff; font-size: 1.6rem;
+        }
+
+        .registro-title { color: var(--brand); font-weight: 700; font-size: 1.4rem; }
+        .registro-sub   { color: #888; font-size: .85rem; }
+
+        .form-control:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 .2rem rgba(74,24,34,.2);
+        }
+
+        .btn-brand {
+            background: var(--brand); color: #fff; border: none;
+            padding: .65rem; font-weight: 600; letter-spacing: .03em;
+            transition: background .2s;
+        }
+        .btn-brand:hover { background: var(--brand-dark); color: #fff; }
+
+        .input-group-text { background: #f8f9fa; border-right: none; }
+        .form-control      { border-left: none; }
+        .input-group .form-control:focus { border-left: none; }
+    </style>
+</head>
+<body>
+    <div class="registro-card">
+        <div class="text-center mb-4">
+            <div class="brand-icon"><i class="bi bi-triangle-fill"></i></div>
+            <div class="registro-title">Mueblería Los Alpes</div>
+            <div class="registro-sub">Crea tu cuenta para comprar</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Error))
+        {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>@Model.Error</span>
+            </div>
+        }
+
+        <form asp-action="Registro" asp-controller="Login" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label fw-semibold">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="Username" class="form-control" placeholder="Elige un nombre de usuario" autocomplete="username" />
+                </div>
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-semibold">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Crea una contraseña" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ConfirmarPassword" class="form-label fw-semibold">Confirmar Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input asp-for="ConfirmarPassword" type="password" class="form-control" placeholder="Repite tu contraseña" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="ConfirmarPassword" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-brand w-100 rounded-2">
+                <i class="bi bi-person-plus me-1"></i> Crear cuenta
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted small">¿Ya tienes cuenta?</span>
+            <a asp-controller="Login" asp-action="Login"
+               style="color: var(--brand); font-weight:600; text-decoration:none; font-size:.9rem;">
+                Iniciar sesión
+            </a>
+        </div>
+
+        <p class="text-center text-muted mt-4 mb-0" style="font-size:.78rem;">
+            &copy; 2026 Mueblería Los Alpes — Todos los derechos reservados
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

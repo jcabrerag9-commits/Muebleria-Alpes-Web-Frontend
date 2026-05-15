@@ -1,0 +1,107 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<OrdenClienteViewModel>
+@{
+    Layout = "_LayoutTienda";
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<!-- Breadcrumb -->
+<div class="tienda-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index">Inicio</a></li>
+                <li class="breadcrumb-item active">Mis Pedidos</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="section-title mb-1"><i class="bi bi-bag-check me-2"></i>Mis Pedidos</h2>
+                <p class="text-muted mb-0">Historial de tus órdenes de compra</p>
+            </div>
+            <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda" style="padding: 10px 22px; font-size: 0.9rem;">
+                <i class="bi bi-grid me-1"></i>Seguir comprando
+            </a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" data-auto-dismiss role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" data-auto-dismiss role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-bag d-block"></i>
+                <p class="mt-3 fw-semibold">No tienes pedidos aún.</p>
+                <p class="text-muted small">¡Empieza a comprar y tus pedidos aparecerán aquí!</p>
+                <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda mt-3">
+                    <i class="bi bi-grid me-1"></i>Ver catálogo
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden;">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background: var(--tienda-light);">
+                            <tr>
+                                <th class="px-4 py-3" style="color: var(--tienda-primary);">N° Orden</th>
+                                <th class="py-3" style="color: var(--tienda-primary);">Fecha</th>
+                                <th class="py-3" style="color: var(--tienda-primary);">Total</th>
+                                <th class="py-3" style="color: var(--tienda-primary);">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var orden in Model)
+                            {
+                                <tr>
+                                    <td class="px-4 py-3 fw-semibold">
+                                        @(orden.NumeroOrden ?? $"#{orden.OrdenId}")
+                                    </td>
+                                    <td class="py-3 text-muted">
+                                        @orden.FechaOrden.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td class="py-3 fw-bold" style="color: var(--tienda-primary);">
+                                        Q @orden.Total.ToString("N2")
+                                    </td>
+                                    <td class="py-3">
+                                        @{
+                                            var estado = orden.EstadoOrden ?? "Pendiente";
+                                            var badgeClass = estado.ToLower() switch
+                                            {
+                                                "completado" or "entregado" => "bg-success",
+                                                "cancelado" => "bg-danger",
+                                                "en proceso" or "procesando" => "bg-warning text-dark",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass" style="border-radius: 20px; padding: 6px 12px;">
+                                            @estado
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</section>

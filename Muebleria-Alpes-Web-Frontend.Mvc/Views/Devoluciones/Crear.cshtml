@@ -1,0 +1,158 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones.DevolucionCreateViewModel
+@{
+    ViewData["Title"] = "Nueva Devolución";
+    var categorias = ViewBag.Categorias as List<Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones.CategoriaDevolucionViewModel> ?? [];
+}
+
+<div class="page-header mb-4">
+    <a asp-action="Index" class="btn-back"><i class="bi bi-arrow-left"></i> Volver</a>
+    <h2 class="page-title mt-2">Nueva Devolución</h2>
+    <p class="page-subtitle">El número RMA se genera automáticamente</p>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alpes-card" style="max-width:780px">
+    <form asp-action="Crear" method="post" id="formDevolucion">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label-alpes">Orden de venta <span class="text-danger">*</span></label>
+                <input asp-for="VenOrdenVenta" type="number" class="form-control-alpes"
+                       placeholder="ID de la orden" />
+                <span asp-validation-for="VenOrdenVenta" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label-alpes">Cliente <span class="text-danger">*</span></label>
+                <input asp-for="CliCliente" type="number" class="form-control-alpes"
+                       placeholder="ID del cliente" />
+                <span asp-validation-for="CliCliente" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label-alpes">Categoría <span class="text-danger">*</span></label>
+                <select asp-for="CtdCategoriaTipoDev" class="form-control-alpes">
+                    <option value="">Seleccionar categoría...</option>
+                    @foreach (var cat in categorias)
+                    {
+                        <option value="@cat.CtdCategoriaTipoDev">@cat.CtdNombre</option>
+                    }
+                </select>
+                <span asp-validation-for="CtdCategoriaTipoDev" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label-alpes">Motivo <span class="text-danger">*</span></label>
+                <textarea asp-for="DevMotivo" class="form-control-alpes" rows="3"
+                          placeholder="Describe el motivo de la devolución..."></textarea>
+                <span asp-validation-for="DevMotivo" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <!-- Detalles -->
+        <div class="mt-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-section-title mb-0">Ítems a devolver</h5>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="agregarDetalle()">
+                    <i class="bi bi-plus me-1"></i> Agregar ítem
+                </button>
+            </div>
+
+            <div id="detallesContainer">
+                <div class="detalle-row row g-2 align-items-end mb-2" data-index="0">
+                    <div class="col-md-4">
+                        <label class="form-label-sm">ID Detalle orden</label>
+                        <input name="Detalles[0].VdeOrdenVentaDetalle" type="number"
+                               class="form-control-alpes" placeholder="ID" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-sm">Cantidad</label>
+                        <input name="Detalles[0].DdeCantidad" type="number" step="0.01"
+                               class="form-control-alpes detalle-cantidad" placeholder="0" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-sm">Monto (Q)</label>
+                        <input name="Detalles[0].DdeMonto" type="number" step="0.01"
+                               class="form-control-alpes detalle-monto" placeholder="0.00" />
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <button type="button" class="btn-icon text-danger" onclick="eliminarDetalle(this)" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-2">
+                <span class="text-muted small">Total estimado: Q</span>
+                <strong id="totalEstimado">0.00</strong>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary-alpes">
+                <i class="bi bi-check-lg me-1"></i> Registrar Devolución
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    let idx = 1;
+
+    function agregarDetalle() {
+        const container = document.getElementById('detallesContainer');
+        const div = document.createElement('div');
+        div.className = 'detalle-row row g-2 align-items-end mb-2';
+        div.dataset.index = idx;
+        div.innerHTML = `
+            <div class="col-md-4">
+                <input name="Detalles[${idx}].VdeOrdenVentaDetalle" type="number"
+                       class="form-control-alpes" placeholder="ID detalle" />
+            </div>
+            <div class="col-md-3">
+                <input name="Detalles[${idx}].DdeCantidad" type="number" step="0.01"
+                       class="form-control-alpes detalle-cantidad" placeholder="0" />
+            </div>
+            <div class="col-md-4">
+                <input name="Detalles[${idx}].DdeMonto" type="number" step="0.01"
+                       class="form-control-alpes detalle-monto" placeholder="0.00" oninput="calcularTotal()" />
+            </div>
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn-icon text-danger" onclick="eliminarDetalle(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>`;
+        container.appendChild(div);
+        idx++;
+        calcularTotal();
+    }
+
+    function eliminarDetalle(btn) {
+        const rows = document.querySelectorAll('.detalle-row');
+        if (rows.length <= 1) { alert('Debe haber al menos un ítem.'); return; }
+        btn.closest('.detalle-row').remove();
+        calcularTotal();
+    }
+
+    function calcularTotal() {
+        const montos = document.querySelectorAll('.detalle-monto');
+        let total = 0;
+        montos.forEach(m => total += parseFloat(m.value) || 0);
+        document.getElementById('totalEstimado').textContent = total.toFixed(2);
+    }
+
+    document.querySelectorAll('.detalle-monto').forEach(el =>
+        el.addEventListener('input', calcularTotal));
+</script>
+}

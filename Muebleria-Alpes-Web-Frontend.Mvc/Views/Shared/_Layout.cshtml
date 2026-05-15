@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modulos.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/crud.css" />
     <style>
         /* Global Loading Overlay */
@@ -136,6 +137,68 @@
                     </span>
                 </a>
 
+
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Seguridad")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#seguridadMenu"
+                            aria-expanded="@(IsController("Seguridad").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Seguridad</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+
+                    <div class="collapse submenu @ShowMenu("Seguridad")" id="seguridadMenu">
+                        <a asp-controller="Seguridad" asp-action="Usuarios">
+                            <i class="bi bi-people"></i> Usuarios
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Roles">
+                            <i class="bi bi-person-badge"></i> Roles
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Permisos">
+                            <i class="bi bi-key"></i> Permisos
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Asignaciones">
+                            <i class="bi bi-diagram-3"></i> Asignaciones
+                        </a>
+                        <a asp-controller="Seguridad" asp-action="Bitacora">
+                            <i class="bi bi-journal-text"></i> Bitácora
+                        </a>
+                    </div>
+                </div>
+
+                <a class="menu-item @ActiveMenu("Envios")" asp-controller="Envios" asp-action="Index">
+                    <span class="menu-left">
+                        <i class="bi bi-truck"></i>
+                        <span>Envíos</span>
+                    </span>
+                </a>
+
+                <div class="menu-group">
+                    <button class="menu-item menu-toggle @ActiveMenu("Reportes")"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#reportesMenu"
+                            aria-expanded="@(IsController("Reportes").ToString().ToLower())">
+                        <span class="menu-left">
+                            <i class="bi bi-bar-chart-line"></i>
+                            <span>Reportes</span>
+                        </span>
+                        <i class="bi bi-chevron-down small-arrow"></i>
+                    </button>
+                    <div class="collapse submenu @ShowMenu("Reportes")" id="reportesMenu">
+                        <a asp-controller="Reportes" asp-action="Index"><i class="bi bi-grid"></i> Panel</a>
+                        <a asp-controller="Reportes" asp-action="Cliente"><i class="bi bi-person-lines-fill"></i> Clientes</a>
+                        <a asp-controller="Reportes" asp-action="Ventas"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
+                        <a asp-controller="Reportes" asp-action="Caja"><i class="bi bi-cash-stack"></i> Caja</a>
+                        <a asp-controller="Reportes" asp-action="Marketing"><i class="bi bi-megaphone"></i> Marketing</a>
+                    </div>
+                </div>
+
                 <div class="menu-group">
                     <button class="menu-item menu-toggle @ActiveMenu("Ventas", "Facturas", "Pagos")"
                             type="button"
@@ -159,6 +222,7 @@
                         <a class="@ActiveSubmenu("Pagos", "Index")" asp-controller="Pagos" asp-action="Index">
                             <i class="bi bi-credit-card"></i> Pagos
                         </a>
+                        <a asp-controller="Devoluciones" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Devoluciones</a>
                     </div>
                 </div>
 
@@ -262,18 +326,32 @@
             </nav>
 
             <div class="store-box">
-                <a href="#">
+                <a asp-controller="Tienda" asp-action="Index">
                     <i class="bi bi-shop"></i>
                     <span>Ver tienda virtual</span>
                 </a>
             </div>
 
             <div class="user-box">
-                <div class="user-avatar">AD</div>
-                <div>
-                    <div class="user-name">Admin</div>
-                    <div class="user-email">admin@losalpes.com</div>
-                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var nombreCompleto = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "Usuario";
+                    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+                    var initials = string.Concat(nombreCompleto.Split(' ').Take(2).Select(p => p.FirstOrDefault()));
+                    <div class="user-avatar">@initials.ToUpper()</div>
+                    <div>
+                        <div class="user-name">@nombreCompleto</div>
+                        <div class="user-email">@rol</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="user-avatar"><i class="bi bi-person"></i></div>
+                    <div>
+                        <div class="user-name">Invitado</div>
+                        <div class="user-email"><a href="/Login/Login" class="text-white-50">Iniciar sesión</a></div>
+                    </div>
+                }
             </div>
         </aside>
 
@@ -290,13 +368,29 @@
                     </div>
                 </div>
 
+                    <div class="topbar-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Buscar en el sistema..." />
+                    </div>
+                </div>
                 <div class="topbar-actions">
-                    <button type="button" class="topbar-btn">
-                        <i class="bi bi-bell"></i>
-                    </button>
-                    <button type="button" class="topbar-btn">
-                        <i class="bi bi-moon"></i>
-                    </button>
+                    @* Botón Ver Tienda — accesible para todos los no-clientes en el admin *@
+                    <a asp-controller="Tienda" asp-action="Index"
+                       class="topbar-btn" title="Ver Tienda Virtual">
+                        <i class="bi bi-shop"></i>
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Login" asp-action="Logout" class="topbar-btn" title="Cerrar sesión">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Login" class="topbar-btn" title="Iniciar sesión">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </a>
+                    }
                 </div>
             </header>
 
