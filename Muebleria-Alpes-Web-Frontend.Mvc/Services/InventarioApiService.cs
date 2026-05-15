@@ -1,92 +1,230 @@
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels;
+using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Inventario;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
 {
-    /// <summary>
-    /// Servicio de inventario.
-    /// - api/producto (GET) → InventarioResponse<IEnumerable<ProductoDTO>> = { Resultado, Mensaje, Data }
-    /// - api/inventario/existencia/{productoId} → InventarioResponse<IEnumerable<ExistenciaDTO>>
-    /// - api/inventario/entrada|salida (POST) → InventarioResponse
-    /// </summary>
     public class InventarioApiService
     {
         private readonly HttpClient _httpClient;
+        public string? LastErrorMessage { get; private set; }
 
         public InventarioApiService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        // Usa api/producto (sin 's') que lista todos los productos con su info de inventario
-        public async Task<List<ExistenciaViewModel>> ListarExistenciasAsync()
-        {
-            try
-            {
-                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<ExistenciaViewModel>>>("api/producto");
-                return result?.Data ?? new List<ExistenciaViewModel>();
-            }
-            catch
-            {
-                return new List<ExistenciaViewModel>();
-            }
-        }
-
-        // api/inventario/existencia/{productoId} — existencias de un producto específico
-        public async Task<List<ExistenciaViewModel>> ObtenerExistenciaPorProductoAsync(int productoId)
+        public async Task<List<ExistenciaViewModel>> ObtenerExistenciasAsync(int productoId)
         {
             try
             {
                 var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<ExistenciaViewModel>>>($"api/inventario/existencia/{productoId}");
-                return result?.Data ?? new List<ExistenciaViewModel>();
+                return result?.Data ?? [];
             }
-            catch
+            catch { return []; }
+        }
+
+        public async Task<List<ReservaViewModel>> ObtenerReservasAsync(int productoId)
+        {
+            try
             {
-                return new List<ExistenciaViewModel>();
+                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<ReservaViewModel>>>($"api/inventario/reservas/{productoId}");
+                return result?.Data ?? [];
             }
+            catch { return []; }
         }
 
-        // Bodegas: no hay endpoint en el backend actual — retorna lista vacía
-        public Task<List<BodegaViewModel>> ListarBodegasAsync()
+        public async Task<List<KardexMovimientoViewModel>> ObtenerKardexAsync(int productoId)
         {
-            return Task.FromResult(new List<BodegaViewModel>());
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<KardexMovimientoViewModel>>>($"api/inventario/kardex/{productoId}");
+                return result?.Data ?? [];
+            }
+            catch { return []; }
         }
 
-        // Registrar entrada: api/inventario/entrada
-        public async Task<bool> RegistrarEntradaAsync(CrearMovimientoViewModel model)
+        public async Task<List<BodegaViewModel>> ObtenerBodegasAsync() => await ListarBodegasAsync();
+
+        public async Task<List<BodegaViewModel>> ListarBodegasAsync()
         {
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<BodegaViewModel>>>("api/inventario/bodegas");
+                return result?.Data ?? [];
+            }
+            catch { return []; }
+        }
+
+        public async Task<bool> RegistrarEntradaAsync(MovimientoInventarioViewModel model)
+        {
+            LastErrorMessage = null;
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/inventario/entrada", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
                 return response.IsSuccessStatusCode;
             }
-            catch
-            {
-                return false;
-            }
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
         }
 
-        // Registrar salida: api/inventario/salida
-        public async Task<bool> RegistrarSalidaAsync(CrearMovimientoViewModel model)
+        public async Task<bool> RegistrarSalidaAsync(MovimientoInventarioViewModel model)
         {
+            LastErrorMessage = null;
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/inventario/salida", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
                 return response.IsSuccessStatusCode;
             }
-            catch
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
+        }
+
+        public async Task<bool> ReservarStockAsync(ReservaStockViewModel model)
+        {
+            LastErrorMessage = null;
+            try
             {
-                return false;
+                var response = await _httpClient.PostAsJsonAsync("api/inventario/reservar", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
+        }
+
+        public async Task<(bool success, string message)> LiberarReservaAsync(int reservaId)
+        {
+            try
+            {
+                // La API real usa "liberar/{id}" según InventarioController.cs:152
+                var response = await _httpClient.DeleteAsync($"api/inventario/liberar/{reservaId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    return (true, result?.Mensaje ?? "Reserva liberada con éxito");
+                }
+                else
+                {
+                    // Manejo seguro: si no es JSON o falla, capturamos el error sin romper el flujo
+                    try 
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                        return (false, errorResult?.Mensaje ?? $"Error {(int)response.StatusCode}");
+                    }
+                    catch 
+                    {
+                        return (false, $"Error del servidor ({(int)response.StatusCode}): {response.ReasonPhrase}");
+                    }
+                }
+            }
+            catch (Exception ex) 
+            { 
+                return (false, $"Error de comunicación: {ex.Message}"); 
             }
         }
 
-        // Mantiene compatibilidad con el método anterior
-        public async Task<bool> RegistrarMovimientoAsync(CrearMovimientoViewModel model)
+        public async Task<bool> CrearBodegaAsync(BodegaViewModel model)
         {
-            // Decide según TipoMovimiento
-            if (model.TipoMovimiento?.ToUpper() == "SALIDA")
-                return await RegistrarSalidaAsync(model);
-            return await RegistrarEntradaAsync(model);
+            LastErrorMessage = null;
+            try
+            {
+                // El backend real tiene BodegaController en api/Bodega
+                var response = await _httpClient.PostAsJsonAsync("api/Bodega", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
         }
+
+        public async Task<bool> ActualizarBodegaAsync(BodegaViewModel model)
+        {
+            LastErrorMessage = null;
+            try
+            {
+                // El backend real tiene BodegaController en api/Bodega/{id}
+                var response = await _httpClient.PutAsJsonAsync($"api/Bodega/{model.BodegaId}", model);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
+        }
+
+        public async Task<bool> InactivarBodegaAsync(int id)
+        {
+            LastErrorMessage = null;
+            try
+            {
+                // El backend real usa PATCH para cambiar estado (api/Bodega/{id}/estado)
+                // Inactivar es poner estado=INACTIVO
+                var url = $"api/Bodega/{id}/estado?estado=INACTIVO&motivo=Inactivacion desde Panel Administrativo&usuarioId=1";
+                var response = await _httpClient.PatchAsync(url, null);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                    LastErrorMessage = error?.Mensaje ?? $"Error {(int)response.StatusCode}";
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex) { LastErrorMessage = ex.Message; return false; }
+        }
+
+        public async Task<List<KardexMovimientoViewModel>> ObtenerMovimientosGlobalesAsync(int? bodegaId, string? desde, string? hasta, string? tipo)
+        {
+            try
+            {
+                var url = $"api/inventario/movimientos?bodegaId={bodegaId}&desde={desde}&hasta={hasta}&tipo={tipo}";
+                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<List<KardexMovimientoViewModel>>>(url);
+                return result?.Data ?? [];
+            }
+            catch { return []; }
+        }
+
+        public async Task<InventarioDashboardViewModel?> ObtenerDashboardAsync()
+        {
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<InventarioApiResponse<InventarioDashboardViewModel>>("api/inventario/dashboard");
+                return result?.Data;
+            }
+            catch { return null; }
+        }
+    }
+
+    public class InventarioApiResponse<T>
+    {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+        
+        [JsonPropertyName("resultado")]
+        public string? Resultado { get; set; }
+        
+        [JsonPropertyName("mensaje")]
+        public string? Mensaje { get; set; }
+        
+        [JsonPropertyName("data")]
+        public T? Data { get; set; }
     }
 }

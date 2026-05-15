@@ -59,7 +59,7 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
         }
 
         // POST api/promociones
-        public async Task<(bool Ok, string Mensaje)> CreateAsync(PromocionCreateViewModel model)
+        public async Task<(bool Ok, string Mensaje)> CreateAsync(CrearPromocionViewModel model)
         {
             try
             {

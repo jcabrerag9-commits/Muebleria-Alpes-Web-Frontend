@@ -333,8 +333,23 @@
         try {
             const r = await fetch('@Url.Action("GetBodegas", "Inventario")');
             const b = await r.json();
-            sel.innerHTML = b.map(x => `<option value="${x.bodegaId || x.BodegaId}">${x.nombre || x.Nombre}</option>`).join('');
-        } catch { sel.innerHTML = '<option value="1">Bodega Central</option>'; }
+            // Soporta respuesta directa o envuelta en Data (estándar ApiResponse)
+            const list = Array.isArray(b) ? b : (b.data || b.Data || []);
+            
+            if (list.length === 0) {
+                sel.innerHTML = '<option value="">Sin bodegas disponibles</option>';
+                return;
+            }
+
+            sel.innerHTML = list.map(x => {
+                const id = x.bodegaId || x.BodegaId;
+                const nom = x.nombre || x.Nombre;
+                return `<option value="${id}">${nom}</option>`;
+            }).join('');
+        } catch (err) { 
+            console.error('[BODEGAS ERROR]', err);
+            sel.innerHTML = '<option value="1">Bodega Central (Fallback)</option>'; 
+        }
     }
 
     // ─── Modal Movimiento ────────────────────────────────────────

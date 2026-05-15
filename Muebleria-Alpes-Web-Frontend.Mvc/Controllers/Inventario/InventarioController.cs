@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Muebleria_Alpes_Web_Frontend.Mvc.Services.Inventario;
+using Muebleria_Alpes_Web_Frontend.Mvc.Services;
 using Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Inventario;
 

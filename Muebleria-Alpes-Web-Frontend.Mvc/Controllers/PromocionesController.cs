@@ -42,12 +42,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers
         }
 
         // GET /Promociones/Crear
-        public IActionResult Crear() => View(new PromocionCreateViewModel());
+        public IActionResult Crear() => View(new CrearPromocionViewModel());
 
         // POST /Promociones/Crear
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Crear(PromocionCreateViewModel model)
+        public async Task<IActionResult> Crear(CrearPromocionViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
 

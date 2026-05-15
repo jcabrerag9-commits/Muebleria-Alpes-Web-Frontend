@@ -7,49 +7,6 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
     /// Mapea ProductoDTO de api/producto: { productoId, sku, nombre, descripcionCorta, estado, ... }
     /// Se usa en la vista de Inventario para mostrar el catálogo de productos disponibles.
     /// </summary>
-    public class ExistenciaViewModel
-    {
-        [JsonPropertyName("productoId")]
-        public int ProductoId { get; set; }
-
-        [JsonPropertyName("sku")]
-        public string? Sku { get; set; }
-
-        [JsonPropertyName("nombre")]
-        public string? Nombre { get; set; }
-
-        [JsonPropertyName("descripcionCorta")]
-        public string? DescripcionCorta { get; set; }
-
-        [JsonPropertyName("estado")]
-        public string? Estado { get; set; }
-
-        [JsonPropertyName("fechaRegistro")]
-        public DateTime FechaRegistro { get; set; }
-
-        // Estos campos vienen de api/inventario/existencia/{id} (consulta separada)
-        public int CantidadDisponible { get; set; }
-        public int CantidadReservada { get; set; }
-        public string? BodegaNombre { get; set; }
-    }
-
-    public class BodegaViewModel
-    {
-        public int BodegaId { get; set; }
-        public string? Nombre { get; set; }
-        public string? Descripcion { get; set; }
-        public string? Estado { get; set; }
-    }
-
-    public class MovimientoInventarioViewModel
-    {
-        public int ProductoId { get; set; }
-        public int BodegaId { get; set; }
-        public string? TipoMovimiento { get; set; }
-        public int Cantidad { get; set; }
-        public string? Motivo { get; set; }
-    }
-
     public class CrearMovimientoViewModel
     {
         [Required]

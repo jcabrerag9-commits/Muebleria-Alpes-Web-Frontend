@@ -49,9 +49,9 @@
                         <th>Tipo</th>
                         <th>Configuración</th>
                         <th>Peso</th>
-                        <th>Registro</th>
-                        <th>Estado</th>
-                        <th class="text-end">Acciones</th>
+                        <th style="width: 110px;">Registro</th>
+                        <th style="width: 120px;">Estado</th>
+                        <th class="text-end" style="width: 180px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,6 +110,12 @@
                                         <i class="bi bi-check-circle"></i> Activo
                                     </span>
                                 }
+                                else if (prod.Estado == "BORRADOR")
+                                {
+                                    <span class="status-badge bg-warning text-dark border-warning" style="background-color: #fff3cd !important;">
+                                        <i class="bi bi-pencil-square"></i> Borrador
+                                    </span>
+                                }
                                 else
                                 {
                                     <span class="status-badge status-inactive">
@@ -131,6 +137,19 @@
                                     <button class="btn-icon btn-edit" type="button" data-bs-toggle="modal" data-bs-target="#modalEditarProducto-@prod.ProductoId" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </button>
+                                    
+                                    @if (prod.Estado == "ACTIVO")
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger btn-toggle-estado py-1 px-2" type="button" data-id="@prod.ProductoId" data-estado="INACTIVO" style="font-size: 0.75rem; font-weight: 700;">
+                                            DESACTIVAR
+                                        </button>
+                                    }
+                                    else if (prod.Estado == "BORRADOR" || prod.Estado == "INACTIVO")
+                                    {
+                                        <button class="btn btn-sm btn-outline-success btn-toggle-estado py-1 px-2" type="button" data-id="@prod.ProductoId" data-estado="ACTIVO" style="font-size: 0.75rem; font-weight: 700;">
+                                            ACTIVAR
+                                        </button>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -314,75 +333,83 @@
                 });
             });
 
-            // Formularios de Edición SPA
-            const editForms = document.querySelectorAll('.form-editar-producto');
-            console.log(`[DOM] Encontrados ${editForms.length} formularios de edición .form-editar-producto`);
+            // Formularios de Creación y Edición SPA
+            const forms = document.querySelectorAll('.form-editar-producto, .form-crear-producto');
+            console.log(`[DOM] Encontrados ${forms.length} formularios SPA`);
             
-            editForms.forEach(form => {
-                form.addEventListener("submit", async function (e) {
-                    console.log(`[SUBMIT EVENT] Formulario interceptado!`);
-                    e.preventDefault(); // Prevenir recarga de página (SSR nativo)
+            forms.forEach(form => {
+                // Eliminar listener previo si existe para evitar duplicados al refrescar tabla
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+
+                newForm.addEventListener("submit", async function (e) {
+                    e.preventDefault(); 
                     
-                    const submitBtn = form.querySelector('.btn-submit-editar');
+                    if (newForm.dataset.submitting === "true") return;
+
+                    const submitBtn = newForm.querySelector('.btn-submit-editar, .btn-submit-crear');
                     const originalText = submitBtn.innerHTML;
-                    const errorAlert = form.querySelector('.form-error-alert');
-                    
-                    console.log(`[SUBMIT EVENT] Form Action:`, form.getAttribute('action'));
+                    const errorAlert = newForm.querySelector('.form-error-alert');
                     
                     try {
+                        newForm.dataset.submitting = "true";
                         submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
                         errorAlert.classList.add('d-none');
                         
-                        const formData = new FormData(form);
-                        const url = form.getAttribute('action');
-                        
-                        console.log(`[FETCH] Iniciando POST a ${url}`);
+                        const formData = new FormData(newForm);
+                        const url = newForm.getAttribute('action');
                         
                         const response = await fetch(url, {
                             method: 'POST',
                             body: formData
                         });
                         
-                        console.log(`[FETCH] Response Status: ${response.status}`);
-                        
                         if (response.ok) {
-                            console.log(`[FETCH] Éxito! Status 200/OK.`);
-                            const modalElement = form.closest('.modal');
+                            const modalElement = newForm.closest('.modal');
                             if (modalElement) {
-                                console.log(`[MODAL] Ocultando modal...`);
-                                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-                                
-                                // IMPORTANTE: Esperar a que la animación termine antes de destruir el HTML
-                                modalElement.addEventListener('hidden.bs.modal', function () {
-                                    console.log(`[MODAL] Animación terminada. Actualizando DOM...`);
-                                    if (typeof window.refrescarTablaPrincipal === 'function') {
-                                        window.refrescarTablaPrincipal();
-                                    }
-                                }, { once: true });
-                                
-                                modal.hide();
+                                const modal = bootstrap.Modal.getInstance(modalElement);
+                                if (modal) modal.hide();
+                                // Pequeña espera para que el modal cierre antes de refrescar
+                                setTimeout(() => window.refrescarTablaPrincipal(), 300);
                             } else {
-                                if (typeof window.refrescarTablaPrincipal === 'function') {
-                                    window.refrescarTablaPrincipal();
-                                }
+                                window.refrescarTablaPrincipal();
                             }
-                            
-                            // Ya no limpiamos manualmente aquí porque hidden.bs.modal lo hará seguro.
                         } else {
                             const errorText = await response.text();
-                            console.error(`[FETCH] Error en response:`, errorText);
-                            errorAlert.innerHTML = errorText || 'Error al actualizar el producto en el servidor.';
+                            errorAlert.innerHTML = errorText || 'Error al procesar la solicitud.';
                             errorAlert.classList.remove('d-none');
                         }
                     } catch (error) {
-                        console.error('[FETCH EXCEPTION] Error capturado:', error);
                         errorAlert.innerHTML = 'Error de comunicación con el servidor.';
                         errorAlert.classList.remove('d-none');
                     } finally {
+                        newForm.dataset.submitting = "false";
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalText;
-                        console.log(`[SUBMIT EVENT] Terminado.`);
+                    }
+                });
+            });
+
+            // Eventos para activar/desactivar
+            document.querySelectorAll(".btn-toggle-estado").forEach(btn => {
+                btn.addEventListener("click", async function() {
+                    const id = this.dataset.id;
+                    const estado = this.dataset.estado;
+                    
+                    if (!confirm(`¿Desea cambiar el estado a ${estado}?`)) return;
+
+                    try {
+                        const response = await fetch(`@Url.Action("CambiarEstado", "Productos")?id=${id}&estado=${estado}`, {
+                            method: 'POST'
+                        });
+                        if (response.ok) {
+                            window.refrescarTablaPrincipal();
+                        } else {
+                            alert("Error al cambiar estado");
+                        }
+                    } catch (e) {
+                        console.error(e);
                     }
                 });
             });

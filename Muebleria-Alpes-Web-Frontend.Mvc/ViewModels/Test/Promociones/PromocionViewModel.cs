@@ -33,7 +33,7 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones
         public string PpoEstado { get; set; } = string.Empty;
     }
 
-    public class PromocionCreateViewModel
+    public class CrearPromocionViewModel
     {
         public string PrmNombre { get; set; } = string.Empty;
         public string? PrmDescripcion { get; set; }

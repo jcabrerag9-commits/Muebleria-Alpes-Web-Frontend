@@ -60,25 +60,41 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Controllers.Productos
         [HttpPost]
         public async Task<IActionResult> Actualizar(int id, ActualizarProductoViewModel model)
         {
-            System.Console.WriteLine($"[MVC MVC] RECIBIDO PUT para ProductoId: {id}");
-            System.Console.WriteLine($"[MVC MVC] Modelo recibido -> Nombre: {model?.Nombre}, Peso: {model?.Peso}");
+            System.Console.WriteLine($"[MVC] >>> ACTUALIZAR SOLICITADO para ID: {id}");
+            System.Console.WriteLine($"[MVC] >>> Payload: Nombre={model?.Nombre}, TipoMueble={model?.TipoMueble}, Peso={model?.Peso}");
 
             if (!ModelState.IsValid)
             {
-                System.Console.WriteLine($"[MVC MVC] ModelState Invalido");
-                return BadRequest("Verifica los datos ingresados.");
+                var errors = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                System.Console.WriteLine($"[MVC] !!! ModelState INVÁLIDO: {errors}");
+                return BadRequest($"Datos inválidos: {errors}");
             }
 
-            var actualizado = await _productoService.ActualizarAsync(id, model);
-
-            if (!actualizado)
+            try 
             {
-                System.Console.WriteLine($"[MVC MVC] Falla en ApiService al actualizar");
-                return BadRequest("Error al actualizar el producto en el backend.");
-            }
+                var actualizado = await _productoService.ActualizarAsync(id, model);
 
-            System.Console.WriteLine($"[MVC MVC] Éxito al actualizar ProductoId: {id}");
-            return Ok(new { success = true, message = "Producto actualizado correctamente." });
+                if (!actualizado)
+                {
+                    System.Console.WriteLine($"[MVC] !!! El servicio de API reportó FALLO.");
+                    return BadRequest("Error al actualizar el producto. El servidor rechazó la solicitud.");
+                }
+
+                System.Console.WriteLine($"[MVC] <<< ÉXITO al actualizar ProductoId: {id}");
+                return Ok(new { success = true, message = "Producto actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"[MVC] !!! EXCEPCIÓN: {ex.Message}");
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstado(int id, string estado)
+        {
+            var exito = await _productoService.CambiarEstadoAsync(id, estado);
+            if (exito) return Ok(new { success = true });
+            return BadRequest("No se pudo cambiar el estado del producto.");
         }
     }
 }

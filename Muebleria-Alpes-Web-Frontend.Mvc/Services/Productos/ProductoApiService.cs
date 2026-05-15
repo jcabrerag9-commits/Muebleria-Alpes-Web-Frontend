@@ -1,26 +1,11 @@
-using System.Text.Json;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Shared;
 using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos;
 
 namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
 {
-    // Local DTO that mirrors the backend Producto domain model field names.
-    file record ProductoDto(
-        int Id,
-        int TipoMueble,
-        string? Sku,
-        string Nombre,
-        string? DescripcionCorta,
-        string? DescripcionLarga,
-        decimal? Peso,
-        string EsConfigurable,
-        string Estado
-    );
-
     public class ProductoApiService
     {
         private readonly HttpClient _httpClient;
-        private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
         public ProductoApiService(HttpClient httpClient)
         {
@@ -29,108 +14,82 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
 
         public async Task<List<ProductoViewModel>> ListarAsync()
         {
-            try
+            try 
             {
                 var response = await _httpClient.GetAsync("api/Productos");
                 var raw = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"[ProductoApiService] ListarAsync ERROR {response.StatusCode}: {raw}");
+                    System.Console.WriteLine($"[MVC API] Error Listar: {raw}");
                     return new List<ProductoViewModel>();
                 }
 
-                // Backend returns a plain array: [{...}, {...}]
-                var dtos = JsonSerializer.Deserialize<List<ProductoDto>>(raw, _json);
-                if (dtos == null) return new List<ProductoViewModel>();
+                // Intentar deserializar como lista directa (estándar Backend actual)
+                try {
+                    var directList = System.Text.Json.JsonSerializer.Deserialize<List<ProductoViewModel>>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (directList != null) return directList;
+                } catch { /* No es lista directa, probar wrapper */ }
 
-                return dtos.Select(d => new ProductoViewModel
-                {
-                    ProductoId       = d.Id,
-                    Sku              = d.Sku ?? string.Empty,
-                    Nombre           = d.Nombre,
-                    DescripcionCorta = d.DescripcionCorta ?? string.Empty,
-                    DescripcionLarga = d.DescripcionLarga ?? string.Empty,
-                    Peso             = d.Peso,
-                    EsConfigurable   = d.EsConfigurable,
-                    Estado           = d.Estado,
-                    TipoMuebleId     = d.TipoMueble,
-                }).ToList();
+                var result = System.Text.Json.JsonSerializer.Deserialize<BackendResponse<List<ProductoViewModel>>>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return result?.Data ?? new List<ProductoViewModel>();
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Console.WriteLine($"[ProductoApiService] ListarAsync EXCEPTION: {ex.Message}");
+                System.Console.WriteLine($"[MVC API] Exception Listar: {ex.Message}");
                 return new List<ProductoViewModel>();
             }
         }
 
         public async Task<ProductoViewModel?> ObtenerPorIdAsync(int id)
         {
-            try
+            try 
             {
                 var response = await _httpClient.GetAsync($"api/Productos/{id}");
                 var raw = await response.Content.ReadAsStringAsync();
+                
+                if (!response.IsSuccessStatusCode) return null;
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"[ProductoApiService] ObtenerPorId({id}) ERROR {response.StatusCode}: {raw}");
-                    return null;
-                }
+                try {
+                    var direct = System.Text.Json.JsonSerializer.Deserialize<ProductoViewModel>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (direct != null && direct.ProductoId > 0) return direct;
+                } catch { }
 
-                var dto = JsonSerializer.Deserialize<ProductoDto>(raw, _json);
-                if (dto == null) return null;
-
-                return new ProductoViewModel
-                {
-                    ProductoId       = dto.Id,
-                    Sku              = dto.Sku ?? string.Empty,
-                    Nombre           = dto.Nombre,
-                    DescripcionCorta = dto.DescripcionCorta ?? string.Empty,
-                    DescripcionLarga = dto.DescripcionLarga ?? string.Empty,
-                    Peso             = dto.Peso,
-                    EsConfigurable   = dto.EsConfigurable,
-                    Estado           = dto.Estado,
-                    TipoMuebleId     = dto.TipoMueble,
-                };
+                var result = System.Text.Json.JsonSerializer.Deserialize<BackendResponse<ProductoViewModel>>(raw, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return result?.Data;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Console.WriteLine($"[ProductoApiService] ObtenerPorId({id}) EXCEPTION: {ex.Message}");
+                System.Console.WriteLine($"[MVC API] Exception GetById: {ex.Message}");
                 return null;
             }
         }
 
         public async Task<bool> CrearAsync(CrearProductoViewModel model)
         {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("api/Productos", model);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ProductoApiService] CrearAsync EXCEPTION: {ex.Message}");
-                return false;
-            }
+            var response = await _httpClient.PostAsJsonAsync("api/Productos", model);
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> ActualizarAsync(int id, ActualizarProductoViewModel model)
         {
-            try
+            System.Console.WriteLine($"[API-SERVICE] PUT a api/Productos/{id}");
+            var response = await _httpClient.PutAsJsonAsync($"api/Productos/{id}", model);
+            
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/Productos/{id}", model);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var err = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"[ProductoApiService] ActualizarAsync({id}) ERROR {response.StatusCode}: {err}");
-                }
-                return response.IsSuccessStatusCode;
+                var errorBody = await response.Content.ReadAsStringAsync();
+                System.Console.WriteLine($"[API-SERVICE] ERROR {response.StatusCode}: {errorBody}");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ProductoApiService] ActualizarAsync({id}) EXCEPTION: {ex.Message}");
-                return false;
-            }
+            
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> CambiarEstadoAsync(int id, string nuevoEstado)
+        {
+            System.Console.WriteLine($"[API-SERVICE] PATCH a api/Productos/{id}/estado?estado={nuevoEstado}");
+            var response = await _httpClient.PatchAsync($"api/Productos/{id}/estado?estado={nuevoEstado}", null);
+            return response.IsSuccessStatusCode;
         }
     }
 }
