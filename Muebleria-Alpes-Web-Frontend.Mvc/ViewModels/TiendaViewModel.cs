@@ -158,4 +158,91 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
         [JsonPropertyName("estadoOrden")]
         public string? EstadoOrden { get; set; }
     }
+
+    // ── Direcciones de entrega ──────────────────────────────────────────────
+
+    public class DireccionClienteViewModel
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("clienteId")]
+        public int ClienteId { get; set; }
+
+        [JsonPropertyName("ciudadId")]
+        public int CiudadId { get; set; }
+
+        [JsonPropertyName("tipo")]
+        public string? Tipo { get; set; }
+
+        [JsonPropertyName("direccionLinea1")]
+        public string? DireccionLinea1 { get; set; }
+
+        [JsonPropertyName("direccionLinea2")]
+        public string? DireccionLinea2 { get; set; }
+
+        [JsonPropertyName("codigoPostal")]
+        public string? CodigoPostal { get; set; }
+
+        [JsonPropertyName("referencia")]
+        public string? Referencia { get; set; }
+
+        [JsonPropertyName("esPrincipal")]
+        public string? EsPrincipal { get; set; }
+
+        [JsonPropertyName("estado")]
+        public string? Estado { get; set; }
+
+        public bool EsActiva => Estado == "ACTIVO";
+        public bool EsPrincipalBool => EsPrincipal == "S";
+    }
+
+    public class ClienteDetalleApiResponse
+    {
+        [JsonPropertyName("direcciones")]
+        public List<DireccionClienteViewModel> Direcciones { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Resumen de envío que se muestra al cliente en Mis Pedidos.
+    /// Mapea la respuesta de api/Envios/orden/{ordenId}.
+    /// </summary>
+    public class EnvioResumenClienteViewModel
+    {
+        [JsonPropertyName("envioId")]
+        public int EnvioId { get; set; }
+
+        [JsonPropertyName("numeroGuia")]
+        public string? NumeroGuia { get; set; }
+
+        [JsonPropertyName("transportista")]
+        public string? Transportista { get; set; }
+
+        [JsonPropertyName("estado")]
+        public string? Estado { get; set; }
+
+        [JsonPropertyName("fechaEnvio")]
+        public DateTime? FechaEnvio { get; set; }
+
+        [JsonPropertyName("fechaEntregaEstimada")]
+        public DateTime? FechaEntregaEstimada { get; set; }
+
+        [JsonPropertyName("fechaEntregaReal")]
+        public DateTime? FechaEntregaReal { get; set; }
+    }
+
+    public class NuevaDireccionRequest
+    {
+        public int ClienteId { get; set; }
+        public int PaisId { get; set; }
+        public int DepartamentoId { get; set; }
+        public int CiudadId { get; set; }
+        public string Tipo { get; set; } = "ENVIO";
+        public string DireccionLinea1 { get; set; } = string.Empty;
+        public string? DireccionLinea2 { get; set; }
+        public string? CodigoPostal { get; set; }
+        public string? Referencia { get; set; }
+        public string EsPrincipal { get; set; } = "N";
+        public string Estado { get; set; } = "ACTIVO";
+    }
 }

@@ -3,6 +3,8 @@
 @{
     Layout = "_LayoutTienda";
     ViewData["Title"] = "Mis Pedidos";
+    var enviosPorOrden = ViewBag.EnviosPorOrden as Dictionary<int, EnvioResumenClienteViewModel>
+                         ?? new Dictionary<int, EnvioResumenClienteViewModel>();
 }
 
 <!-- Breadcrumb -->
@@ -22,7 +24,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="section-title mb-1"><i class="bi bi-bag-check me-2"></i>Mis Pedidos</h2>
-                <p class="text-muted mb-0">Historial de tus órdenes de compra</p>
+                <p class="text-muted mb-0">Historial de tus órdenes de compra y estado de entrega</p>
             </div>
             <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda" style="padding: 10px 22px; font-size: 0.9rem;">
                 <i class="bi bi-grid me-1"></i>Seguir comprando
@@ -57,50 +59,139 @@
         }
         else
         {
-            <div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden;">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead style="background: var(--tienda-light);">
-                            <tr>
-                                <th class="px-4 py-3" style="color: var(--tienda-primary);">N° Orden</th>
-                                <th class="py-3" style="color: var(--tienda-primary);">Fecha</th>
-                                <th class="py-3" style="color: var(--tienda-primary);">Total</th>
-                                <th class="py-3" style="color: var(--tienda-primary);">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var orden in Model)
-                            {
-                                <tr>
-                                    <td class="px-4 py-3 fw-semibold">
+            <div class="row g-4">
+                @foreach (var orden in Model)
+                {
+                    var estadoOrden = orden.EstadoOrden ?? "Pendiente";
+                    var badgeOrden = estadoOrden.ToLower() switch
+                    {
+                        "completado" or "entregado" => "bg-success",
+                        "cancelado" => "bg-danger",
+                        "en proceso" or "procesando" or "procesado" => "bg-warning text-dark",
+                        "enviado" => "bg-info text-dark",
+                        _ => "bg-secondary"
+                    };
+
+                    enviosPorOrden.TryGetValue(orden.OrdenId, out var envio);
+
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden;">
+                            <!-- Cabecera de la orden -->
+                            <div class="card-header border-0 py-3 px-4 d-flex justify-content-between align-items-center"
+                                 style="background: var(--tienda-light);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold" style="color: var(--tienda-primary);">
                                         @(orden.NumeroOrden ?? $"#{orden.OrdenId}")
-                                    </td>
-                                    <td class="py-3 text-muted">
-                                        @orden.FechaOrden.ToString("dd/MM/yyyy")
-                                    </td>
-                                    <td class="py-3 fw-bold" style="color: var(--tienda-primary);">
+                                    </span>
+                                    <span class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i>@orden.FechaOrden.ToString("dd/MM/yyyy")
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fw-bold" style="color: var(--tienda-primary);">
                                         Q @orden.Total.ToString("N2")
-                                    </td>
-                                    <td class="py-3">
-                                        @{
-                                            var estado = orden.EstadoOrden ?? "Pendiente";
-                                            var badgeClass = estado.ToLower() switch
+                                    </span>
+                                    <span class="badge @badgeOrden" style="border-radius: 20px; padding: 6px 12px;">
+                                        @estadoOrden
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Detalle del envío -->
+                            <div class="card-body px-4 py-3">
+                                @if (envio != null)
+                                {
+                                    var estadoEnvio = (envio.Estado ?? "").ToUpperInvariant();
+                                    var (iconoEnvio, colorEnvio, textoEnvio) = estadoEnvio switch
+                                    {
+                                        "PREPARANDO"   => ("bi-box-seam",        "#f39c12", "Preparando tu pedido"),
+                                        "EN_TRANSITO"  => ("bi-truck",           "#2980b9", "En camino"),
+                                        "ENTREGADO"    => ("bi-check-circle",    "#27ae60", "Entregado"),
+                                        "CANCELADO"    => ("bi-x-circle",        "#e74c3c", "Envío cancelado"),
+                                        "FALLIDO"      => ("bi-exclamation-triangle", "#e74c3c", "Envío fallido"),
+                                        _              => ("bi-question-circle", "#7f8c8d", envio.Estado ?? "Desconocido")
+                                    };
+                                    <div class="d-flex flex-wrap gap-4 align-items-start">
+                                        <!-- Progreso visual -->
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="bi @iconoEnvio" style="font-size:1.3rem; color:@colorEnvio;"></i>
+                                                <span class="fw-semibold" style="color:@colorEnvio;">@textoEnvio</span>
+                                            </div>
+                                            @if (!string.IsNullOrWhiteSpace(envio.NumeroGuia))
                                             {
-                                                "completado" or "entregado" => "bg-success",
-                                                "cancelado" => "bg-danger",
-                                                "en proceso" or "procesando" => "bg-warning text-dark",
-                                                _ => "bg-secondary"
-                                            };
+                                                <p class="mb-1 text-muted small">
+                                                    <i class="bi bi-upc-scan me-1"></i>
+                                                    Guía: <strong class="text-dark">@envio.NumeroGuia</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(envio.Transportista))
+                                                    {
+                                                        <span class="ms-2">— @envio.Transportista</span>
+                                                    }
+                                                </p>
+                                            }
+                                            @if (envio.FechaEnvio.HasValue)
+                                            {
+                                                <p class="mb-1 text-muted small">
+                                                    <i class="bi bi-calendar-check me-1"></i>
+                                                    Fecha de envío: @envio.FechaEnvio.Value.ToString("dd/MM/yyyy")
+                                                </p>
+                                            }
+                                            @if (envio.FechaEntregaReal.HasValue)
+                                            {
+                                                <p class="mb-0 text-muted small">
+                                                    <i class="bi bi-calendar2-check me-1"></i>
+                                                    Entregado el: <strong>@envio.FechaEntregaReal.Value.ToString("dd/MM/yyyy")</strong>
+                                                </p>
+                                            }
+                                            else if (envio.FechaEntregaEstimada.HasValue && estadoEnvio != "ENTREGADO" && estadoEnvio != "CANCELADO")
+                                            {
+                                                <p class="mb-0 text-muted small">
+                                                    <i class="bi bi-calendar2-event me-1"></i>
+                                                    Entrega estimada: @envio.FechaEntregaEstimada.Value.ToString("dd/MM/yyyy")
+                                                </p>
+                                            }
+                                        </div>
+
+                                        <!-- Barra de progreso de etapas -->
+                                        @{
+                                            var etapas = new[] { "PREPARANDO", "EN_TRANSITO", "ENTREGADO" };
+                                            var idxActual = Array.IndexOf(etapas, estadoEnvio);
                                         }
-                                        <span class="badge @badgeClass" style="border-radius: 20px; padding: 6px 12px;">
-                                            @estado
-                                        </span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            @for (int i = 0; i < etapas.Length; i++)
+                                            {
+                                                var activo = i <= idxActual && idxActual >= 0;
+                                                var esActual = i == idxActual;
+                                                <div class="d-flex flex-column align-items-center" style="min-width:64px;">
+                                                    <div style="width:28px; height:28px; border-radius:50%;
+                                                                background:@(activo ? "var(--tienda-primary)" : "#dee2e6");
+                                                                display:flex; align-items:center; justify-content:center;">
+                                                        <i class="bi @(i==0?"bi-box-seam":i==1?"bi-truck":"bi-check-lg") text-white"
+                                                           style="font-size:0.75rem;"></i>
+                                                    </div>
+                                                    <span class="small mt-1" style="font-size:0.65rem; color:@(activo?"var(--tienda-primary)":"#adb5bd");">
+                                                        @(i==0?"Preparando":i==1?"En camino":"Entregado")
+                                                    </span>
+                                                </div>
+                                                @if (i < etapas.Length - 1)
+                                                {
+                                                    <div style="flex:1; height:2px; background:@(i<idxActual?"var(--tienda-primary)":"#dee2e6"); margin-bottom:18px;"></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Tu pedido aún no tiene un envío asignado. Te notificaremos cuando esté listo.
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         }
     </div>
