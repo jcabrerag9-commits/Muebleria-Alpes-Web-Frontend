@@ -1,0 +1,205 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<OrdenViewModel>
+
+@{
+    ViewData["Title"] = "Ventas / Órdenes";
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-cart3"></i>
+        </div>
+        <div>
+            <h1 data-i18n="admin.sales_title">Ventas</h1>
+            <p data-i18n="admin.sales_sub">Órdenes de compra registradas</p>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <input type="text" id="buscarOrden" class="form-control search-input" data-i18n-placeholder="admin.search" placeholder="Buscar..." />
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count <span data-i18n="admin.records">registros</span>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table" id="tablaOrdenes">
+            <thead>
+                <tr>
+                    <th data-i18n="admin.order_number_col">Número Orden</th>
+                    <th data-i18n="admin.date_col">Fecha</th>
+                    <th data-i18n="admin.customer_col">Cliente</th>
+                    <th data-i18n="admin.total_col">Total</th>
+                    <th data-i18n="admin.status_col">Estado</th>
+                    <th data-i18n="admin.actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var orden in Model)
+                {
+                    var estadoUp = (orden.Estado ?? "").ToUpperInvariant();
+
+                    var estadoBadge = estadoUp switch
+                    {
+                        "PENDIENTE"   => "status-warning",
+                        "PROCESANDO"  => "status-warning",
+                        "ENVIADO"     => "status-active",
+                        "COMPLETADO"  => "status-active",
+                        "ENTREGADO"   => "status-active",
+                        "CANCELADO"   => "status-danger",
+                        _             => "status-inactive"
+                    };
+
+                    var estadoIcon = estadoUp switch
+                    {
+                        "PENDIENTE"   => "bi-clock",
+                        "PROCESANDO"  => "bi-arrow-repeat",
+                        "ENVIADO"     => "bi-truck",
+                        "COMPLETADO"  => "bi-check-circle",
+                        "ENTREGADO"   => "bi-check-circle",
+                        "CANCELADO"   => "bi-x-circle",
+                        _             => "bi-dash-circle"
+                    };
+
+                    <tr>
+                        <td>
+                            <span class="code-badge">@(orden.NumeroOrden ?? "-")</span>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <strong>@(orden.FechaOrden == DateTime.MinValue ? "N/A" : orden.FechaOrden.ToString("yyyy-MM-dd"))</strong>
+                            </div>
+                        </td>
+                        <td>@(orden.Cliente ?? "N/A")</td>
+                        <td>
+                            <strong>Q @orden.Total.ToString("N2")</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge @estadoBadge">
+                                <i class="bi @estadoIcon"></i> @(orden.Estado ?? "N/A")
+                            </span>
+                        </td>
+                        <td>
+                            @if (estadoUp == "PENDIENTE")
+                            {
+                                <button class="btn btn-sm btn-primary btn-procesar"
+                                        data-orden-id="@orden.OrdenId"
+                                        data-numero="@orden.NumeroOrden"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalProcesar">
+                                    <i class="bi bi-arrow-repeat"></i> <span data-i18n="admin.process">Procesar</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal confirmación -->
+<div class="modal fade" id="modalProcesar" tabindex="-1" aria-labelledby="modalProcesarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProcesarLabel">
+                    <i class="bi bi-arrow-repeat me-2"></i><span data-i18n="admin.process_order">Procesar Orden</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p><span data-i18n="admin.process_confirm_text">¿Deseas cambiar el estado de la orden</span> <strong id="modalNumeroOrden"></strong></p>
+                <p class="text-muted small mb-0" data-i18n="admin.process_confirm_sub">Esta acción permitirá emitir facturas para la orden.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="admin.cancel">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarProcesar">
+                    <span id="btnProcesarSpinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                    <span data-i18n="admin.confirm">Confirmar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ── Búsqueda ──
+            const input = document.getElementById("buscarOrden");
+            const tabla = document.getElementById("tablaOrdenes");
+            if (input && tabla) {
+                input.addEventListener("keyup", function () {
+                    const filtro = input.value.toLowerCase();
+                    tabla.querySelectorAll("tbody tr").forEach(fila => {
+                        fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
+                    });
+                });
+            }
+
+            // ── Modal Procesar ──
+            let ordenIdSeleccionada = null;
+
+            document.querySelectorAll(".btn-procesar").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    ordenIdSeleccionada = this.dataset.ordenId;
+                    document.getElementById("modalNumeroOrden").textContent = this.dataset.numero;
+                });
+            });
+
+            document.getElementById("btnConfirmarProcesar").addEventListener("click", async function () {
+                if (!ordenIdSeleccionada) return;
+
+                const spinner = document.getElementById("btnProcesarSpinner");
+                const btnConfirmar = this;
+                spinner.classList.remove("d-none");
+                btnConfirmar.disabled = true;
+
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const response = await fetch("/Ventas/ProcesarOrden", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            ...(token ? { "RequestVerificationToken": token } : {})
+                        },
+                        body: `ordenId=${ordenIdSeleccionada}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.exitoso) {
+                        bootstrap.Modal.getInstance(document.getElementById("modalProcesar")).hide();
+                        mostrarAlerta("success", "Orden procesada correctamente.");
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        mostrarAlerta("danger", data.mensaje || "No se pudo procesar la orden.");
+                    }
+                } catch (err) {
+                    mostrarAlerta("danger", "Error de conexión: " + err.message);
+                } finally {
+                    spinner.classList.add("d-none");
+                    btnConfirmar.disabled = false;
+                }
+            });
+
+            function mostrarAlerta(tipo, mensaje) {
+                const alerta = document.createElement("div");
+                alerta.className = `alert alert-${tipo} alert-dismissible fade show position-fixed bottom-0 end-0 m-3`;
+                alerta.style.zIndex = "9999";
+                alerta.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                document.body.appendChild(alerta);
+                setTimeout(() => alerta.remove(), 4000);
+            }
+        });
+    </script>
+}

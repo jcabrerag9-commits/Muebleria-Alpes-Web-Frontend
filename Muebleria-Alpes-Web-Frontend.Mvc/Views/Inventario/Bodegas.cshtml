@@ -1,0 +1,350 @@
+@model List<Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Inventario.BodegaViewModel>
+
+@{
+    ViewData["Title"] = "Administración de Bodegas ERP";
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header ERP Superior -->
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #1a1a1e;">Maestro de Bodegas</h2>
+            <p class="text-muted small m-0"><i class="bi bi-info-circle me-1"></i> Gestión de almacenes físicos, virtuales y centros de distribución.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary fw-bold px-3 shadow-sm border-2">
+                <i class="bi bi-download me-2"></i>Exportar
+            </button>
+            <button class="btn btn-main text-white fw-bold px-4 shadow-sm" id="btnNuevaBodega">
+                <i class="bi bi-plus-lg me-2"></i>Registrar Bodega
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros Rápidos / KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3 text-primary">
+                        <i class="bi bi-building fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Total Bodegas</div>
+                        <h3 class="fw-bold m-0">@Model.Count</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 bg-success bg-opacity-10 p-3 me-3 text-success">
+                        <i class="bi bi-check-circle fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Activas</div>
+                        <h3 class="fw-bold m-0">@Model.Count(x => x.Estado == "ACTIVO")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 bg-warning bg-opacity-10 p-3 me-3 text-warning">
+                        <i class="bi bi-cloud fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Virtuales</div>
+                        <h3 class="fw-bold m-0">@Model.Count(x => x.Tipo == "VIRTUAL")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listado Principal -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden;">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h6 class="m-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Listado de Almacenes</h6>
+                </div>
+                <div class="col-auto">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control bg-light border-0" placeholder="Buscar bodega..." id="txtBusquedaBodega">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblBodegas">
+                <thead class="bg-light text-muted small text-uppercase fw-bold">
+                    <tr>
+                        <th class="ps-4"># / Nombre</th>
+                        <th>Tipo / Canal</th>
+                        <th>Configuración ERP</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Reservas</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-3 bg-light border p-2 me-3">
+                                        <i class="bi @(b.Tipo == "FISICA" ? "bi-house" : "bi-cloud") fs-5 text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark mb-0">@b.Nombre</div>
+                                        <div class="text-muted x-small">ID: @b.BodegaId</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge @(b.Tipo == "FISICA" ? "bg-info bg-opacity-10 text-info" : "bg-purple bg-opacity-10 text-purple") px-2 py-1">
+                                    @b.Tipo
+                                </span>
+                                <div class="small text-muted mt-1">@(b.CanalVentaNombre ?? "Todos los canales")</div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-bookmark-check-fill @(b.PermiteReserva == "S" ? "text-success" : "text-light")" title="Permite Reserva"></i>
+                                    <i class="bi bi-cart-check-fill @(b.PermiteVenta == "S" ? "text-primary" : "text-light")" title="Permite Venta"></i>
+                                    <i class="bi bi-truck @(b.ManejaDespacho == "S" ? "text-info" : "text-light")" title="Maneja Despacho"></i>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold text-primary fs-6">@b.StockTotal</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-warning text-dark px-3">@b.ReservasActivas</span>
+                            </td>
+                            <td>
+                                <span class="status-badge @(b.Estado == "ACTIVO" ? "status-active" : "status-inactive")">
+                                    <i class="bi @(b.Estado == "ACTIVO" ? "bi-check-circle-fill" : "bi-dash-circle-fill") me-1"></i>
+                                    @b.Estado
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light border btn-editar-bodega" 
+                                        data-bodega='@Json.Serialize(b)'>
+                                    <i class="bi bi-gear-fill me-1 text-primary"></i> Gestionar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Maestro Bodega (Crear/Editar) -->
+<div class="modal fade" id="mdlBodega" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white p-4 border-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">Registrar Nueva Bodega</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="frmBodega" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BodegaId" id="f_id" />
+                <div class="modal-body p-4 bg-light bg-opacity-50">
+                    <div class="row g-4">
+                        <!-- Info Básica -->
+                        <div class="col-md-7">
+                            <div class="card border-0 shadow-sm p-4 h-100">
+                                <h6 class="fw-bold mb-3 border-bottom pb-2">Información Principal</h6>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Nombre de Almacén</label>
+                                    <input type="text" name="Nombre" id="f_nombre" class="form-control border-2 shadow-none" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Descripción / Localización</label>
+                                    <textarea name="Descripcion" id="f_descripcion" class="form-control border-2 shadow-none" rows="4"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Clasificación ERP -->
+                        <div class="col-md-5">
+                            <div class="card border-0 shadow-sm p-4 h-100">
+                                <h6 class="fw-bold mb-3 border-bottom pb-2">Configuración ERP</h6>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Tipo de Bodega</label>
+                                    <select name="Tipo" id="f_tipo" class="form-select border-2 shadow-none">
+                                        <option value="FISICA">FISICA (Almacén real)</option>
+                                        <option value="VIRTUAL">VIRTUAL (Ecommerce/Canal)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Canal de Venta</label>
+                                    <select name="CanalVentaId" id="f_canal" class="form-select border-2 shadow-none">
+                                        <option value="">-- Global (Todos) --</option>
+                                        <option value="1">Tienda Física</option>
+                                        <option value="2">Ecommerce Web</option>
+                                        <option value="3">Venta Directa</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-switch-input" type="checkbox" name="PermiteReserva" value="S" id="f_reserva" checked>
+                                    <label class="form-check-label fw-bold small" for="f_reserva">Permitir Reservas</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-switch-input" type="checkbox" name="PermiteVenta" value="S" id="f_venta" checked>
+                                    <label class="form-check-label fw-bold small" for="f_venta">Permitir Ventas</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-switch-input" type="checkbox" name="ManejaDespacho" value="S" id="f_despacho" checked>
+                                    <label class="form-check-label fw-bold small" for="f_despacho">Habilitar Despacho</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-switch-input" type="checkbox" name="Estado" value="ACTIVO" id="f_estado" checked>
+                                    <label class="form-check-label fw-bold small" for="f_estado">Bodega Activa</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white p-4 border-top">
+                    <button type="button" class="btn fw-bold text-muted px-4" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-main text-white fw-bold px-5 py-2 shadow" id="btnGuardar">
+                        <i class="bi bi-save me-2"></i>GUARDAR CAMBIOS ERP
+                    </button>
+                    <button type="button" class="btn btn-danger text-white fw-bold px-3 py-2 shadow d-none" id="btnInactivar">
+                        <i class="bi bi-trash me-2"></i>INACTIVAR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-purple { background-color: #6f42c1; }
+    .text-purple { color: #6f42c1; }
+    .x-small { font-size: 0.75rem; }
+    .form-switch-input { width: 40px; height: 20px; cursor: pointer; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('mdlBodega'));
+    const form = document.getElementById('frmBodega');
+    const title = document.getElementById('modalTitle');
+    const btnInactivar = document.getElementById('btnInactivar');
+
+    document.getElementById('btnNuevaBodega').onclick = () => {
+        form.reset();
+        document.getElementById('f_id').value = '';
+        title.innerText = 'Registrar Nueva Bodega';
+        form.action = '/Inventario/CrearBodega';
+        document.getElementById('f_estado').checked = true;
+        btnInactivar.classList.add('d-none');
+        modal.show();
+    };
+
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        
+        // Build clean form data manually
+        const f = document.createElement('form');
+        f.method = 'POST';
+        f.action = form.action;
+        
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        f.appendChild(createHidden('__RequestVerificationToken', token));
+        
+        const idVal = document.getElementById('f_id').value;
+        if (idVal) f.appendChild(createHidden('BodegaId', idVal));
+        
+        f.appendChild(createHidden('Nombre', document.getElementById('f_nombre').value));
+        f.appendChild(createHidden('Descripcion', document.getElementById('f_descripcion').value));
+        f.appendChild(createHidden('Tipo', document.getElementById('f_tipo').value));
+        
+        const canalVal = document.getElementById('f_canal').value;
+        if (canalVal) f.appendChild(createHidden('CanalVentaId', canalVal));
+        
+        f.appendChild(createHidden('PermiteReserva', document.getElementById('f_reserva').checked ? 'S' : 'N'));
+        f.appendChild(createHidden('PermiteVenta', document.getElementById('f_venta').checked ? 'S' : 'N'));
+        f.appendChild(createHidden('ManejaDespacho', document.getElementById('f_despacho').checked ? 'S' : 'N'));
+        f.appendChild(createHidden('Estado', document.getElementById('f_estado').checked ? 'ACTIVO' : 'INACTIVO'));
+        
+        document.body.appendChild(f);
+        f.submit();
+    };
+
+    function createHidden(name, value) {
+        const h = document.createElement('input');
+        h.type = 'hidden';
+        h.name = name;
+        h.value = value;
+        return h;
+    }
+
+    document.querySelectorAll('.btn-editar-bodega').forEach(btn => {
+        btn.onclick = () => {
+            const b = JSON.parse(btn.dataset.bodega);
+            const id = b.bodegaId || b.BodegaId;
+            title.innerText = 'Gestionar Bodega #' + id;
+            form.action = '/Inventario/EditarBodega';
+            
+            document.getElementById('f_id').value = id;
+            document.getElementById('f_nombre').value = b.nombre || b.Nombre;
+            document.getElementById('f_descripcion').value = b.descripcion || b.Descripcion;
+            document.getElementById('f_tipo').value = b.tipo || b.Tipo;
+            document.getElementById('f_canal').value = (b.canalVentaId !== undefined ? b.canalVentaId : b.CanalVentaId) || '';
+            
+            document.getElementById('f_reserva').checked = (b.permiteReserva || b.PermiteReserva) === 'S';
+            document.getElementById('f_venta').checked = (b.permiteVenta || b.PermiteVenta) === 'S';
+            document.getElementById('f_despacho').checked = (b.maneja_despacho || b.manejaDespacho || b.ManejaDespacho) === 'S';
+            document.getElementById('f_estado').checked = (b.estado || b.Estado) === 'ACTIVO';
+
+            btnInactivar.classList.remove('d-none');
+            btnInactivar.onclick = async () => {
+                if(confirm('¿Está seguro de inactivar esta bodega? Solo se permitirá si no tiene stock ni reservas.')) {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    
+                    try {
+                        const response = await fetch('/Inventario/InactivarBodega', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'RequestVerificationToken': token
+                            },
+                            body: `id=${id}`
+                        });
+
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const data = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                            alert(data.message || 'Error al inactivar la bodega.');
+                        }
+                    } catch (err) {
+                        alert('Error de red al intentar inactivar la bodega.');
+                    }
+                }
+            };
+            
+            modal.show();
+        };
+    });
+
+    document.getElementById('txtBusquedaBodega').addEventListener('keyup', function() {
+        const val = this.value.toLowerCase();
+        document.querySelectorAll('#tblBodegas tbody tr').forEach(tr => {
+            tr.style.display = tr.innerText.toLowerCase().includes(val) ? '' : 'none';
+        });
+    });
+});
+</script>

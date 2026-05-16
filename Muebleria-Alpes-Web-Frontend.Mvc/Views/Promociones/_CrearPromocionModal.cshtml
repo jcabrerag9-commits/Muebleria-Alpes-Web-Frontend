@@ -1,0 +1,67 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones
+@model PromocionViewModel
+
+<div class="modal fade" id="modalCrearPromocion" tabindex="-1" aria-labelledby="modalCrearPromocionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearPromocionLabel">
+                    <i class="bi bi-ticket-perforated me-2"></i> Nueva Promoción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-controller="Promociones" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="Nombre" class="form-control" required
+                               placeholder="Nombre de la promoción" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea name="Descripcion" class="form-control" rows="2"
+                                  placeholder="Descripción opcional"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+                        <select name="Tipo" class="form-select" required>
+                            <option value="">-- Seleccione tipo --</option>
+                            <option value="PORCENTAJE">Porcentaje</option>
+                            <option value="MONTO_FIJO">Monto Fijo</option>
+                            <option value="2X1">2x1</option>
+                            <option value="ENVIO_GRATIS">Envío Gratis</option>
+                            <option value="COMPRA_MINIMA">Compra Mínima</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Valor</label>
+                        <input type="number" name="Valor" class="form-control"
+                               step="0.01" min="0" placeholder="0.00" />
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Fecha Inicio <span class="text-danger">*</span></label>
+                            <input type="date" name="FechaInicio" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Fecha Fin <span class="text-danger">*</span></label>
+                            <input type="date" name="FechaFin" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-check-lg"></i> Crear Promoción
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

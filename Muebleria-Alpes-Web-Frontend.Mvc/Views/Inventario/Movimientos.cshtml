@@ -1,0 +1,277 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Inventario
+@model MovimientoGlobalViewModel
+
+@{
+    ViewData["Title"] = "Auditoría Global de Movimientos ERP";
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header ERP -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold m-0" style="color: #1f1f24;">Auditoría de Movimientos</h3>
+            <p class="text-muted small m-0"><i class="bi bi-shield-check me-1"></i> Trazabilidad completa de entradas, salidas y ajustes del sistema.</p>
+        </div>
+        <button class="btn btn-outline-primary fw-bold" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>Imprimir Reporte
+        </button>
+    </div>
+
+    <!-- Filtros SPA -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+        <div class="card-body p-4">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Bodega</label>
+                    <select name="bodegaId" class="form-select border-2 shadow-none">
+                        <option value="">-- Todas --</option>
+                        @foreach (var b in Model.Bodegas)
+                        {
+                            <option value="@b.BodegaId" selected="@(Model.BodegaId == b.BodegaId)">@b.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Operación</label>
+                    <select name="tipoMovimiento" class="form-select border-2 shadow-none">
+                        <option value="">-- Todas --</option>
+                        <option value="ENTRADA" selected="@(Model.TipoMovimiento == "ENTRADA")">Entradas</option>
+                        <option value="SALIDA" selected="@(Model.TipoMovimiento == "SALIDA")">Salidas</option>
+                        <option value="RESERVA" selected="@(Model.TipoMovimiento == "RESERVA")">Reservas</option>
+                        <option value="LIBERACION" selected="@(Model.TipoMovimiento == "LIBERACION")">Liberaciones</option>
+                        <option value="AJUSTE" selected="@(Model.TipoMovimiento == "AJUSTE")">Ajustes</option>
+                        <option value="VENTA" selected="@(Model.TipoMovimiento == "VENTA")">Ventas</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Desde</label>
+                    <input type="date" name="desde" class="form-control border-2 shadow-none" value="@Model.FechaDesde" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Hasta</label>
+                    <input type="date" name="hasta" class="form-control border-2 shadow-none" value="@Model.FechaHasta" />
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-main text-white fw-bold w-100 py-2">
+                        <i class="bi bi-filter me-2"></i>Filtrar Auditoría
+                    </button>
+                    <a href="@Url.Action("Movimientos")" class="btn btn-light border w-auto px-3" title="Limpiar">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados Auditoría -->
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblGlobalKardex">
+                <thead class="bg-dark text-white small text-uppercase">
+                    <tr>
+                        <th class="ps-4 py-3">Fecha / ID</th>
+                        <th>Producto / SKU</th>
+                        <th>Origen (Bodega)</th>
+                        <th>Operación</th>
+                        <th class="text-center">Cant.</th>
+                        <th>Trazabilidad Stock</th>
+                        <th>Usuario</th>
+                        <th class="text-end pe-4">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Movimientos.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-search fs-1 text-muted opacity-25"></i>
+                                <p class="text-muted mt-2">No se encontraron movimientos con los filtros aplicados.</p>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var m in Model.Movimientos)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark mb-0">@m.Fecha.ToString("dd/MM/yyyy")</div>
+                                <div class="text-muted x-small">@m.Fecha.ToString("HH:mm:ss") | #@m.MovimientoId</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold mb-0">@m.NombreProducto</div>
+                                <span class="badge bg-light text-dark border">@m.Sku</span>
+                            </td>
+                            <td>
+                                <div class="small fw-bold">@m.NombreBodega</div>
+                                <div class="text-muted x-small">ID: @m.BodegaId</div>
+                            </td>
+                            <td>
+                                @{
+                                    var (bg, icon, label) = m.TipoMovimiento.ToUpper() switch {
+                                        "ENTRADA"    => ("bg-success", "bi-box-arrow-in-down", "ENTRADA"),
+                                        "SALIDA"     => ("bg-danger", "bi-box-arrow-up", "SALIDA"),
+                                        "RESERVA"    => ("bg-warning text-dark", "bi-bookmark-plus", "RESERVA"),
+                                        "LIBERACION" => ("bg-info text-dark", "bi-unlock", "LIBERACIÓN"),
+                                        "VENTA"      => ("bg-primary", "bi-receipt", "VENTA"),
+                                        "AJUSTE"     => ("bg-dark", "bi-gear", "AJUSTE"),
+                                        _            => ("bg-secondary", "bi-info-circle", m.TipoMovimiento)
+                                    };
+                                }
+                                <span class="badge @bg d-inline-flex align-items-center gap-1 py-2 px-3 shadow-sm">
+                                    <i class="bi @icon"></i> @label
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="fs-5 fw-bold @(m.TipoMovimiento == "ENTRADA" ? "text-success" : m.TipoMovimiento == "SALIDA" ? "text-danger" : "text-dark")">
+                                    @(m.TipoMovimiento == "SALIDA" ? "-" : "+")@m.Cantidad
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center bg-light rounded-pill p-1 border" style="width: fit-content; min-width: 120px;">
+                                    <span class="text-muted px-2" title="Anterior">@m.StockAnterior</span>
+                                    <i class="bi bi-arrow-right text-primary"></i>
+                                    <span class="fw-bold px-2 @(m.StockNuevo > m.StockAnterior ? "text-success" : m.StockNuevo < m.StockAnterior ? "text-danger" : "text-dark")" title="Nuevo">@m.StockNuevo</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small fw-bold text-dark">@(m.UsuarioNombre ?? "Sistema ERP")</div>
+                                <div class="text-muted x-small">ID: @(m.UsuarioId?.ToString() ?? "N/A")</div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 btn-detalle-kardex" 
+                                        data-movimiento='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(m))'>
+                                    <i class="bi bi-eye me-1"></i>Detalle
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle Movimiento -->
+<div class="modal fade" id="modalDetalleMovimiento" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-info-circle me-2"></i>Detalle de Movimiento</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div id="det_badge_container"></div>
+                    <h4 class="fw-bold mt-2 mb-1" id="det_producto"></h4>
+                    <span class="badge bg-light text-dark border" id="det_sku"></span>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold">Fecha / Hora</label>
+                        <div class="fw-bold" id="det_fecha"></div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <label class="text-muted small text-uppercase fw-bold">ID Transacción</label>
+                        <div class="fw-bold" id="det_id"></div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold">Almacén / Bodega</label>
+                        <div class="fw-bold" id="det_bodega"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold">Trazabilidad de Inventario</label>
+                        <div class="d-flex align-items-center justify-content-between bg-light p-3 rounded-3 mt-1">
+                            <div class="text-center">
+                                <div class="text-muted x-small">Anterior</div>
+                                <div class="h4 m-0" id="det_stock_ant"></div>
+                            </div>
+                            <div class="text-primary h3 m-0"><i class="bi bi-arrow-right"></i></div>
+                            <div class="text-center">
+                                <div class="text-muted x-small">Cantidad</div>
+                                <div class="h4 m-0 text-primary" id="det_cantidad"></div>
+                            </div>
+                            <div class="text-primary h3 m-0"><i class="bi bi-arrow-right"></i></div>
+                            <div class="text-center">
+                                <div class="text-muted x-small">Nuevo</div>
+                                <div class="h4 m-0 fw-bold" id="det_stock_nue"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <label class="text-muted small text-uppercase fw-bold">Observación / Glosa</label>
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-primary mt-1 italic" id="det_obs">
+                        </div>
+                    </div>
+                    <div class="col-12" id="det_relacion_container">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-dark w-100 py-2 fw-bold" data-bs-dismiss="modal">Cerrar Detalle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+    .btn-main { background-color: #1f1f24; }
+    .bg-purple { background-color: #6f42c1; }
+    .text-purple { color: #6f42c1; }
+    @@media print {
+        .card-body, .btn, .container-fluid > div:first-child { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        .table { width: 100% !important; border: 1px solid #000 !important; }
+        .badge { border: 1px solid #000 !important; color: #000 !important; background: none !important; }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-detalle-kardex').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const m = JSON.parse(this.dataset.movimiento);
+                verDetalleMovimiento(m);
+            });
+        });
+    });
+
+    function verDetalleMovimiento(m) {
+        document.getElementById('det_producto').innerText = m.NombreProducto || m.nombreProducto || 'N/A';
+        document.getElementById('det_sku').innerText = m.Sku || m.sku || 'N/A';
+        document.getElementById('det_fecha').innerText = (m.Fecha || m.fecha || '').replace('T', ' ');
+        document.getElementById('det_id').innerText = '#' + (m.MovimientoId || m.movimientoId);
+        document.getElementById('det_bodega').innerText = m.NombreBodega || m.nombreBodega || 'N/A';
+        document.getElementById('det_stock_ant').innerText = m.StockAnterior ?? m.stockAnterior ?? 0;
+        document.getElementById('det_cantidad').innerText = ((m.TipoMovimiento || m.tipoMovimiento) === 'SALIDA' ? '-' : '+') + m.Cantidad;
+        document.getElementById('det_stock_nue').innerText = m.StockNuevo ?? m.stockNuevo ?? 0;
+        document.getElementById('det_obs').innerText = m.Observacion || m.observacion || 'Sin observaciones registradas.';
+        
+        const rel = document.getElementById('det_relacion_container');
+        rel.innerHTML = '';
+        const ordenId = m.OrdenVentaId || m.ordenVentaId;
+        if (ordenId) {
+            rel.innerHTML = `
+                <div class="alert alert-primary mt-3 mb-0 py-2 border-0 shadow-sm d-flex justify-content-between align-items-center">
+                    <span class="small fw-bold text-uppercase"><i class="bi bi-cart4 me-2"></i>Orden de Venta Relacionada</span>
+                    <span class="badge bg-primary">#${ordenId}</span>
+                </div>`;
+        }
+
+        const badgeContainer = document.getElementById('det_badge_container');
+        const tipo = (m.TipoMovimiento || m.tipoMovimiento || '').toUpperCase();
+        let bg = 'bg-secondary', icon = 'bi-info-circle', label = tipo;
+        
+        if(tipo === 'ENTRADA') { bg = 'bg-success'; icon = 'bi-box-arrow-in-down'; label = 'ENTRADA'; }
+        else if(tipo === 'SALIDA') { bg = 'bg-danger'; icon = 'bi-box-arrow-up'; label = 'SALIDA'; }
+        else if(tipo === 'RESERVA') { bg = 'bg-warning text-dark'; icon = 'bi-bookmark-plus'; label = 'RESERVA'; }
+        else if(tipo === 'LIBERACION' || tipo === 'LIBERACIÓN') { bg = 'bg-info text-dark'; icon = 'bi-unlock'; label = 'LIBERACIÓN'; }
+        else if(tipo === 'VENTA') { bg = 'bg-primary'; icon = 'bi-receipt'; label = 'VENTA'; }
+        else if(tipo === 'AJUSTE') { bg = 'bg-dark'; icon = 'bi-gear'; label = 'AJUSTE'; }
+
+        badgeContainer.innerHTML = `<span class="badge ${bg} py-2 px-4 shadow-sm h5 mb-0"><i class="bi ${icon} me-2"></i>${label}</span>`;
+
+        new bootstrap.Modal(document.getElementById('modalDetalleMovimiento')).show();
+    }
+</script>

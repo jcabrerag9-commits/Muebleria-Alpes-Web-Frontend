@@ -1,0 +1,94 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@{ ViewData["Title"] = "Crear envío"; var ordenes = ViewBag.Ordenes as List<FiltroOrdenDisponibleResponse> ?? new(); }
+
+<div class="crud-page">
+    <h1 data-i18n="admin.create_shipment_title">Crear envío</h1>
+    <p class="text-muted" data-i18n="admin.create_shipment_sub">Selecciona una orden disponible y registra los datos logísticos.</p>
+
+    @if (TempData["Success"] is not null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] is not null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body">
+            <form asp-action="Crear" method="post" class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label" data-i18n="admin.available_order">Orden disponible</label>
+                    <select class="form-select" name="ordenVentaId" id="ordenSelect" required>
+                        <option value="" data-i18n="admin.select_one">Seleccione...</option>
+                        @foreach (var o in ordenes)
+                        {
+                            <option value="@o.OrdenVentaId" data-cliente="@o.ClienteId">
+                                @o.NumeroOrden - @o.ClienteNombre - Q @o.Total.ToString("N2")
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" data-i18n="admin.customer_address">Dirección de cliente</label>
+                    <select class="form-select" name="clienteDireccionId" id="direccionSelect" required>
+                        <option value="" data-i18n="admin.select_order_first">Seleccione una orden primero...</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" data-i18n="admin.tracking_number">Número de guía</label>
+                    <input class="form-control" name="numeroGuia" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" data-i18n="admin.carrier_col">Transportista</label>
+                    <input class="form-control" name="transportista" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" data-i18n="admin.cost_col">Costo</label>
+                    <input class="form-control" type="number" step="0.01" name="costoEnvio" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" data-i18n="admin.status_col">Estado</label>
+                    <select class="form-select" name="estado">
+                        <option>PREPARANDO</option>
+                        <option>EN_TRANSITO</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-danger" data-i18n="admin.register_shipment">Registrar envío</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index" data-i18n="admin.back">Volver</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const orden = document.getElementById('ordenSelect');
+const dir   = document.getElementById('direccionSelect');
+
+orden?.addEventListener('change', async () => {
+    const cliente = orden.selectedOptions[0]?.dataset.cliente;
+    const loadingText = (typeof i18n !== 'undefined') ? i18n.t('common.loading') : 'Cargando...';
+    const noOrderText = (typeof i18n !== 'undefined') ? i18n.t('admin.select_order_first') : 'Seleccione una orden primero...';
+    const noAddrText  = (typeof i18n !== 'undefined') ? i18n.t('admin.no_addresses_client') : 'Sin direcciones registradas para este cliente';
+
+    dir.innerHTML = `<option>${loadingText}</option>`;
+
+    if (!cliente) {
+        dir.innerHTML = `<option value="">${noOrderText}</option>`;
+        return;
+    }
+
+    const r    = await fetch(`/Envios/DireccionesCliente?clienteId=${cliente}`);
+    const data = await r.json();
+
+    dir.innerHTML = data.length
+        ? data.map(d => `<option value="${d.clienteDireccionId}">${d.tipo ?? ''} - ${d.direccionLinea1 ?? d.direccion ?? 'Sin dirección'} (${d.ciudadNombre ?? ''})</option>`).join('')
+        : `<option value="">${noAddrText}</option>`;
+});
+</script>
+}

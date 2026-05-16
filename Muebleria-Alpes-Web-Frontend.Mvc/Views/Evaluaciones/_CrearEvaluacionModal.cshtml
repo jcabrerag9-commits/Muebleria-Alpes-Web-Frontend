@@ -1,0 +1,42 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearEvaluacionViewModel
+
+<div class="modal fade" id="modalCrearEvaluacion" tabindex="-1" aria-labelledby="modalCrearEvaluacionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearEvaluacionLabel">
+                    <i class="bi bi-star me-2"></i> Nueva Evaluación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-controller="Evaluaciones" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Empleado ID <span class="text-danger">*</span></label>
+                        <input type="number" name="EmpleadoId" class="form-control" required placeholder="ID del empleado" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="Fecha" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Calificación (0 - 100) <span class="text-danger">*</span></label>
+                        <input type="number" name="Calificacion" class="form-control" required min="0" max="100" placeholder="Ej. 85" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Comentarios</label>
+                        <textarea name="Comentarios" class="form-control" rows="3" placeholder="Observaciones sobre el desempeño"></textarea>
+                    </div>
+                    <input type="hidden" name="UsuarioId" value="1" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

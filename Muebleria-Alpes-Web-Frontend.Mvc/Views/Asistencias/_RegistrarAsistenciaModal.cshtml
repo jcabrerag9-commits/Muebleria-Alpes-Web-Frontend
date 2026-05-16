@@ -1,0 +1,51 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model CrearAsistenciaViewModel
+
+<div class="modal fade" id="modalRegistrarAsistencia" tabindex="-1" aria-labelledby="modalRegistrarAsistenciaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRegistrarAsistenciaLabel">
+                    <i class="bi bi-calendar-check me-2"></i> Registrar Asistencia
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-controller="Asistencias" asp-action="Registrar" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Empleado ID <span class="text-danger">*</span></label>
+                        <input type="number" name="EmpleadoId" class="form-control" required placeholder="ID del empleado" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="Fecha" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora Entrada</label>
+                        <input type="time" name="HoraEntrada" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora Salida</label>
+                        <input type="time" name="HoraSalida" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado <span class="text-danger">*</span></label>
+                        <select name="Estado" class="form-select" required>
+                            <option value="PRESENTE">PRESENTE</option>
+                            <option value="AUSENTE">AUSENTE</option>
+                            <option value="TARDANZA">TARDANZA</option>
+                            <option value="PERMISO">PERMISO</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="UsuarioId" value="1" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-main">
+                        <i class="bi bi-save "></i> Registrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

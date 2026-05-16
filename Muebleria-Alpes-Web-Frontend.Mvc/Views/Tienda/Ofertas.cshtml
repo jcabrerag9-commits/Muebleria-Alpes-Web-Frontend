@@ -1,0 +1,90 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<TiendaProductoViewModel>
+@{
+    Layout = "_LayoutTienda";
+    ViewData["Title"] = "Ofertas";
+}
+
+<!-- Page Header -->
+<div class="tienda-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index" data-i18n="common.home">Inicio</a></li>
+                <li class="breadcrumb-item active" data-i18n="offers.breadcrumb">Ofertas</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Hero Banner for Offers -->
+<div style="background: linear-gradient(135deg, var(--tienda-accent) 0%, #c0395a 100%); color: white; padding: 40px 0;">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-2"><i class="bi bi-tag me-2"></i><span data-i18n="offers.title">Ofertas Especiales</span></h2>
+        <p class="mb-0" style="opacity: 0.9;" data-i18n="offers.hero_sub">Precios increíbles por tiempo limitado. ¡No te los pierdas!</p>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+
+        @if (Model.Any())
+        {
+            <p class="text-muted mb-4">@Model.Count <span data-i18n="offers.available">oferta(s) disponible(s)</span></p>
+
+            <div class="row g-4">
+                @foreach (var p in Model)
+                {
+                    <div class="col-md-4 col-sm-6 producto-card-wrapper">
+                        <div class="card producto-card">
+                            <div class="producto-img-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <span class="badge-promo mb-2 align-self-start" data-i18n="offers.sale_badge">Oferta</span>
+                                <h5 class="card-title mb-1">@p.Nombre</h5>
+                                <p class="text-muted small mb-2">Tipo @p.TipoMuebleId</p>
+                                <div class="mt-auto pt-2">
+                                    @if (p.PrecioConDescuento.HasValue)
+                                    {
+                                        <div class="text-muted small text-decoration-line-through">Q @p.Precio.ToString("N2")</div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="producto-precio" style="color: var(--tienda-accent);">
+                                                Q @p.PrecioConDescuento.Value.ToString("N2")
+                                            </span>
+                                            <a asp-controller="Tienda" asp-action="Detalle" asp-route-id="@p.Id"
+                                               class="btn-tienda" style="padding: 8px 18px; font-size: 0.85rem;" data-i18n="offers.see_more">
+                                                Ver más
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="producto-precio">Q @p.Precio.ToString("N2")</span>
+                                            <a asp-controller="Tienda" asp-action="Detalle" asp-route-id="@p.Id"
+                                               class="btn-tienda" style="padding: 8px 18px; font-size: 0.85rem;" data-i18n="offers.see_more">
+                                                Ver más
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-tag d-block"></i>
+                <p class="mt-3 fw-semibold" data-i18n="offers.no_offers">Sin ofertas disponibles por el momento.</p>
+                <p class="text-muted small" data-i18n="offers.no_offers_sub">Vuelve pronto, actualizamos nuestras promociones frecuentemente.</p>
+                <a asp-controller="Tienda" asp-action="Catalogo" class="btn-tienda mt-3" data-i18n="offers.view_catalog">
+                    <i class="bi bi-grid me-1"></i>Ver catálogo completo
+                </a>
+            </div>
+        }
+    </div>
+</section>

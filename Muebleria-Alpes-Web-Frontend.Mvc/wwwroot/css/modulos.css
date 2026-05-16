@@ -1,0 +1,211 @@
+/* ============================================================
+   MUEBLES LOS ALPES — Estilos módulos Promociones y Devoluciones
+   ============================================================ */
+
+/* ── Variables ─────────────────────────────────────────────── */
+:root {
+    --alpes-red:     #e11d48;
+    --alpes-red-soft:#fff1f2;
+    --alpes-dark:    #1e1b4b;
+    --alpes-gray:    #64748b;
+    --alpes-border:  #e2e8f0;
+    --alpes-radius:  12px;
+    --alpes-shadow:  0 1px 3px rgba(0,0,0,.08);
+}
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.alpes-card {
+    background: #fff;
+    border-radius: var(--alpes-radius);
+    border: 1px solid var(--alpes-border);
+    padding: 1.5rem;
+    box-shadow: var(--alpes-shadow);
+}
+
+/* ── Page header ───────────────────────────────────────────── */
+.page-title    { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+.page-subtitle { color: var(--alpes-gray); font-size: .9rem; margin: 0; }
+.btn-back      { color: var(--alpes-gray); text-decoration: none; font-size: .85rem; }
+.btn-back:hover{ color: var(--alpes-red); }
+.card-section-title { font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem; }
+
+/* ── Stat cards ────────────────────────────────────────────── */
+.stat-card {
+    background: #fff;
+    border-radius: var(--alpes-radius);
+    border: 1px solid var(--alpes-border);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--alpes-shadow);
+}
+.stat-icon  { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+.stat-value { font-size: 1.6rem; font-weight: 700; color: #1e293b; line-height: 1; }
+.stat-label { font-size: .8rem; color: var(--alpes-gray); margin-top: 2px; }
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn-primary-alpes {
+    background: var(--alpes-red);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .5rem 1.25rem;
+    font-weight: 600;
+    font-size: .875rem;
+    transition: background .2s;
+}
+.btn-primary-alpes:hover { background: #be123c; color: #fff; }
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: .3rem .45rem;
+    border-radius: 6px;
+    color: var(--alpes-gray);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.btn-icon:hover { background: #f1f5f9; color: #1e293b; }
+
+/* ── Badges ────────────────────────────────────────────────── */
+.badge-code {
+    background: #f1f5f9;
+    color: #475569;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.badge-estado {
+    padding: .25rem .65rem;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+.badge-estado-activo   { background: #dcfce7; color: #16a34a; }
+.badge-estado-inactivo { background: #f1f5f9; color: #64748b; }
+.badge-estado-default  { background: #fef9c3; color: #854d0e; }
+
+.badge-warning   { background: #fef3c7; color: #92400e; }
+.badge-info      { background: #dbeafe; color: #1e40af; }
+.badge-success   { background: #dcfce7; color: #166534; }
+.badge-danger    { background: #fee2e2; color: #991b1b; }
+.badge-secondary { background: #f1f5f9; color: #475569; }
+.badge-primary   { background: #ede9fe; color: #5b21b6; }
+
+.bg-success-soft { background: #dcfce7 !important; }
+
+/* Promo badge */
+.promo-badge {
+    background: var(--alpes-red-soft);
+    color: var(--alpes-red);
+    padding: .2rem .65rem;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+/* ── Tables ────────────────────────────────────────────────── */
+.alpes-table { margin: 0; }
+.alpes-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--alpes-border);
+    padding: .75rem 1rem;
+}
+.alpes-table tbody td {
+    padding: .9rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .875rem;
+}
+.alpes-table tbody tr:hover { background: #fafbfc; }
+.fw-600 { font-weight: 600; }
+
+/* ── Forms ─────────────────────────────────────────────────── */
+.form-control-alpes {
+    width: 100%;
+    border: 1px solid var(--alpes-border);
+    border-radius: 8px;
+    padding: .55rem .85rem;
+    font-size: .875rem;
+    color: #1e293b;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+}
+.form-control-alpes:focus {
+    border-color: var(--alpes-red);
+    box-shadow: 0 0 0 3px rgba(225,29,72,.1);
+}
+.form-label-alpes { font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .35rem; display: block; }
+.form-label-sm    { font-size: .78rem; font-weight: 500; color: #6b7280; margin-bottom: .25rem; display: block; }
+
+.input-group-alpes { display: flex; }
+.input-prefix      { background: #f1f5f9; border: 1px solid var(--alpes-border); border-right: none; border-radius: 8px 0 0 8px; padding: .55rem .75rem; font-size: .85rem; color: #64748b; display: flex; align-items: center; }
+.input-group-alpes .form-control-alpes { border-radius: 0 8px 8px 0; }
+
+/* ── Empty state ───────────────────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--alpes-gray);
+}
+.empty-state i { font-size: 2.5rem; display: block; margin-bottom: .75rem; opacity: .4; }
+.empty-state p { margin-bottom: .75rem; }
+
+/* ── Detail grid ───────────────────────────────────────────── */
+.detail-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.detail-item  { display: flex; flex-direction: column; gap: .25rem; }
+.detail-label { font-size: .75rem; font-weight: 600; color: var(--alpes-gray); text-transform: uppercase; letter-spacing: .05em; }
+.col-span-2   { grid-column: span 2; }
+
+/* ── Estado flow (devoluciones) ────────────────────────────── */
+.estado-flow { display: flex; flex-direction: column; gap: .5rem; }
+.estado-step {
+    padding: .4rem .75rem;
+    border-radius: 8px;
+    font-size: .82rem;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.estado-step.active {
+    background: var(--alpes-red-soft);
+    color: var(--alpes-red);
+    border-color: #fecdd3;
+    font-weight: 600;
+}
+
+/* ── Banner cards ──────────────────────────────────────────── */
+.banner-card  { padding: 0; overflow: hidden; }
+.banner-img-wrap { position: relative; height: 160px; overflow: hidden; background: #f1f5f9; }
+.banner-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.banner-estado { position: absolute; top: .5rem; right: .5rem; }
+.banner-body   { padding: 1rem; }
+.banner-title  { font-weight: 600; margin-bottom: .4rem; font-size: .95rem; }
+.banner-meta   { font-size: .78rem; color: var(--alpes-gray); display: flex; gap: .5rem; margin-bottom: .4rem; }
+.banner-clicks { font-size: .8rem; color: #475569; }
+.banner-footer { padding: .75rem 1rem; border-top: 1px solid var(--alpes-border); display: flex; justify-content: flex-end; gap: .5rem; }
+
+/* ── Modals ────────────────────────────────────────────────── */
+.alpes-modal { border-radius: var(--alpes-radius); border: none; }
+.alpes-modal .modal-header { border-bottom: 1px solid var(--alpes-border); padding: 1.25rem 1.5rem; }
+.alpes-modal .modal-title  { font-weight: 700; font-size: 1.05rem; }
+.alpes-modal .modal-footer { border-top: 1px solid var(--alpes-border); }
+
+/* ── Alerts ────────────────────────────────────────────────── */
+.alert { border-radius: 10px; border: none; font-size: .875rem; }
+.alert-success { background: #f0fdf4; color: #15803d; }
+.alert-danger  { background: #fef2f2; color: #b91c1c; }

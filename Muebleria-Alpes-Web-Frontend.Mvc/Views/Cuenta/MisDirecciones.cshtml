@@ -1,0 +1,265 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model List<DireccionClienteViewModel>
+@{
+    Layout = "_LayoutTienda";
+    ViewData["Title"] = "Mis Direcciones";
+
+    // Datos de catálogo embebidos (mismos de BD)
+    var paises = new[] {
+        (Id: 1, Nombre: "Guatemala"),
+        (Id: 2, Nombre: "El Salvador"),
+        (Id: 3, Nombre: "Honduras")
+    };
+
+    var departamentos = new[] {
+        (Id: 1, Nombre: "Guatemala",       PaisId: 1),
+        (Id: 2, Nombre: "Sacatepéquez",    PaisId: 1),
+        (Id: 3, Nombre: "Escuintla",       PaisId: 1),
+        (Id: 4, Nombre: "Quetzaltenango",  PaisId: 1),
+        (Id: 5, Nombre: "San Salvador",    PaisId: 2)
+    };
+
+    var ciudades = new[] {
+        (Id: 1, Nombre: "Guatemala",          DepId: 1),
+        (Id: 3, Nombre: "Mixco",              DepId: 1),
+        (Id: 2, Nombre: "Villa Nueva",        DepId: 1),
+        (Id: 4, Nombre: "Antigua Guatemala",  DepId: 2),
+        (Id: 5, Nombre: "Quetzaltenango",     DepId: 4)
+    };
+}
+
+<!-- Breadcrumb -->
+<div class="tienda-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index" data-i18n="common.home">Inicio</a></li>
+                <li class="breadcrumb-item active" data-i18n="addresses.breadcrumb">Mis Direcciones</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- ── Lista de direcciones ── -->
+            <div class="col-lg-7">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="section-title mb-1"><i class="bi bi-geo-alt me-2"></i><span data-i18n="addresses.title">Mis Direcciones</span></h2>
+                        <p class="text-muted mb-0" data-i18n="addresses.subtitle">Direcciones de entrega registradas en tu cuenta</p>
+                    </div>
+                    <a asp-controller="Cuenta" asp-action="MisPedidos" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-bag-check me-1"></i><span data-i18n="addresses.my_orders_btn">Mis Pedidos</span>
+                    </a>
+                </div>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-geo-alt-fill d-block mb-3" style="font-size:3rem; color:var(--tienda-primary);"></i>
+                        <p class="fw-semibold" data-i18n="addresses.no_addresses">No tienes direcciones registradas.</p>
+                        <p class="text-muted small" data-i18n="addresses.no_addresses_sub">Agrega una dirección de entrega usando el formulario.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var dir in Model)
+                        {
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm h-100" style="border-radius:14px; border-left: 4px solid var(--tienda-primary) !important;">
+                                    <div class="card-body py-3 px-4">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="badge rounded-pill"
+                                                          style="background:var(--tienda-primary); font-size:0.75rem;">
+                                                        @(dir.Tipo ?? "ENVIO")
+                                                    </span>
+                                                    @if (dir.EsPrincipalBool)
+                                                    {
+                                                        <span class="badge bg-success rounded-pill" style="font-size:0.75rem;">
+                                                            <i class="bi bi-star-fill me-1"></i><span data-i18n="addresses.principal">Principal</span>
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <p class="mb-0 fw-semibold">@dir.DireccionLinea1</p>
+                                                @if (!string.IsNullOrWhiteSpace(dir.DireccionLinea2))
+                                                {
+                                                    <p class="mb-0 text-muted small">@dir.DireccionLinea2</p>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(dir.Referencia))
+                                                {
+                                                    <p class="mb-0 text-muted small"><i class="bi bi-info-circle me-1"></i>@dir.Referencia</p>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(dir.CodigoPostal))
+                                                {
+                                                    <p class="mb-0 text-muted small">CP: @dir.CodigoPostal</p>
+                                                }
+                                            </div>
+                                            <i class="bi bi-house-door text-muted" style="font-size:1.4rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- ── Formulario agregar dirección ── -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm" style="border-radius:16px;">
+                    <div class="card-header border-0 py-3 px-4" style="background:var(--tienda-primary); border-radius:16px 16px 0 0;">
+                        <h5 class="mb-0 text-white"><i class="bi bi-plus-circle me-2"></i><span data-i18n="addresses.form_title">Nueva dirección</span></h5>
+                    </div>
+                    <div class="card-body px-4 py-4">
+                        <form asp-action="AgregarDireccion" asp-controller="Cuenta" method="post" id="formDireccion">
+                            @Html.AntiForgeryToken()
+
+                            <!-- Tipo -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" data-i18n="addresses.type_label">Tipo de dirección</label>
+                                <select class="form-select" name="tipo" required>
+                                    <option value="ENVIO" data-i18n="addresses.type_shipping">Envío</option>
+                                    <option value="FACTURACION" data-i18n="addresses.type_billing">Facturación</option>
+                                    <option value="OTRO" data-i18n="addresses.type_other">Otro</option>
+                                </select>
+                            </div>
+
+                            <!-- País -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" data-i18n="addresses.country_label">País</label>
+                                <select class="form-select" name="paisId" id="selPais" required>
+                                    <option value="" data-i18n="addresses.country_placeholder">Selecciona un país...</option>
+                                    @foreach (var p in paises)
+                                    {
+                                        <option value="@p.Id">@p.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Departamento -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" data-i18n="addresses.department_label">Departamento</label>
+                                <select class="form-select" name="departamentoId" id="selDep" required disabled>
+                                    <option value="" data-i18n="addresses.department_placeholder">Selecciona un departamento...</option>
+                                    @foreach (var d in departamentos)
+                                    {
+                                        <option value="@d.Id" data-pais="@d.PaisId">@d.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Ciudad -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" data-i18n="addresses.city_label">Ciudad / Municipio</label>
+                                <select class="form-select" name="ciudadId" id="selCiudad" required disabled>
+                                    <option value="" data-i18n="addresses.city_placeholder">Selecciona una ciudad...</option>
+                                    @foreach (var c in ciudades)
+                                    {
+                                        <option value="@c.Id" data-dep="@c.DepId">@c.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Dirección línea 1 -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold"><span data-i18n="addresses.address_label">Dirección</span> <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="direccionLinea1"
+                                       data-i18n-placeholder="addresses.address_placeholder"
+                                       placeholder="Ej: 5ta Avenida 10-15 Zona 1" required maxlength="200" />
+                            </div>
+
+                            <!-- Dirección línea 2 -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold"><span data-i18n="addresses.address2_label">Apartamento / Colonia</span> <span class="text-muted small" data-i18n="addresses.address2_optional">(opcional)</span></label>
+                                <input type="text" class="form-control" name="direccionLinea2"
+                                       data-i18n-placeholder="addresses.address2_placeholder"
+                                       placeholder="Ej: Apto 3B, Col. Las Flores" maxlength="200" />
+                            </div>
+
+                            <!-- Fila: CP + Referencia -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-5">
+                                    <label class="form-label fw-semibold" data-i18n="addresses.postal_label">Código postal</label>
+                                    <input type="text" class="form-control" name="codigoPostal"
+                                           placeholder="01001" maxlength="10" />
+                                </div>
+                                <div class="col-7">
+                                    <label class="form-label fw-semibold" data-i18n="addresses.reference_label">Referencia</label>
+                                    <input type="text" class="form-control" name="referencia"
+                                           data-i18n-placeholder="addresses.reference_placeholder"
+                                           placeholder="Ej: frente al parque" maxlength="200" />
+                                </div>
+                            </div>
+
+                            <!-- Principal -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" name="esPrincipal" id="chkPrincipal" value="true" />
+                                <label class="form-check-label" for="chkPrincipal" data-i18n="addresses.set_main">
+                                    Establecer como dirección principal
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn w-100 fw-semibold py-2"
+                                    style="background:var(--tienda-primary); color:#fff; border-radius:10px;">
+                                <i class="bi bi-plus-circle me-2"></i><span data-i18n="addresses.save_btn">Guardar dirección</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    const selPais   = document.getElementById('selPais');
+    const selDep    = document.getElementById('selDep');
+    const selCiudad = document.getElementById('selCiudad');
+
+    selPais.addEventListener('change', () => {
+        const pid = selPais.value;
+        // Filtrar departamentos
+        Array.from(selDep.options).forEach(o => {
+            o.hidden = o.value && o.dataset.pais !== pid;
+        });
+        selDep.value = '';
+        selDep.disabled = !pid;
+        selCiudad.value = '';
+        selCiudad.disabled = true;
+        Array.from(selCiudad.options).forEach(o => o.hidden = !!o.value);
+    });
+
+    selDep.addEventListener('change', () => {
+        const did = selDep.value;
+        // Filtrar ciudades
+        Array.from(selCiudad.options).forEach(o => {
+            o.hidden = o.value && o.dataset.dep !== did;
+        });
+        selCiudad.value = '';
+        selCiudad.disabled = !did;
+    });
+</script>
+}

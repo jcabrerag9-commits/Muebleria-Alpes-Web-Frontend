@@ -1,0 +1,170 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Devoluciones.DevolucionIndexViewModel
+
+@{
+    ViewData["Title"] = "Devoluciones";
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="page-title">Devoluciones</h2>
+        <p class="page-subtitle">Gestión de solicitudes RMA</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Categorias" class="btn btn-outline-secondary">
+            <i class="bi bi-tags me-1"></i> Categorías
+        </a>
+        <a asp-action="Crear" class="btn btn-primary-alpes">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Devolución
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(251,191,36,.12);color:#f59e0b">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalSolicitadas</div>
+                <div class="stat-label">Solicitadas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(34,197,94,.12);color:#22c55e">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalAprobadas</div>
+                <div class="stat-label">Aprobadas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(239,68,68,.12);color:#ef4444">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalRechazadas</div>
+                <div class="stat-label">Rechazadas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(148,163,184,.12);color:#94a3b8">
+                <i class="bi bi-archive"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalCompletadas</div>
+                <div class="stat-label">Completadas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="alpes-card mb-4">
+    <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+        <div>
+            <label class="form-label-sm">Estado</label>
+            <select name="estado" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="SOLICITADA"  selected="@(Model.FiltroEstado=="SOLICITADA")">Solicitada</option>
+                <option value="EN_REVISION" selected="@(Model.FiltroEstado=="EN_REVISION")">En revisión</option>
+                <option value="APROBADA"    selected="@(Model.FiltroEstado=="APROBADA")">Aprobada</option>
+                <option value="RECHAZADA"   selected="@(Model.FiltroEstado=="RECHAZADA")">Rechazada</option>
+                <option value="COMPLETADA"  selected="@(Model.FiltroEstado=="COMPLETADA")">Completada</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary-alpes btn-sm">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="alpes-card">
+    @if (!Model.Devoluciones.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-arrow-return-left"></i>
+            <p>No hay devoluciones registradas.</p>
+            <a asp-action="Crear" class="btn btn-primary-alpes btn-sm">Crear primera devolución</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table alpes-table">
+                <thead>
+                    <tr>
+                        <th>RMA</th>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Categoría</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Devoluciones)
+                    {
+                        <tr>
+                            <td><span class="badge-code">@d.DevNumeroRma</span></td>
+                            <td>#@d.VenOrdenVenta</td>
+                            <td>@d.CliCliente</td>
+                            <td>@(d.NombreCategoria ?? "—")</td>
+                            <td>Q @d.DevMontoTotal.ToString("N2")</td>
+                            <td>@d.DevFechaCreacion.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge-estado @d.EstadoBadgeClass">@d.DevEstado</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Detalle" asp-route-id="@d.DevDevolucion"
+                                   class="btn-icon" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if (d.DevEstado == "SOLICITADA")
+                                {
+                                    <form asp-action="Eliminar" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar devolución @d.DevNumeroRma?')">
+                                        <input type="hidden" name="id" value="@d.DevDevolucion" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-icon text-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

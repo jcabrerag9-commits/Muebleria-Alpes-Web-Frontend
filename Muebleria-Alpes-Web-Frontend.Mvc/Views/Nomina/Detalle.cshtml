@@ -1,0 +1,69 @@
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.RecursosHumanos
+@model List<NominaDetalleViewModel>
+
+@{
+    ViewData["Title"] = "Detalle de Nómina";
+    var nominaId = ViewBag.NominaId;
+}
+
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon">
+            <i class="bi bi-list-check"></i>
+        </div>
+        <div>
+            <h1>Detalle de Nómina</h1>
+            <p>Nómina #@nominaId</p>
+        </div>
+    </div>
+    <div class="page-actions">
+        <a asp-controller="Nomina" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="record-count">
+    @Model.Count empleados
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Salario Base</th>
+                    <th>Total Ingresos</th>
+                    <th>Total Deducciones</th>
+                    <th>Salario Neto</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td><span class="code-badge">@d.EmpCodigo</span></td>
+                        <td>@d.Nombre</td>
+                        <td>Q @d.SalarioBase.ToString("N2")</td>
+                        <td>Q @d.TotalIngresos.ToString("N2")</td>
+                        <td>Q @d.TotalDeducciones.ToString("N2")</td>
+                        <td><strong>Q @d.SalarioNeto.ToString("N2")</strong></td>
+                        <td>
+                            @if (d.Estado == "ACTIVO")
+                            {
+                                <span class="status-badge status-active">@d.Estado</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">@d.Estado</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

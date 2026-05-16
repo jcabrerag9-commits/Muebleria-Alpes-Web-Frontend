@@ -1,28 +1,154 @@
-﻿@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Test.TestConexionViewModel
-
+@using Muebleria_Alpes_Web_Frontend.Mvc.ViewModels
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-4">
-        <h2 class="fw-bold mb-2">Prueba de Conexión</h2>
-        <p class="text-muted mb-4">
-            Esta prueba valida la comunicación del frontend MVC con el backend API y la conexión del backend con Oracle.
-        </p>
+<div class="page-header">
+    <div class="page-title-box">
+        <div class="page-icon"><i class="bi bi-grid"></i></div>
+        <div>
+            <h1 data-i18n="admin.dashboard">Dashboard</h1>
+            <p><span data-i18n="admin.dashboard_sub">Resumen del sistema</span> - @DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+        </div>
+    </div>
+    <div class="page-actions">
+        <a asp-controller="Tienda" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-shop"></i> <span data-i18n="admin.view_store_btn">Ver Tienda</span>
+        </a>
+    </div>
+</div>
 
-        @if (Model.Exitoso)
-        {
-            <div class="alert alert-success rounded-4">
-                <strong>@Model.Mensaje</strong><br />
-                Resultado: @Model.Resultado
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(255,92,130,.12); color: #ff5c82;">
+                <i class="bi bi-cart-check"></i>
             </div>
-        }
-        else
-        {
-            <div class="alert alert-danger rounded-4">
-                <strong>Error:</strong> @Model.Mensaje
+            <div class="stat-body">
+                <div class="stat-value">@Model.TotalOrdenes</div>
+                <div class="stat-label" data-i18n="admin.total_orders">Órdenes Totales</div>
             </div>
-        }
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(25,135,84,.1); color: #198754;">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-value">Q @Model.VentasHoy.ToString("N2")</div>
+                <div class="stat-label" data-i18n="admin.today_sales">Ventas de Hoy</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(13,110,253,.1); color: #0d6efd;">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-value">@Model.TotalClientes</div>
+                <div class="stat-label" data-i18n="admin.total_customers">Clientes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(255,193,7,.1); color: #ffc107;">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-value">@Model.TotalProductos</div>
+                <div class="stat-label" data-i18n="admin.total_products">Productos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders & Quick Links -->
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="erp-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-danger"></i><span data-i18n="admin.recent_orders">Órdenes Recientes</span></h5>
+                <a asp-controller="Ventas" asp-action="Index" class="btn btn-sm btn-outline-secondary" data-i18n="admin.view_all">Ver todas</a>
+            </div>
+            @if (Model.OrdeneRecientes.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table erp-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin.order_col">Orden</th>
+                                <th data-i18n="admin.customer_col">Cliente</th>
+                                <th data-i18n="admin.total_col">Total</th>
+                                <th data-i18n="admin.status_col">Estado</th>
+                                <th data-i18n="admin.date_col">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.OrdeneRecientes)
+                            {
+                                <tr>
+                                    <td><span class="code-badge">@o.NumeroOrden</span></td>
+                                    <td>@o.Cliente</td>
+                                    <td>Q @o.Total.ToString("N2")</td>
+                                    <td>
+                                        @{
+                                            var badgeClass = o.Estado switch
+                                            {
+                                                "COMPLETADO" => "status-active",
+                                                "CANCELADO" => "status-inactive",
+                                                _ => "status-warning"
+                                            };
+                                        }
+                                        <span class="status-badge @badgeClass">@o.Estado</span>
+                                    </td>
+                                    <td>@o.Fecha.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i><span data-i18n="admin.no_recent_orders">No hay órdenes recientes</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="col-xl-4">
+        <div class="erp-card">
+            <h5 class="mb-3 fw-bold"><i class="bi bi-lightning-charge me-2 text-warning"></i><span data-i18n="admin.quick_links">Accesos Rápidos</span></h5>
+            <div class="d-grid gap-2">
+                <a asp-controller="Productos" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-box-seam me-2"></i> <span data-i18n="admin.manage_products">Gestionar Productos</span>
+                </a>
+                <a asp-controller="Clientes" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-people me-2"></i> <span data-i18n="admin.view_customers">Ver Clientes</span>
+                </a>
+                <a asp-controller="Ventas" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-cart me-2"></i> <span data-i18n="admin.view_orders">Ver Órdenes</span>
+                </a>
+                <a asp-controller="Inventario" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-building me-2"></i> <span data-i18n="admin.view_inventory">Ver Inventario</span>
+                </a>
+                <a asp-controller="Caja" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-cash-stack me-2"></i> <span data-i18n="admin.cash_register">Corte de Caja</span>
+                </a>
+                <a asp-controller="Empleados" asp-action="Index" class="btn btn-outline-secondary text-start">
+                    <i class="bi bi-person-gear me-2"></i> <span data-i18n="admin.manage_employees">Gestionar Empleados</span>
+                </a>
+                <a asp-controller="Tienda" asp-action="Index" class="btn btn-danger text-start mt-2">
+                    <i class="bi bi-shop me-2"></i> <span data-i18n="admin.go_store">Ir a la Tienda Virtual</span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>

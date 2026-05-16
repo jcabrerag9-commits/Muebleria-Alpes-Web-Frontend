@@ -1,0 +1,96 @@
+@model Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Promociones.CrearPromocionViewModel
+@{
+    ViewData["Title"] = "Nueva Promoción";
+}
+
+<div class="page-header mb-4">
+    <a asp-action="Index" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <h2 class="page-title mt-2">Nueva Promoción</h2>
+    <p class="page-subtitle">Crea una nueva campaña de descuento</p>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alpes-card" style="max-width:720px">
+    <form asp-action="Crear" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label-alpes">Nombre <span class="text-danger">*</span></label>
+                <input asp-for="PrmNombre" class="form-control-alpes" placeholder="Ej. Descuento de Verano" />
+                <span asp-validation-for="PrmNombre" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label-alpes">Descripción</label>
+                <textarea asp-for="PrmDescripcion" class="form-control-alpes" rows="2"
+                          placeholder="Descripción opcional de la promoción"></textarea>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label-alpes">Tipo <span class="text-danger">*</span></label>
+                <select asp-for="PrmTipo" class="form-control-alpes" id="selectTipo" onchange="toggleValor()">
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="PORCENTAJE">Porcentaje (%)</option>
+                    <option value="MONTO_FIJO">Monto fijo (Q)</option>
+                    <option value="2X1">2x1</option>
+                    <option value="ENVIO_GRATIS">Envío gratis</option>
+                    <option value="COMPRA_MINIMA">Compra mínima</option>
+                </select>
+                <span asp-validation-for="PrmTipo" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6" id="campoValor">
+                <label class="form-label-alpes">Valor <span class="text-danger">*</span></label>
+                <div class="input-group-alpes">
+                    <span class="input-prefix" id="prefixValor">%</span>
+                    <input asp-for="PrmValor" type="number" step="0.01" min="0.01"
+                           class="form-control-alpes" placeholder="0.00" />
+                </div>
+                <span asp-validation-for="PrmValor" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label-alpes">Fecha inicio <span class="text-danger">*</span></label>
+                <input asp-for="PrmFechaInicio" type="date" class="form-control-alpes" />
+                <span asp-validation-for="PrmFechaInicio" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label-alpes">Fecha fin <span class="text-danger">*</span></label>
+                <input asp-for="PrmFechaFin" type="date" class="form-control-alpes" />
+                <span asp-validation-for="PrmFechaFin" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary-alpes">
+                <i class="bi bi-check-lg me-1"></i> Crear Promoción
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    function toggleValor() {
+        const tipo = document.getElementById('selectTipo').value;
+        const campo = document.getElementById('campoValor');
+        const prefix = document.getElementById('prefixValor');
+        const noNecesita = ['2X1', 'ENVIO_GRATIS'];
+        campo.style.display = noNecesita.includes(tipo) ? 'none' : 'block';
+        prefix.textContent = tipo === 'PORCENTAJE' ? '%' : 'Q';
+    }
+    toggleValor();
+</script>
+}
