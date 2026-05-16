@@ -271,6 +271,33 @@ html, body {
     gap: 12px;
 }
 
+/* Admin language switcher */
+.admin-lang-btn {
+    padding: 2px 9px;
+    border: 1px solid #d6cdd0;
+    background: transparent;
+    color: #7f6f75;
+    border-radius: 6px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all .2s;
+    line-height: 1.5;
+}
+
+.admin-lang-btn:hover {
+    border-color: #9e7b83;
+    color: #5d4f54;
+    background: #f5eff1;
+}
+
+.admin-lang-btn.lang-active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .topbar-btn {
     width: 36px;
     height: 36px;

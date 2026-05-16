@@ -8,13 +8,13 @@
     <div class="page-title-box">
         <div class="page-icon"><i class="bi bi-grid"></i></div>
         <div>
-            <h1>Dashboard</h1>
-            <p>Resumen del sistema - @DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+            <h1 data-i18n="admin.dashboard">Dashboard</h1>
+            <p><span data-i18n="admin.dashboard_sub">Resumen del sistema</span> - @DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
         </div>
     </div>
     <div class="page-actions">
         <a asp-controller="Tienda" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-shop"></i> Ver Tienda
+            <i class="bi bi-shop"></i> <span data-i18n="admin.view_store_btn">Ver Tienda</span>
         </a>
     </div>
 </div>
