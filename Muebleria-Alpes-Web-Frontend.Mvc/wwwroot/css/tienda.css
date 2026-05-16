@@ -124,6 +124,32 @@
     color: white;
 }
 
+/* Language switcher */
+.lang-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+
+.lang-btn:hover {
+    border-color: rgba(255,255,255,0.8);
+    color: white;
+}
+
+.lang-btn.lang-active {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.8);
+    color: white;
+}
+
 /* =====================
    Hero Section
    ===================== */

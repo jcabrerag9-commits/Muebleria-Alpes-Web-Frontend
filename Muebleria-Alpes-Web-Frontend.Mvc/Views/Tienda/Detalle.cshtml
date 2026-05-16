@@ -10,8 +10,8 @@
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index">Inicio</a></li>
-                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Catalogo">Catálogo</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Index" data-i18n="common.home">Inicio</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Tienda" asp-action="Catalogo" data-i18n="detail.breadcrumb_catalog">Catálogo</a></li>
                 <li class="breadcrumb-item active">@Model.Nombre</li>
             </ol>
         </nav>
@@ -46,7 +46,7 @@
             <div class="col-md-7">
                 @if (Model.TienePromocion)
                 {
-                    <span class="badge-promo mb-3 d-inline-block">En oferta</span>
+                    <span class="badge-promo mb-3 d-inline-block" data-i18n="detail.on_sale">En oferta</span>
                 }
 
                 <h1 class="fw-bold mb-2" style="color: var(--tienda-primary);">@Model.Nombre</h1>
@@ -94,7 +94,7 @@
                     <input type="hidden" name="productoId" value="@Model.Id" />
 
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <label class="fw-semibold">Cantidad:</label>
+                        <label class="fw-semibold" data-i18n="detail.quantity">Cantidad:</label>
                         <div class="d-flex align-items-center qty-group">
                             <button type="button" class="btn btn-outline-secondary qty-decrease" style="border-radius: 8px 0 0 8px;">
                                 <i class="bi bi-dash"></i>
@@ -109,10 +109,10 @@
 
                     <div class="d-flex gap-3 flex-wrap">
                         <button type="submit" class="btn-tienda">
-                            <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                            <i class="bi bi-cart-plus me-2"></i><span data-i18n="detail.add_to_cart">Agregar al carrito</span>
                         </button>
                         <a asp-controller="Tienda" asp-action="Catalogo" class="btn btn-outline-secondary" style="border-radius: 30px; padding: 12px 24px;">
-                            <i class="bi bi-arrow-left me-1"></i>Volver al catálogo
+                            <i class="bi bi-arrow-left me-1"></i><span data-i18n="detail.back_catalog">Volver al catálogo</span>
                         </a>
                     </div>
                 </form>
@@ -120,9 +120,9 @@
                 <!-- Benefits mini -->
                 <div class="mt-4 pt-4 border-top">
                     <div class="d-flex gap-4 text-muted small">
-                        <span><i class="bi bi-truck me-1" style="color: var(--tienda-primary);"></i>Envío disponible</span>
-                        <span><i class="bi bi-shield-check me-1" style="color: var(--tienda-primary);"></i>12 meses garantía</span>
-                        <span><i class="bi bi-arrow-repeat me-1" style="color: var(--tienda-primary);"></i>Devolución 30 días</span>
+                        <span><i class="bi bi-truck me-1" style="color: var(--tienda-primary);"></i><span data-i18n="detail.shipping_available">Envío disponible</span></span>
+                        <span><i class="bi bi-shield-check me-1" style="color: var(--tienda-primary);"></i><span data-i18n="detail.warranty_months">12 meses garantía</span></span>
+                        <span><i class="bi bi-arrow-repeat me-1" style="color: var(--tienda-primary);"></i><span data-i18n="detail.returns_days">Devolución 30 días</span></span>
                     </div>
                 </div>
             </div>

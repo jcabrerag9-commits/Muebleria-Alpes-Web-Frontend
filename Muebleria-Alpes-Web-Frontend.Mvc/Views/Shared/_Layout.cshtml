@@ -82,19 +82,19 @@
                     </div>
                     <div>
                         <div class="brand-title">Los Alpes</div>
-                        <div class="brand-subtitle">SISTEMA ERP</div>
+                        <div class="brand-subtitle" data-i18n="admin.system_title">SISTEMA ERP</div>
                     </div>
                 </a>
             </div>
 
-            <div class="menu-title">MENÚ PRINCIPAL</div>
+            <div class="menu-title" data-i18n="admin.main_menu">MENÚ PRINCIPAL</div>
 
             <nav class="sidebar-menu">
 
                 <a class="menu-item @ActiveMenu("Home")" asp-controller="Home" asp-action="Index">
                     <span class="menu-left">
                         <i class="bi bi-grid"></i>
-                        <span>Dashboard</span>
+                        <span data-i18n="admin.dashboard">Dashboard</span>
                     </span>
                 </a>
 
@@ -106,26 +106,26 @@
                             aria-expanded="@(IsController("Productos", "Categorias", "Colores", "Materiales", "Promociones").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-box-seam"></i>
-                            <span>Productos</span>
+                            <span data-i18n="admin.products_menu">Productos</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Productos", "Categorias", "Colores", "Materiales", "Promociones")" id="productosMenu">
                         <a class="@ActiveSubmenu("Productos", "Index")" asp-controller="Productos" asp-action="Index">
-                            <i class="bi bi-box"></i> Catálogo
+                            <i class="bi bi-box"></i> <span data-i18n="admin.catalog">Catálogo</span>
                         </a>
                         <a class="@ActiveSubmenu("Categorias", "Index")" asp-controller="Categorias" asp-action="Index">
-                            <i class="bi bi-tag"></i> Categorías
+                            <i class="bi bi-tag"></i> <span data-i18n="admin.categories">Categorías</span>
                         </a>
                         <a class="@ActiveSubmenu("Colores", "Index")" asp-controller="Colores" asp-action="Index">
-                            <i class="bi bi-palette"></i> Colores
+                            <i class="bi bi-palette"></i> <span data-i18n="admin.colors">Colores</span>
                         </a>
                         <a class="@ActiveSubmenu("Materiales", "Index")" asp-controller="Materiales" asp-action="Index">
-                            <i class="bi bi-layers"></i> Materiales
+                            <i class="bi bi-layers"></i> <span data-i18n="admin.materials">Materiales</span>
                         </a>
                         <a class="@ActiveSubmenu("Promociones", "Index")" asp-controller="Promociones" asp-action="Index">
-                            <i class="bi bi-ticket-perforated"></i> Promociones
+                            <i class="bi bi-ticket-perforated"></i> <span data-i18n="admin.promotions">Promociones</span>
                         </a>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                 <a class="menu-item @ActiveMenu("Clientes")" asp-controller="Clientes" asp-action="Index">
                     <span class="menu-left">
                         <i class="bi bi-people"></i>
-                        <span>Clientes</span>
+                        <span data-i18n="admin.customers">Clientes</span>
                     </span>
                 </a>
 
@@ -147,26 +147,26 @@
                             aria-expanded="@(IsController("Seguridad").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-shield-lock"></i>
-                            <span>Seguridad</span>
+                            <span data-i18n="admin.security">Seguridad</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Seguridad")" id="seguridadMenu">
                         <a asp-controller="Seguridad" asp-action="Usuarios">
-                            <i class="bi bi-people"></i> Usuarios
+                            <i class="bi bi-people"></i> <span data-i18n="admin.users">Usuarios</span>
                         </a>
                         <a asp-controller="Seguridad" asp-action="Roles">
-                            <i class="bi bi-person-badge"></i> Roles
+                            <i class="bi bi-person-badge"></i> <span data-i18n="admin.roles">Roles</span>
                         </a>
                         <a asp-controller="Seguridad" asp-action="Permisos">
-                            <i class="bi bi-key"></i> Permisos
+                            <i class="bi bi-key"></i> <span data-i18n="admin.permissions">Permisos</span>
                         </a>
                         <a asp-controller="Seguridad" asp-action="Asignaciones">
-                            <i class="bi bi-diagram-3"></i> Asignaciones
+                            <i class="bi bi-diagram-3"></i> <span data-i18n="admin.assignments">Asignaciones</span>
                         </a>
                         <a asp-controller="Seguridad" asp-action="Bitacora">
-                            <i class="bi bi-journal-text"></i> Bitácora
+                            <i class="bi bi-journal-text"></i> <span data-i18n="admin.log">Bitácora</span>
                         </a>
                     </div>
                 </div>
@@ -174,7 +174,7 @@
                 <a class="menu-item @ActiveMenu("Envios")" asp-controller="Envios" asp-action="Index">
                     <span class="menu-left">
                         <i class="bi bi-truck"></i>
-                        <span>Envíos</span>
+                        <span data-i18n="admin.shipments_menu">Envíos</span>
                     </span>
                 </a>
 
@@ -186,15 +186,15 @@
                             aria-expanded="@(IsController("Reportes").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-bar-chart-line"></i>
-                            <span>Reportes</span>
+                            <span data-i18n="admin.reports">Reportes</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
                     <div class="collapse submenu @ShowMenu("Reportes")" id="reportesMenu">
-                        <a asp-controller="Reportes" asp-action="Index"><i class="bi bi-grid"></i> Panel</a>
-                        <a asp-controller="Reportes" asp-action="Cliente"><i class="bi bi-person-lines-fill"></i> Clientes</a>
-                        <a asp-controller="Reportes" asp-action="Ventas"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
-                        <a asp-controller="Reportes" asp-action="Caja"><i class="bi bi-cash-stack"></i> Caja</a>
+                        <a asp-controller="Reportes" asp-action="Index"><i class="bi bi-grid"></i> <span data-i18n="admin.panel">Panel</span></a>
+                        <a asp-controller="Reportes" asp-action="Cliente"><i class="bi bi-person-lines-fill"></i> <span data-i18n="admin.customers">Clientes</span></a>
+                        <a asp-controller="Reportes" asp-action="Ventas"><i class="bi bi-graph-up-arrow"></i> <span data-i18n="admin.sales_menu">Ventas</span></a>
+                        <a asp-controller="Reportes" asp-action="Caja"><i class="bi bi-cash-stack"></i> <span data-i18n="admin.cash_register">Caja</span></a>
                         <a asp-controller="Reportes" asp-action="Marketing"><i class="bi bi-megaphone"></i> Marketing</a>
                     </div>
                 </div>
@@ -207,22 +207,22 @@
                             aria-expanded="@(IsController("Ventas", "Facturas", "Pagos").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-cart"></i>
-                            <span>Ventas</span>
+                            <span data-i18n="admin.sales_menu">Ventas</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Ventas", "Facturas", "Pagos")" id="ventasMenu">
                         <a class="@ActiveSubmenu("Ventas", "Index")" asp-controller="Ventas" asp-action="Index">
-                            <i class="bi bi-cart"></i> Órdenes
+                            <i class="bi bi-cart"></i> <span data-i18n="admin.orders_menu">Órdenes</span>
                         </a>
                         <a class="@ActiveSubmenu("Facturas", "Index")" asp-controller="Facturas" asp-action="Index">
-                            <i class="bi bi-file-earmark-text"></i> Facturas
+                            <i class="bi bi-file-earmark-text"></i> <span data-i18n="admin.invoices">Facturas</span>
                         </a>
                         <a class="@ActiveSubmenu("Pagos", "Index")" asp-controller="Pagos" asp-action="Index">
-                            <i class="bi bi-credit-card"></i> Pagos
+                            <i class="bi bi-credit-card"></i> <span data-i18n="admin.payments">Pagos</span>
                         </a>
-                        <a asp-controller="Devoluciones" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Devoluciones</a>
+                        <a asp-controller="Devoluciones" asp-action="Index"><i class="bi bi-arrow-return-left"></i> <span data-i18n="admin.returns">Devoluciones</span></a>
                     </div>
                 </div>
 
@@ -234,14 +234,14 @@
                             aria-expanded="@(IsController("Finanzas").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-bank"></i>
-                            <span>Finanzas</span>
+                            <span data-i18n="admin.finance">Finanzas</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Finanzas")" id="finanzasMenu">
                         <a class="@ActiveSubmenu("Finanzas", "Historial")" asp-controller="Finanzas" asp-action="Historial">
-                            <i class="bi bi-journal-text"></i> Kárdex Financiero
+                            <i class="bi bi-journal-text"></i> <span data-i18n="admin.financial_ledger">Kárdex Financiero</span>
                         </a>
                     </div>
                 </div>
@@ -254,20 +254,20 @@
                             aria-expanded="@(IsController("Inventario", "Bodegas", "MovimientosInventario").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-building"></i>
-                            <span>Inventario</span>
+                            <span data-i18n="admin.inventory_menu">Inventario</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Inventario")" id="inventarioMenu">
                         <a class="@ActiveSubmenu("Inventario", "Index")" asp-controller="Inventario" asp-action="Index">
-                            <i class="bi bi-box"></i> Existencias
+                            <i class="bi bi-box"></i> <span data-i18n="admin.stock">Existencias</span>
                         </a>
                         <a class="@ActiveSubmenu("Inventario", "Bodegas")" asp-controller="Inventario" asp-action="Bodegas">
-                            <i class="bi bi-buildings"></i> Bodegas
+                            <i class="bi bi-buildings"></i> <span data-i18n="admin.warehouses">Bodegas</span>
                         </a>
                         <a class="@ActiveSubmenu("Inventario", "Movimientos")" asp-controller="Inventario" asp-action="Movimientos">
-                            <i class="bi bi-arrow-left-right"></i> Movimientos
+                            <i class="bi bi-arrow-left-right"></i> <span data-i18n="admin.movements">Movimientos</span>
                         </a>
                     </div>
                 </div>
@@ -275,7 +275,7 @@
                 <a class="menu-item @ActiveMenu("Produccion")" asp-controller="Produccion" asp-action="Index">
                     <span class="menu-left">
                         <i class="bi bi-building-gear"></i>
-                        <span>Producción</span>
+                        <span data-i18n="admin.production">Producción</span>
                     </span>
                 </a>
 
@@ -287,38 +287,38 @@
                             aria-expanded="@(IsController("Empleados", "Contratos", "Nomina", "Asistencias", "Vacaciones", "Puestos", "Departamentos", "Evaluaciones", "Turnos").ToString().ToLower())">
                         <span class="menu-left">
                             <i class="bi bi-person-gear"></i>
-                            <span>RRHH</span>
+                            <span data-i18n="admin.hr">RRHH</span>
                         </span>
                         <i class="bi bi-chevron-down small-arrow"></i>
                     </button>
 
                     <div class="collapse submenu @ShowMenu("Empleados", "Contratos", "Nomina", "Asistencias", "Vacaciones", "Puestos", "Departamentos", "Evaluaciones", "Turnos")" id="rrhhMenu">
                         <a class="@ActiveSubmenu("Empleados", "Index")" asp-controller="Empleados" asp-action="Index">
-                            <i class="bi bi-person"></i> Empleados
+                            <i class="bi bi-person"></i> <span data-i18n="admin.employees_menu">Empleados</span>
                         </a>
                         <a class="@ActiveSubmenu("Contratos", "Index")" asp-controller="Contratos" asp-action="Index">
-                            <i class="bi bi-file-earmark-check"></i> Contratos
+                            <i class="bi bi-file-earmark-check"></i> <span data-i18n="admin.contracts">Contratos</span>
                         </a>
                         <a class="@ActiveSubmenu("Nomina", "Index")" asp-controller="Nomina" asp-action="Index">
-                            <i class="bi bi-currency-dollar"></i> Nómina
+                            <i class="bi bi-currency-dollar"></i> <span data-i18n="admin.payroll">Nómina</span>
                         </a>
                         <a class="@ActiveSubmenu("Asistencias", "Index")" asp-controller="Asistencias" asp-action="Index">
-                            <i class="bi bi-clock-history"></i> Asistencias
+                            <i class="bi bi-clock-history"></i> <span data-i18n="admin.attendance">Asistencias</span>
                         </a>
                         <a class="@ActiveSubmenu("Vacaciones", "Index")" asp-controller="Vacaciones" asp-action="Index">
-                            <i class="bi bi-airplane"></i> Vacaciones
+                            <i class="bi bi-airplane"></i> <span data-i18n="admin.vacations">Vacaciones</span>
                         </a>
                         <a class="@ActiveSubmenu("Puestos", "Index")" asp-controller="Puestos" asp-action="Index">
-                            <i class="bi bi-briefcase"></i> Puestos
+                            <i class="bi bi-briefcase"></i> <span data-i18n="admin.positions">Puestos</span>
                         </a>
                         <a class="@ActiveSubmenu("Departamentos", "Index")" asp-controller="Departamentos" asp-action="Index">
-                            <i class="bi bi-diagram-3"></i> Departamentos
+                            <i class="bi bi-diagram-3"></i> <span data-i18n="admin.departments">Departamentos</span>
                         </a>
                         <a class="@ActiveSubmenu("Evaluaciones", "Index")" asp-controller="Evaluaciones" asp-action="Index">
-                            <i class="bi bi-clipboard-check"></i> Evaluaciones
+                            <i class="bi bi-clipboard-check"></i> <span data-i18n="admin.evaluations">Evaluaciones</span>
                         </a>
                         <a class="@ActiveSubmenu("Turnos", "Index")" asp-controller="Turnos" asp-action="Index">
-                            <i class="bi bi-calendar2-week"></i> Turnos
+                            <i class="bi bi-calendar2-week"></i> <span data-i18n="admin.shifts">Turnos</span>
                         </a>
                     </div>
                 </div>
@@ -328,7 +328,7 @@
             <div class="store-box">
                 <a asp-controller="Tienda" asp-action="Index">
                     <i class="bi bi-shop"></i>
-                    <span>Ver tienda virtual</span>
+                    <span data-i18n="admin.view_store">Ver tienda virtual</span>
                 </a>
             </div>
 
@@ -348,8 +348,8 @@
                 {
                     <div class="user-avatar"><i class="bi bi-person"></i></div>
                     <div>
-                        <div class="user-name">Invitado</div>
-                        <div class="user-email"><a href="/Login/Login" class="text-white-50">Iniciar sesión</a></div>
+                        <div class="user-name" data-i18n="admin.guest">Invitado</div>
+                        <div class="user-email"><a href="/Login/Login" class="text-white-50" data-i18n="admin.signin_link">Iniciar sesión</a></div>
                     </div>
                 }
             </div>
@@ -364,24 +364,33 @@
 
                     <div class="topbar-search">
                         <i class="bi bi-search"></i>
-                        <input type="text" placeholder="Buscar en el sistema..." />
+                        <input type="text" data-i18n-placeholder="admin.search_placeholder" placeholder="Buscar en el sistema..." />
                     </div>
                 </div>
                 <div class="topbar-actions">
+                    <!-- Language switcher -->
+                    <div class="d-flex align-items-center gap-1">
+                        <button type="button" class="admin-lang-btn lang-active" data-lang-btn="es"
+                                onclick="i18n.load('es')" title="Español">ES</button>
+                        <span class="text-muted" style="font-size:0.7rem;">|</span>
+                        <button type="button" class="admin-lang-btn" data-lang-btn="en"
+                                onclick="i18n.load('en')" title="English">EN</button>
+                    </div>
+
                     @* Botón Ver Tienda — accesible para todos los no-clientes en el admin *@
                     <a asp-controller="Tienda" asp-action="Index"
-                       class="topbar-btn" title="Ver Tienda Virtual">
+                       class="topbar-btn" data-i18n-title="admin.view_virtual_store">
                         <i class="bi bi-shop"></i>
                     </a>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a asp-controller="Login" asp-action="Logout" class="topbar-btn" title="Cerrar sesión">
+                        <a asp-controller="Login" asp-action="Logout" class="topbar-btn" data-i18n-title="admin.logout_title">
                             <i class="bi bi-box-arrow-right"></i>
                         </a>
                     }
                     else
                     {
-                        <a asp-controller="Login" asp-action="Login" class="topbar-btn" title="Iniciar sesión">
+                        <a asp-controller="Login" asp-action="Login" class="topbar-btn" data-i18n-title="admin.signin_title">
                             <i class="bi bi-box-arrow-in-right"></i>
                         </a>
                     }
@@ -416,6 +425,7 @@
     <script src="~/js/admin-layout.js" asp-append-version="true"></script>
     <script src="~/js/erp-helpers.js" asp-append-version="true"></script>
     <script src="~/js/erp-validation.js" asp-append-version="true"></script>
+    <script src="~/js/i18n.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
