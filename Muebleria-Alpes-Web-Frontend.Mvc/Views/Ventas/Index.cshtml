@@ -22,7 +22,7 @@
 </div>
 
 <div class="record-count">
-    @Model.Count registros
+    @Model.Count <span data-i18n="admin.records">registros</span>
 </div>
 
 <div class="erp-card">
@@ -30,12 +30,12 @@
         <table class="table erp-table" id="tablaOrdenes">
             <thead>
                 <tr>
-                    <th>Número Orden</th>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+                    <th data-i18n="admin.order_number_col">Número Orden</th>
+                    <th data-i18n="admin.date_col">Fecha</th>
+                    <th data-i18n="admin.customer_col">Cliente</th>
+                    <th data-i18n="admin.total_col">Total</th>
+                    <th data-i18n="admin.status_col">Estado</th>
+                    <th data-i18n="admin.actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,7 +91,7 @@
                                         data-numero="@orden.NumeroOrden"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalProcesar">
-                                    <i class="bi bi-arrow-repeat"></i> Procesar
+                                    <i class="bi bi-arrow-repeat"></i> <span data-i18n="admin.process">Procesar</span>
                                 </button>
                             }
                             else
@@ -112,19 +112,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalProcesarLabel">
-                    <i class="bi bi-arrow-repeat me-2"></i>Procesar Orden
+                    <i class="bi bi-arrow-repeat me-2"></i><span data-i18n="admin.process_order">Procesar Orden</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <p>¿Deseas cambiar el estado de la orden <strong id="modalNumeroOrden"></strong> a <span class="text-primary fw-bold">Procesando</span>?</p>
-                <p class="text-muted small mb-0">Esta acción permitirá emitir facturas para la orden.</p>
+                <p><span data-i18n="admin.process_confirm_text">¿Deseas cambiar el estado de la orden</span> <strong id="modalNumeroOrden"></strong></p>
+                <p class="text-muted small mb-0" data-i18n="admin.process_confirm_sub">Esta acción permitirá emitir facturas para la orden.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="admin.cancel">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnConfirmarProcesar">
                     <span id="btnProcesarSpinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-                    Confirmar
+                    <span data-i18n="admin.confirm">Confirmar</span>
                 </button>
             </div>
         </div>

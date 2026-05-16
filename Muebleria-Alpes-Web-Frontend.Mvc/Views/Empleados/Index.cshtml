@@ -11,15 +11,15 @@
             <i class="bi bi-people"></i>
         </div>
         <div>
-            <h1>Empleados</h1>
-            <p>Gestión del personal</p>
+            <h1 data-i18n="admin.employees_title">Empleados</h1>
+            <p data-i18n="admin.employees_sub">Gestión del personal</p>
         </div>
     </div>
 
     <div class="page-actions">
-        <input type="text" id="buscarEmpleado" class="form-control search-input" placeholder="Buscar..." />
+        <input type="text" id="buscarEmpleado" class="form-control search-input" data-i18n-placeholder="admin.search" placeholder="Buscar..." />
         <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearEmpleado">
-            <i class="bi bi-plus-lg"></i> Nuevo Empleado
+            <i class="bi bi-plus-lg"></i> <span data-i18n="admin.new_employee">Nuevo Empleado</span>
         </button>
     </div>
 </div>
@@ -35,7 +35,7 @@
 }
 
 <div class="record-count">
-    @Model.Count registros
+    @Model.Count <span data-i18n="admin.records">registros</span>
 </div>
 
 <div class="erp-card">
@@ -43,13 +43,13 @@
         <table class="table erp-table" id="tablaEmpleados">
             <thead>
                 <tr>
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>Documento</th>
-                    <th>Contacto</th>
-                    <th>Ingreso</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
+                    <th data-i18n="admin.code_col">Código</th>
+                    <th data-i18n="admin.name_col">Nombre</th>
+                    <th data-i18n="admin.document_col">Documento</th>
+                    <th data-i18n="admin.contact_col">Contacto</th>
+                    <th data-i18n="admin.entry_col">Ingreso</th>
+                    <th data-i18n="admin.status_col">Estado</th>
+                    <th class="text-end" data-i18n="admin.actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>

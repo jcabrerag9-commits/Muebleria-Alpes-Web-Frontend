@@ -11,15 +11,15 @@
             <i class="bi bi-box-seam"></i>
         </div>
         <div>
-            <h1>Catálogo de Productos</h1>
-            <p>Gestión del catálogo general de muebles</p>
+            <h1 data-i18n="admin.products_title">Catálogo de Productos</h1>
+            <p data-i18n="admin.products_sub">Gestión del catálogo general de muebles</p>
         </div>
     </div>
 
     <div class="page-actions">
-        <input type="text" id="buscarProducto" class="form-control search-input" placeholder="Buscar producto..." />
+        <input type="text" id="buscarProducto" class="form-control search-input" data-i18n-placeholder="admin.search_product" placeholder="Buscar producto..." />
         <button class="btn btn-primary btn-main" data-bs-toggle="modal" data-bs-target="#modalCrearProducto">
-            <i class="bi bi-plus-lg"></i> Nuevo Producto
+            <i class="bi bi-plus-lg"></i> <span data-i18n="admin.new_product">Nuevo Producto</span>
         </button>
     </div>
 </div>
@@ -35,7 +35,7 @@
 }
 
 <div class="record-count">
-    @Model.Count registros
+    @Model.Count <span data-i18n="admin.records">registros</span>
 </div>
 
 <div id="contenedorListaProductos">
@@ -44,15 +44,15 @@
             <table class="table erp-table" id="tablaProductos">
                 <thead>
                     <tr>
-                        <th>SKU</th>
-                        <th>Producto</th>
-                        <th>Tipo</th>
-                        <th>Configuración</th>
-                        <th>Peso</th>
-                        <th style="width: 130px;">Precio</th>
-                        <th style="width: 110px;">Registro</th>
-                        <th style="width: 120px;">Estado</th>
-                        <th class="text-end" style="width: 180px;">Acciones</th>
+                        <th data-i18n="admin.sku">SKU</th>
+                        <th data-i18n="admin.product_col">Producto</th>
+                        <th data-i18n="admin.type_col">Tipo</th>
+                        <th data-i18n="admin.config_col">Configuración</th>
+                        <th data-i18n="admin.weight_col">Peso</th>
+                        <th style="width: 130px;" data-i18n="admin.price_col">Precio</th>
+                        <th style="width: 110px;" data-i18n="admin.registration_col">Registro</th>
+                        <th style="width: 120px;" data-i18n="admin.status_col">Estado</th>
+                        <th class="text-end" style="width: 180px;" data-i18n="admin.actions">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>

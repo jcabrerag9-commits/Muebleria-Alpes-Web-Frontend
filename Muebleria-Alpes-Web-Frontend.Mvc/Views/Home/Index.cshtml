@@ -28,7 +28,7 @@
             </div>
             <div class="stat-body">
                 <div class="stat-value">@Model.TotalOrdenes</div>
-                <div class="stat-label">Órdenes Totales</div>
+                <div class="stat-label" data-i18n="admin.total_orders">Órdenes Totales</div>
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
             </div>
             <div class="stat-body">
                 <div class="stat-value">Q @Model.VentasHoy.ToString("N2")</div>
-                <div class="stat-label">Ventas de Hoy</div>
+                <div class="stat-label" data-i18n="admin.today_sales">Ventas de Hoy</div>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
             </div>
             <div class="stat-body">
                 <div class="stat-value">@Model.TotalClientes</div>
-                <div class="stat-label">Clientes</div>
+                <div class="stat-label" data-i18n="admin.total_customers">Clientes</div>
             </div>
         </div>
     </div>
@@ -61,7 +61,7 @@
             </div>
             <div class="stat-body">
                 <div class="stat-value">@Model.TotalProductos</div>
-                <div class="stat-label">Productos</div>
+                <div class="stat-label" data-i18n="admin.total_products">Productos</div>
             </div>
         </div>
     </div>
@@ -72,8 +72,8 @@
     <div class="col-xl-8">
         <div class="erp-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-danger"></i>Órdenes Recientes</h5>
-                <a asp-controller="Ventas" asp-action="Index" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-danger"></i><span data-i18n="admin.recent_orders">Órdenes Recientes</span></h5>
+                <a asp-controller="Ventas" asp-action="Index" class="btn btn-sm btn-outline-secondary" data-i18n="admin.view_all">Ver todas</a>
             </div>
             @if (Model.OrdeneRecientes.Any())
             {
@@ -81,11 +81,11 @@
                     <table class="table erp-table">
                         <thead>
                             <tr>
-                                <th>Orden</th>
-                                <th>Cliente</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Fecha</th>
+                                <th data-i18n="admin.order_col">Orden</th>
+                                <th data-i18n="admin.customer_col">Cliente</th>
+                                <th data-i18n="admin.total_col">Total</th>
+                                <th data-i18n="admin.status_col">Estado</th>
+                                <th data-i18n="admin.date_col">Fecha</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -116,7 +116,7 @@
             else
             {
                 <div class="text-center py-4 text-muted">
-                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay órdenes recientes
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i><span data-i18n="admin.no_recent_orders">No hay órdenes recientes</span>
                 </div>
             }
         </div>
@@ -125,28 +125,28 @@
     <!-- Quick Links -->
     <div class="col-xl-4">
         <div class="erp-card">
-            <h5 class="mb-3 fw-bold"><i class="bi bi-lightning-charge me-2 text-warning"></i>Accesos Rápidos</h5>
+            <h5 class="mb-3 fw-bold"><i class="bi bi-lightning-charge me-2 text-warning"></i><span data-i18n="admin.quick_links">Accesos Rápidos</span></h5>
             <div class="d-grid gap-2">
                 <a asp-controller="Productos" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-box-seam me-2"></i> Gestionar Productos
+                    <i class="bi bi-box-seam me-2"></i> <span data-i18n="admin.manage_products">Gestionar Productos</span>
                 </a>
                 <a asp-controller="Clientes" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-people me-2"></i> Ver Clientes
+                    <i class="bi bi-people me-2"></i> <span data-i18n="admin.view_customers">Ver Clientes</span>
                 </a>
                 <a asp-controller="Ventas" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-cart me-2"></i> Ver Órdenes
+                    <i class="bi bi-cart me-2"></i> <span data-i18n="admin.view_orders">Ver Órdenes</span>
                 </a>
                 <a asp-controller="Inventario" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-building me-2"></i> Ver Inventario
+                    <i class="bi bi-building me-2"></i> <span data-i18n="admin.view_inventory">Ver Inventario</span>
                 </a>
                 <a asp-controller="Caja" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-cash-stack me-2"></i> Corte de Caja
+                    <i class="bi bi-cash-stack me-2"></i> <span data-i18n="admin.cash_register">Corte de Caja</span>
                 </a>
                 <a asp-controller="Empleados" asp-action="Index" class="btn btn-outline-secondary text-start">
-                    <i class="bi bi-person-gear me-2"></i> Gestionar Empleados
+                    <i class="bi bi-person-gear me-2"></i> <span data-i18n="admin.manage_employees">Gestionar Empleados</span>
                 </a>
                 <a asp-controller="Tienda" asp-action="Index" class="btn btn-danger text-start mt-2">
-                    <i class="bi bi-shop me-2"></i> Ir a la Tienda Virtual
+                    <i class="bi bi-shop me-2"></i> <span data-i18n="admin.go_store">Ir a la Tienda Virtual</span>
                 </a>
             </div>
         </div>
