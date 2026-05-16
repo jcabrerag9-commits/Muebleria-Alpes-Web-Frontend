@@ -74,7 +74,20 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services.Productos
         public async Task<bool> ActualizarAsync(int id, ActualizarProductoViewModel model)
         {
             System.Console.WriteLine($"[API-SERVICE] PUT a api/Productos/{id}");
-            var response = await _httpClient.PutAsJsonAsync($"api/Productos/{id}", model);
+            
+            // Aseguramos que el payload incluya los precios para que el Backend los procese
+            var payload = new {
+                Nombre = model.Nombre,
+                DescripcionCorta = model.DescripcionCorta,
+                DescripcionLarga = model.DescripcionLarga,
+                Peso = model.Peso,
+                TipoMueble = model.TipoMueble,
+                EsConfigurable = model.EsConfigurable,
+                PrecioVigente = model.PrecioVigente,
+                PrecioOferta = model.PrecioOferta
+            };
+
+            var response = await _httpClient.PutAsJsonAsync($"api/Productos/{id}", payload);
             
             if (!response.IsSuccessStatusCode)
             {

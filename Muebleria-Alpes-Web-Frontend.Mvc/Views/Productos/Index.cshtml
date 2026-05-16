@@ -49,6 +49,7 @@
                         <th>Tipo</th>
                         <th>Configuración</th>
                         <th>Peso</th>
+                        <th style="width: 130px;">Precio</th>
                         <th style="width: 110px;">Registro</th>
                         <th style="width: 120px;">Estado</th>
                         <th class="text-end" style="width: 180px;">Acciones</th>
@@ -93,6 +94,30 @@
                             <td>
                                 <div class="contact-cell">
                                     <div><i class="bi bi-speedometer2"></i> @(prod.Peso?.ToString("0.00") ?? "0.00") kg</div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="price-cell">
+                                    @if (prod.PrecioVigente.HasValue && prod.PrecioVigente > 0)
+                                    {
+                                        <div class="d-flex flex-column">
+                                            @if (prod.PrecioOferta.HasValue)
+                                            {
+                                                <span class="text-muted text-decoration-line-through" style="font-size: 0.75rem;">Q @prod.PrecioVigente.Value.ToString("N2")</span>
+                                                <span class="fw-bold text-danger">Q @prod.PrecioOferta.Value.ToString("N2")</span>
+                                                <span class="badge bg-danger p-1" style="font-size: 0.6rem; width: fit-content;">OFERTA</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="fw-bold text-success">Q @prod.PrecioVigente.Value.ToString("N2")</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary opacity-75">Sin precio</span>
+                                    }
                                 </div>
                             </td>
 
