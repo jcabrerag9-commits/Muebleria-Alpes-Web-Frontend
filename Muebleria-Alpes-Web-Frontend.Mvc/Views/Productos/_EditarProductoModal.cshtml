@@ -37,6 +37,16 @@
                             <label class="form-label">Peso (kg)</label>
                             <input name="Peso" class="form-control" type="number" step="0.01" value="@Model.Peso" />
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Precio Regular (Q) <span class="text-danger">*</span></label>
+                            <input name="PrecioVigente" class="form-control" type="number" step="0.01" value="@Model.PrecioVigente" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Precio Oferta (Opcional)</label>
+                            <input name="PrecioOferta" class="form-control" type="number" step="0.01" value="@Model.PrecioOferta" />
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

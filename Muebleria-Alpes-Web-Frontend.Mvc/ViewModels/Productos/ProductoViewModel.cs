@@ -19,6 +19,8 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
         public int? TipoMuebleId { get; set; }
         public string? TipoMuebleNombre { get; set; }
         public string? ImagenUrl { get; set; }
+        public decimal? PrecioVigente { get; set; }
+        public decimal? PrecioOferta { get; set; }
     }
 
     public class CrearProductoViewModel
@@ -40,6 +42,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
 
         [JsonPropertyName("esConfigurable")]
         public string EsConfigurable { get; set; } = "N";
+
+        [JsonPropertyName("precioVigente")]
+        public decimal? PrecioVigente { get; set; }
+
+        [JsonPropertyName("precioOferta")]
+        public decimal? PrecioOferta { get; set; }
     }
 
     public class ActualizarProductoViewModel
@@ -61,6 +69,12 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.ViewModels.Productos
 
         [JsonPropertyName("esConfigurable")]
         public string EsConfigurable { get; set; } = "N";
+
+        [JsonPropertyName("precioVigente")]
+        public decimal? PrecioVigente { get; set; }
+
+        [JsonPropertyName("precioOferta")]
+        public decimal? PrecioOferta { get; set; }
     }
 
     // ── CATEGORIAS ───────────────────────────────────────────────────────────
