@@ -54,7 +54,8 @@ public class FiltroDireccionClienteResponse
     [JsonPropertyName("clienteId")] public int ClienteId { get; set; }
     [JsonPropertyName("ciudadId")] public int CiudadId { get; set; }
     [JsonPropertyName("ciudadNombre")] public string? CiudadNombre { get; set; }
-    [JsonPropertyName("direccion")] public string? Direccion { get; set; }
+    [JsonPropertyName("direccionLinea1")] public string? DireccionLinea1 { get; set; }
+    [JsonPropertyName("direccionLinea2")] public string? DireccionLinea2 { get; set; }
     [JsonPropertyName("tipo")] public string? Tipo { get; set; }
     [JsonPropertyName("principal")] public string? Principal { get; set; }
     [JsonPropertyName("estado")] public string? Estado { get; set; }

@@ -50,5 +50,21 @@ namespace Muebleria_Alpes_Web_Frontend.Mvc.Services
                 return new List<FacturaViewModel>();
             }
         }
+
+        public async Task<(bool Exitoso, string Mensaje)> ActualizarEstadoOrdenAsync(int ordenId, int nuevoEstado, int usuarioId, string comentario = "")
+        {
+            try
+            {
+                var body = new { OrdenId = ordenId, NuevoEstado = nuevoEstado, UsuarioId = usuarioId, Comentario = comentario };
+                var response = await _httpClient.PutAsJsonAsync("api/ventas/orden/estado", body);
+                var result = await response.Content.ReadFromJsonAsync<InventarioApiResponse<object>>();
+                var exitoso = result?.Resultado?.ToUpper() == "EXITO" || response.IsSuccessStatusCode;
+                return (exitoso, result?.Mensaje ?? "Sin respuesta del servidor");
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
     }
 }

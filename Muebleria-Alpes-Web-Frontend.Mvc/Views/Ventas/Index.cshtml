@@ -35,27 +35,32 @@
                     <th>Cliente</th>
                     <th>Total</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var orden in Model)
                 {
-                    var estadoBadge = orden.Estado switch
+                    var estadoUp = (orden.Estado ?? "").ToUpperInvariant();
+
+                    var estadoBadge = estadoUp switch
                     {
                         "PENDIENTE"   => "status-warning",
                         "PROCESANDO"  => "status-warning",
                         "ENVIADO"     => "status-active",
                         "COMPLETADO"  => "status-active",
+                        "ENTREGADO"   => "status-active",
                         "CANCELADO"   => "status-danger",
                         _             => "status-inactive"
                     };
 
-                    var estadoIcon = orden.Estado switch
+                    var estadoIcon = estadoUp switch
                     {
                         "PENDIENTE"   => "bi-clock",
                         "PROCESANDO"  => "bi-arrow-repeat",
                         "ENVIADO"     => "bi-truck",
                         "COMPLETADO"  => "bi-check-circle",
+                        "ENTREGADO"   => "bi-check-circle",
                         "CANCELADO"   => "bi-x-circle",
                         _             => "bi-dash-circle"
                     };
@@ -78,6 +83,22 @@
                                 <i class="bi @estadoIcon"></i> @(orden.Estado ?? "N/A")
                             </span>
                         </td>
+                        <td>
+                            @if (estadoUp == "PENDIENTE")
+                            {
+                                <button class="btn btn-sm btn-primary btn-procesar"
+                                        data-orden-id="@orden.OrdenId"
+                                        data-numero="@orden.NumeroOrden"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalProcesar">
+                                    <i class="bi bi-arrow-repeat"></i> Procesar
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -85,9 +106,35 @@
     </div>
 </div>
 
+<!-- Modal confirmación -->
+<div class="modal fade" id="modalProcesar" tabindex="-1" aria-labelledby="modalProcesarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProcesarLabel">
+                    <i class="bi bi-arrow-repeat me-2"></i>Procesar Orden
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Deseas cambiar el estado de la orden <strong id="modalNumeroOrden"></strong> a <span class="text-primary fw-bold">Procesando</span>?</p>
+                <p class="text-muted small mb-0">Esta acción permitirá emitir facturas para la orden.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarProcesar">
+                    <span id="btnProcesarSpinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // ── Búsqueda ──
             const input = document.getElementById("buscarOrden");
             const tabla = document.getElementById("tablaOrdenes");
             if (input && tabla) {
@@ -97,6 +144,61 @@
                         fila.style.display = fila.innerText.toLowerCase().includes(filtro) ? "" : "none";
                     });
                 });
+            }
+
+            // ── Modal Procesar ──
+            let ordenIdSeleccionada = null;
+
+            document.querySelectorAll(".btn-procesar").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    ordenIdSeleccionada = this.dataset.ordenId;
+                    document.getElementById("modalNumeroOrden").textContent = this.dataset.numero;
+                });
+            });
+
+            document.getElementById("btnConfirmarProcesar").addEventListener("click", async function () {
+                if (!ordenIdSeleccionada) return;
+
+                const spinner = document.getElementById("btnProcesarSpinner");
+                const btnConfirmar = this;
+                spinner.classList.remove("d-none");
+                btnConfirmar.disabled = true;
+
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const response = await fetch("/Ventas/ProcesarOrden", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            ...(token ? { "RequestVerificationToken": token } : {})
+                        },
+                        body: `ordenId=${ordenIdSeleccionada}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.exitoso) {
+                        bootstrap.Modal.getInstance(document.getElementById("modalProcesar")).hide();
+                        mostrarAlerta("success", "Orden procesada correctamente.");
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        mostrarAlerta("danger", data.mensaje || "No se pudo procesar la orden.");
+                    }
+                } catch (err) {
+                    mostrarAlerta("danger", "Error de conexión: " + err.message);
+                } finally {
+                    spinner.classList.add("d-none");
+                    btnConfirmar.disabled = false;
+                }
+            });
+
+            function mostrarAlerta(tipo, mensaje) {
+                const alerta = document.createElement("div");
+                alerta.className = `alert alert-${tipo} alert-dismissible fade show position-fixed bottom-0 end-0 m-3`;
+                alerta.style.zIndex = "9999";
+                alerta.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                document.body.appendChild(alerta);
+                setTimeout(() => alerta.remove(), 4000);
             }
         });
     </script>

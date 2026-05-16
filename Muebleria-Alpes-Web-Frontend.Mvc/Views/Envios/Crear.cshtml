@@ -15,5 +15,5 @@
 </div>
 @section Scripts{<script>
 const orden = document.getElementById('ordenSelect'); const dir = document.getElementById('direccionSelect');
-orden?.addEventListener('change', async () => { const cliente = orden.selectedOptions[0]?.dataset.cliente; dir.innerHTML='<option>Cargando...</option>'; if(!cliente){dir.innerHTML='<option>Seleccione una orden primero...</option>'; return;} const r=await fetch(`/Envios/DireccionesCliente?clienteId=${cliente}`); const data=await r.json(); dir.innerHTML=data.length?data.map(d=>`<option value="${d.clienteDireccionId}">${d.tipo} - ${d.direccion} (${d.ciudadNombre})</option>`).join(''):'<option value="">Sin direcciones activas</option>'; });
+orden?.addEventListener('change', async () => { const cliente = orden.selectedOptions[0]?.dataset.cliente; dir.innerHTML='<option>Cargando...</option>'; if(!cliente){dir.innerHTML='<option>Seleccione una orden primero...</option>'; return;} const r=await fetch(`/Envios/DireccionesCliente?clienteId=${cliente}`); const data=await r.json(); dir.innerHTML=data.length?data.map(d=>`<option value="${d.clienteDireccionId}">${d.tipo ?? ''} - ${d.direccionLinea1 ?? d.direccion ?? 'Sin dirección'} (${d.ciudadNombre ?? ''})</option>`).join(''):'<option value="">Sin direcciones registradas para este cliente</option>'; });
 </script>}
